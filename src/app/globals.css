@@ -1,26 +1,113 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --bg: #ffffff; /* base */
+    --fg: #000000;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+}
+
+/* selection + focus accents */
+::selection {
+    background: #0008ff33;
+}
+:focus-visible {
+    outline: 2px solid #0008ff;
+    outline-offset: 2px;
+}
+
+@layer components {
+    .card {
+        @apply rounded-xl2 border border-black/10 bg-black/5 shadow-soft transition;
+    }
+    .card:hover {
+        @apply bg-black/10;
+    }
+
+    .meta {
+        @apply font-pixel tracking-widest text-[11px] uppercase text-fofo-blue/70;
+    }
+
+    .meta-section {
+        @apply font-pixel tracking-widest text-[11px] uppercase text-fofo-mist/70;
+    }
+
+    .badge {
+        @apply inline-flex items-center rounded-full border border-black/20 px-2 py-1 meta;
+    }
+
+    .grid-bg {
+        background-image: linear-gradient(
+                to right,
+                rgba(0, 0, 0, 0.05) 1px,
+                transparent 1px
+            ),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        background-size: 24px 24px;
+    }
+    .gpu {
+        transform: translateZ(0);
+        will-change: transform;
+    }
+    @keyframes fofo-expand {
+        from {
+            transform: translate(0, 0) scale(1) rotate(0deg);
+        }
+        to {
+            transform: translate(var(--dx), var(--dy)) scale(var(--scaleBig))
+                rotate(1000deg);
+        }
+    }
+    @keyframes fofo-retract {
+        from {
+            transform: translate(var(--dx), var(--dy)) scale(var(--scaleBig))
+                rotate(1000deg);
+        }
+        to {
+            transform: translate(0, 0) scale(1) rotate(0deg);
+        }
+    }
+    .logo-expand {
+        animation: fofo-expand 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+    .logo-retract {
+        animation: fofo-retract 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+    /* Backdrop blur layer driven by a root class on <html> */
+    .fc-blur-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 59; /* just under the logo (z-[60]) */
+        pointer-events: none;
+        backdrop-filter: blur(var(--fc-blur, 0px));
+        transition: backdrop-filter var(--fc-blur-dur, 450ms)
+            var(--fc-blur-ease, cubic-bezier(0.2, 0.8, 0.2, 1));
+    }
+}
+
+@layer utilities {
+    .page-padding {
+        @apply px-6 pb-28;
+    }
+
+    .padding-bottom-hero {
+        padding-bottom: 10rem;
+    }
+}
+
+/* Toggle this class from LogoFly to turn blur on/off */
+.fc-blur-on {
+    --fc-blur: 8px; /* blur amount — tweak */
+    --fc-blur-dur: 450ms; /* animation duration */
+    --fc-blur-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.about-section {
+    font-color: mist;
 }
