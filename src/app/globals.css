@@ -103,11 +103,17 @@ body {
 
 /* Toggle this class from LogoFly to turn blur on/off */
 .fc-blur-on {
-    --fc-blur: 8px; /* blur amount — tweak */
-    --fc-blur-dur: 450ms; /* animation duration */
+    --fc-blur: 200px; /* blur amount — tweak */
+    --fc-blur-dur: 1s; /* animation duration */
     --fc-blur-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.about-section {
-    font-color: mist;
+.fc-section {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+.fc-section-in {
+  opacity: 1;
+  transform: translateY(0);
 }
