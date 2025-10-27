@@ -87,7 +87,7 @@ export default function FofoFooter() {
             <Linkedin className="w-5 h-5 text-fofo-blue opacity-70 hover:opacity-100" />
           </a>
           <a
-            href="https://github.com/"
+            href="https://github.com/fofofabio"
             target="_blank"
             className="transition hover:scale-110"
             aria-label="GitHub"
