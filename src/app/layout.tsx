@@ -15,7 +15,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} ${grotesk.variable} ${tiny5.variable}`}>
       <body className="min-h-dvh antialiased bg-white text-black">
         <LogoFly />
-
         {/* Header */}
         <header className="sticky top-0 z-50 border-black/10 bg-white/70 backdrop-blur">
           <div className="flex w-full items-center justify-between pl-6 pr-6 py-3">
