@@ -28,7 +28,7 @@ export default function Home() {
               <ul className="mt-10 grid gap-3 md:grid-cols-2">
                 <li className="meta-section">Tools → code, tools, prototypes</li>
                 <li className="meta-section">Projects → design, art, experiments</li>
-                <li className="meta-section">Fun → games, toys, diversions</li>
+                <li className="meta-section">Blog → thoughts, projects, updates</li>
                 <li className="meta-section">Gear → apparel, prints, swag</li>
                 <li className="meta-section">About → who I am, what this is</li>
               </ul>

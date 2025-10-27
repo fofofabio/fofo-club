@@ -1,7 +1,7 @@
 // Minimal CV data used by the About page
 export const profile = {
   name: "Fabio Unterholzer",
-  birthdate: "2002-04-14",
+  birthdate: "",
   age: 23,                // computed for 2025-10-24
   location: "Graz, Austria",
   email: "fabio.unterholzer@outlook.com",

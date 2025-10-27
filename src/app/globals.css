@@ -55,6 +55,21 @@ body {
         transform: translateZ(0);
         will-change: transform;
     }
+    @keyframes fofo-float {
+        0% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-8px) rotate(6deg); }
+        100% { transform: translateY(0) rotate(0deg); }
+    }
+    @keyframes fofo-spin-slow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .logo-404 {
+        animation: fofo-float 3.2s ease-in-out infinite;
+    }
+    .logo-404-slowspin {
+        animation: fofo-spin-slow 10s linear infinite;
+    }
     @keyframes fofo-expand {
         from {
             transform: translate(0, 0) scale(1) rotate(0deg);

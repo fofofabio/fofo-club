@@ -7,6 +7,7 @@ export default function LogoFly() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [state, setState] = useState<AnimState>("expanded");
+  const initializedRef = useRef<boolean>(false);
 
   // Flag: block the first page scroll once after expansion
   const consumedFirstScroll = useRef(false);
@@ -56,11 +57,37 @@ export default function LogoFly() {
     setPageBlur(s === "expanding" || s === "expanded");
 
     if (anchor) {
-      anchor.style.opacity = active ? "0" : "1";
+      // Adjust timings for smoother transition
+      if (s === "retracting") {
+        // Keep the animated logo visible during retraction
+        anchor.style.opacity = "0";
+        anchor.style.transition = "opacity 150ms ease-in";
+      } else if (s === "collapsed") {
+        // Fade in the navbar logo after retraction
+        anchor.style.opacity = "1";
+        anchor.style.transition = "opacity 300ms ease-out";
+      } else {
+        // Normal cases (expanding/expanded)
+        anchor.style.opacity = active ? "0" : "1";
+        anchor.style.transition = "opacity 150ms ease";
+      }
+      
       anchor.style.pointerEvents = active ? "none" : "auto";
-      anchor.style.transition = "opacity 150ms linear";
     }
-    if (wrap) wrap.style.visibility = active ? "visible" : "hidden";
+    
+    // Keep the animated logo visible until the transition is complete
+    if (wrap) {
+      if (s === "collapsed") {
+        // Delay hiding the animated logo until the navbar logo is visible
+        setTimeout(() => {
+          if (wrapRef.current && state === "collapsed") {
+            wrapRef.current.style.visibility = "hidden";
+          }
+        }, 150);
+      } else {
+        wrap.style.visibility = "visible";
+      }
+    }
   };
 
   // ------------------------------------------------ initial mount
@@ -68,9 +95,24 @@ export default function LogoFly() {
     const m = measure();
     const img = imgRef.current;
     if (!m || !img) return;
+
     img.style.transition = "none";
-    img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(${m.scale}) rotate(390deg)`;
-    setVisibility("expanded");
+    const isDirectLoad = !document.referrer || document.referrer.indexOf(window.location.origin) === -1;
+    const isHomepage = window.location.pathname === "/";
+    
+    // Expand on homepage direct load or when navigating between pages
+    if ((isDirectLoad && isHomepage) || !isDirectLoad || initializedRef.current) {
+      img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(${m.scale}) rotate(390deg)`;
+      setVisibility("expanded");
+      setState("expanded");
+      initializedRef.current = true;
+    } else {
+      // Collapse on direct loads to non-homepage routes
+      img.style.transform = `translate(0px, 0px) scale(1) rotate(0deg)`;
+      setVisibility("collapsed");
+      setState("collapsed");
+    }
+
     void img.offsetWidth;
     img.style.transition = "";
   }, []);
@@ -95,6 +137,31 @@ export default function LogoFly() {
   }, [state]);
 
   // ------------------------------------------------ animations
+  const cleanupAnimation = () => {
+    const img = imgRef.current;
+    if (!img) return;
+    const m = measure();
+    if (!m) return;
+
+    // Force state based on position
+    const currentTransform = img.style.transform;
+    const isExpanded = currentTransform.includes('390deg');
+    
+    img.style.transition = "none";
+    if (isExpanded) {
+      setState("expanded");
+      setVisibility("expanded");
+      img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(${m.scale}) rotate(390deg)`;
+      consumedFirstScroll.current = false;
+    } else {
+      setState("collapsed");
+      setVisibility("collapsed");
+      img.style.transform = `translate(0px, 0px) scale(1) rotate(0deg)`;
+    }
+    void img.offsetWidth;
+    img.style.transition = "";
+  };
+
   const retract = () => {
     const img = imgRef.current;
     if (!img || state === "retracting" || state === "collapsed") return;
@@ -104,14 +171,20 @@ export default function LogoFly() {
     img.style.transition = "transform 0.9s cubic-bezier(.2,.8,.2,1)";
     img.style.transform = `translate(0px, 0px) scale(1) rotate(0deg)`;
 
-    const done = () => {
+    const done = (e?: TransitionEvent) => {
+      if (e && e.propertyName !== 'transform') return;
       img.removeEventListener("transitionend", done);
       setState("collapsed");
       setVisibility("collapsed");
-      // allow page scroll afterwards
-      if (window.scrollY < 1) window.scrollTo({ top: 1 });
     };
+
+    const interrupted = () => {
+      img.removeEventListener("transitioncancel", interrupted);
+      cleanupAnimation();
+    };
+
     img.addEventListener("transitionend", done);
+    img.addEventListener("transitioncancel", interrupted);
   };
 
   const expand = () => {
@@ -124,24 +197,32 @@ export default function LogoFly() {
     img.style.transition = "transform 0.9s cubic-bezier(.2,.8,.2,1)";
     img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(${m.scale}) rotate(390deg)`;
 
-    const done = () => {
+    const done = (e?: TransitionEvent) => {
+      if (e && e.propertyName !== 'transform') return;
       img.removeEventListener("transitionend", done);
       setState("expanded");
       setVisibility("expanded");
-      if (window.scrollY !== 0) window.scrollTo({ top: 0 });
       // 🔄 reset "ignore first scroll" each time we fully expand again
       consumedFirstScroll.current = false;
+      try { sessionStorage.setItem('fofoLogoInit', '1'); } catch (e) {}
     };
+
+    const interrupted = () => {
+      img.removeEventListener("transitioncancel", interrupted);
+      cleanupAnimation();
+    };
+
     img.addEventListener("transitionend", done);
+    img.addEventListener("transitioncancel", interrupted);
   };
 
   // ------------------------------------------------ gestures
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
-      const atTop = window.scrollY <= 0;
+      const atTop = window.scrollY <= 10; // More forgiving top threshold
 
       // Expanded + scroll down = retract
-      if (state === "expanded" && e.deltaY > 0 && atTop) {
+      if ((state === "expanded" || state === "expanding") && e.deltaY > 0 && atTop) {
         if (!consumedFirstScroll.current) {
           e.preventDefault();
           consumedFirstScroll.current = true;
@@ -151,7 +232,7 @@ export default function LogoFly() {
       }
 
       // Collapsed + scroll up = expand
-      if (state === "collapsed" && atTop && e.deltaY < 0) {
+      if ((state === "collapsed" || state === "retracting") && atTop && e.deltaY < 0) {
         expand();
         return;
       }
@@ -165,7 +246,7 @@ export default function LogoFly() {
       if (touchStartY.current == null) return;
       const y = e.touches[0]?.clientY ?? touchStartY.current;
       const dy = touchStartY.current - y; // >0 = finger up (scroll down)
-      const atTop = window.scrollY <= 0;
+      const atTop = window.scrollY <= 10; // More forgiving top threshold
 
       // Expanded + swipe up -> retract
       if (state === "expanded" && dy > 6 && atTop) {

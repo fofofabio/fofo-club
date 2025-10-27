@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {[
                 ["tools", "/tools"],
                 ["projects", "/projects"],
-                ["fun", "/fun"],
+                ["blog", "/blog"],
                 ["gear", "/gear"],
                 ["about", "/about"],
               ].map(([label, href]) => (
