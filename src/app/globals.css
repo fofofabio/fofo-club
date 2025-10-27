@@ -117,3 +117,15 @@ body {
   opacity: 1;
   transform: translateY(0);
 }
+.fc-section-variant {
+  opacity: 1;
+  transform: translateY(12px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+/* keep them minimal + soft */
+.card { @apply rounded-2xl border border-black/10 bg-white shadow-sm; }
+.card:hover { @apply shadow-md; }
+
+.badge { @apply rounded-full border border-black/15 px-2 py-0.5 text-[10px] tracking-wide uppercase text-black/60; }
+.meta  { @apply uppercase tracking-wider text-[10px] text-fofo-blue; }
