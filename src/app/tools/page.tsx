@@ -21,10 +21,11 @@ export default function ToolsPage() {
 
           <WeatherCard defaultCity="Graz" />
         </SectionFade>
-        <SectionFade once threshold={0.12}>
+        
+      </main>
+      <SectionFade once threshold={0.12}>
             <Footer />
         </SectionFade>
-      </main>
     </PageTransition>
   );
 }

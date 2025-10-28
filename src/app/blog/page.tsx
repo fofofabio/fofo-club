@@ -23,10 +23,11 @@ export default async function BlogPage({
           <SectionFade once threshold={0.15}>
             <PaceGrid activities={activities} show={show} />
           </SectionFade>
-          <SectionFade once threshold={0.12}>
+          
+        </main>
+        <SectionFade once threshold={0.12}>
             <Footer />
           </SectionFade>
-        </main>
       </PageTransition>
     );
   } catch (e: any) {
