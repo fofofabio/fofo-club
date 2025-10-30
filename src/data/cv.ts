@@ -16,8 +16,7 @@ export const experience = [
     location: "Graz",
     period: "Apr 2025 — present",
     highlights: [
-      "ESL template systems, label pipelines, CLI tooling & studio workflows",
-      "Template logic (JavaScript/ES5), XML layout ops, automation",
+      "ESL template systems, Template logic (JavaScript/ES5), XML layout ops, automation",
       "Cross-team delivery & rollouts; performance + reliability focus",
     ],
   },
