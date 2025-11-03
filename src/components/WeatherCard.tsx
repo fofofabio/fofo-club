@@ -239,14 +239,16 @@ export default function WeatherCard({ defaultCity }: { defaultCity: string }) {
       {/* two layered animated backgrounds for a more noticeable effect */}
       <motion.div
         className="pointer-events-none absolute inset-0"
-        style={{ background: bgLayers.b, mixBlendMode: 'normal' }}
+        // avoid mixing the shorthand `background` with `backgroundPosition` animation
+        // use backgroundImage + explicit positioning instead
+        style={{ backgroundImage: bgLayers.b, backgroundRepeat: 'no-repeat', backgroundPosition: '0% 0%', mixBlendMode: 'normal' }}
         animate={{ backgroundPosition: ['0% 0%', '20% 10%', '0% 0%'] }}
         transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
       />
 
       <motion.div
         className="pointer-events-none absolute inset-0"
-        style={{ background: bgLayers.a, mixBlendMode: 'screen', opacity: 0.95 }}
+        style={{ backgroundImage: bgLayers.a, backgroundRepeat: 'no-repeat', backgroundPosition: '0% 0%', mixBlendMode: 'screen', opacity: 0.95 }}
         animate={{ opacity: [0.7, 1, 0.7], backgroundPosition: ['0% 0%', '10% 20%', '0% 0%'] }}
         transition={{ duration: 8, repeat: Infinity, ease: [0.2, 0.8, 0.2, 1] }}
       />

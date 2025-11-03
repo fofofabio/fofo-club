@@ -13,6 +13,13 @@ body {
     color: var(--fg);
 }
 
+/* Prevent layout shift when vertical scrollbar appears/disappears */
+html {
+    overflow-y: scroll;              /* keep gutter reserved on desktop */
+    scrollbar-gutter: stable;        /* modern browsers reserve space */
+}
+body { scrollbar-gutter: stable; }
+
 /* selection + focus accents */
 ::selection {
     background: #0008ff33;
@@ -24,7 +31,7 @@ body {
 
 @layer components {
     .card {
-        @apply rounded-xl2 border border-black/10 bg-black/5 shadow-soft transition;
+        @apply rounded-xl2 border border-black/10 bg-black/5 shadow-soft;
     }
     .card:hover {
         @apply bg-black/10;
