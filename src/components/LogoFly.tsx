@@ -1,9 +1,12 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 type AnimState = "collapsed" | "expanding" | "expanded" | "retracting";
 
 export default function LogoFly() {
+    const pathname = usePathname();
+    const isHome = pathname === "/";
     const wrapRef = useRef<HTMLDivElement>(null);
     const imgRef = useRef<HTMLImageElement>(null);
     const [state, setState] = useState<AnimState>("expanded");
@@ -12,6 +15,45 @@ export default function LogoFly() {
     // Flag: block the first page scroll once after expansion
     const consumedFirstScroll = useRef(false);
     const touchStartY = useRef<number | null>(null);
+
+    // Keep blur/navbar state in sync with route + anim state
+    useEffect(() => {
+        const resetNavbar = () => {
+            const anchor = document.getElementById(
+                "fofo-navbar-logo"
+            ) as HTMLImageElement | null;
+            if (anchor) {
+                anchor.style.opacity = "1";
+                anchor.style.pointerEvents = "auto";
+                anchor.style.transition = "";
+            }
+        };
+
+        if (!isHome) {
+            document.documentElement.classList.remove("fc-blur-on");
+            resetNavbar();
+            if (wrapRef.current) wrapRef.current.style.visibility = "hidden";
+        } else {
+            // On home, ensure blur reflects current animation state
+            const shouldBlur = state === "expanding" || state === "expanded";
+            document.documentElement.classList.toggle("fc-blur-on", shouldBlur);
+        }
+    }, [isHome, state]);
+
+    // Unmount safety: always clear globals when component unmounts
+    useEffect(() => {
+        return () => {
+            document.documentElement.classList.remove("fc-blur-on");
+            const anchor = document.getElementById(
+                "fofo-navbar-logo"
+            ) as HTMLImageElement | null;
+            if (anchor) {
+                anchor.style.opacity = "1";
+                anchor.style.pointerEvents = "auto";
+                anchor.style.transition = "";
+            }
+        };
+    }, []);
 
     // ------------------------------------------------ geometry
     const getRect = () => {
@@ -97,6 +139,7 @@ export default function LogoFly() {
 
     // ------------------------------------------------ initial mount
     useLayoutEffect(() => {
+        if (!isHome) return; // disable all animation work off-home
         const m = measure();
         const img = imgRef.current;
         if (!m || !img) return;
@@ -126,10 +169,11 @@ export default function LogoFly() {
 
         void img.offsetWidth;
         img.style.transition = "";
-    }, []);
+    }, [isHome]);
 
     // ------------------------------------------------ keep geometry on resize
     useEffect(() => {
+        if (!isHome) return;
         const onResize = () => {
             const m = measure();
             const img = imgRef.current;
@@ -145,7 +189,7 @@ export default function LogoFly() {
         };
         window.addEventListener("resize", onResize, { passive: true });
         return () => window.removeEventListener("resize", onResize);
-    }, [state]);
+    }, [state, isHome]);
 
     // ------------------------------------------------ animations
     const cleanupAnimation = () => {
@@ -231,6 +275,7 @@ export default function LogoFly() {
 
     // ------------------------------------------------ gestures
     useEffect(() => {
+        if (!isHome) return;
         const onWheel = (e: WheelEvent) => {
             const atTop = window.scrollY <= 10; // More forgiving top threshold
 
@@ -303,20 +348,26 @@ export default function LogoFly() {
             window.removeEventListener("touchstart", onTouchStart);
             window.removeEventListener("touchmove", onTouchMove);
         };
-    }, [state]);
+    }, [state, isHome]);
 
     // ------------------------------------------------ render
     return (
         <>
-            <div className="fc-blur-layer" />
+            {isHome && <div className="fc-blur-layer" />}
 
-            <div
-                ref={wrapRef}
-                className="pointer-events-none fixed z-[60] -translate-x-1/2 -translate-y-1/2"
-                style={{ left: 0, top: 0, visibility: "visible" }}
-            >
-                <img ref={imgRef} src="/fofo-logo.png" alt="Fofo Club logo" />
-            </div>
+            {isHome && (
+                <div
+                    ref={wrapRef}
+                    className="pointer-events-none fixed z-[60] -translate-x-1/2 -translate-y-1/2"
+                    style={{ left: 0, top: 0, visibility: "visible" }}
+                >
+                    <img
+                        ref={imgRef}
+                        src="/fofo-logo.png"
+                        alt="Fofo Club logo"
+                    />
+                </div>
+            )}
         </>
     );
 }
