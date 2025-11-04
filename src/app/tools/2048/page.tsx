@@ -213,6 +213,16 @@ export default function Game2048Page() {
     const t = e.touches[0];
     touchStart.current = { x: t.clientX, y: t.clientY };
   };
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart.current) return;
+    // If the finger is moving enough to be a swipe, prevent the page from scrolling
+    const t = e.touches[0];
+    const dx = Math.abs(t.clientX - touchStart.current.x);
+    const dy = Math.abs(t.clientY - touchStart.current.y);
+    if (dx > 6 || dy > 6) {
+      if (e.cancelable) e.preventDefault();
+    }
+  };
   const onTouchEnd = (e: React.TouchEvent) => {
     if (!touchStart.current) return;
     const t = e.changedTouches[0];
@@ -276,7 +286,13 @@ export default function Game2048Page() {
               </div>
 
               {/* Board */}
-              <div className="relative rounded-2xl bg-black/5 p-2 sm:p-3" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+              <div
+                className="relative rounded-2xl bg-black/5 p-2 sm:p-3"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+                style={{ touchAction: 'none', overscrollBehavior: 'contain' }}
+              >
                 {/* Background grid */}
                 <div className="grid grid-cols-4 gap-2 sm:gap-3">
                   {Array.from({ length: 16 }).map((_, i) => (
