@@ -7,7 +7,7 @@ import RouteTransitions from "@/components/RouteTransitions"; // client wrapper
 
 export const metadata: Metadata = {
   title: "Fofo Club",
-  description: "Fofo Club — Digital Racing Division",
+  description: "For Ordinary Fellows, Occasionally exceptional",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
