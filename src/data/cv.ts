@@ -12,11 +12,11 @@ export const profile = {
 export const experience = [
   {
     company: "LNConsult GmbH",
-    role: "Junior IT Project Manager / Engineer",
+    role: "Junior IT Project Manager",
     location: "Graz",
     period: "Apr 2025 — present",
     highlights: [
-      "ESL template systems, Template logic (JavaScript/ES5), XML layout ops, automation",
+      "ESL template systems, Template logic (JavaScript, Python, Node, XML), automation",
       "Cross-team delivery & rollouts; performance + reliability focus",
     ],
   },
