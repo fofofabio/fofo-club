@@ -33,47 +33,41 @@ export const blogStories: BlogStory[] = [
   },
   {
     slug: "alpine-gravel-overnighter",
-    title: "Alpine Gravel Overnighter",
-    kicker: "micro adventure",
+    title: "Placeholder Title",
+    kicker: "ride notes",
     summary:
-      "Two days through Salzburg's side valleys with a bivvy sack, too much instant coffee, and the best sunrise I've seen this year.",
+      "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     heroImage: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
     heroImageAlt: "Gravel bike resting beside an alpine hut at dawn.",
     publishedAt: "2024-09-07",
     body: [
-      "I'd been staring at weather apps all week waiting for a clear window. When Saturday finally promised high pressure, I threw a bivvy sack, stove, and minimal kit onto the Topstone and started rolling out of Salzburg before sunrise.",
-      "The first climb up to Gaisberg was all mist and silence. Once I dropped into the Hintersee valley the sun finally punched through, turning every wet pine needle into a fibre optic cable.",
-      "I camped just above the tree line, cowboy-style, and was rewarded with a sunrise so orange it felt fake. The descent back toward the city the next morning was all brakes and giggles.",
+      "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     ],
   },
   {
     slug: "night-ride-to-grado",
-    title: "Night Ride to Grado",
+    title: "Placeholder Title",
     kicker: "ride notes",
     summary:
-      "A 180 km moonlit roll from Villach to the Adriatic, chasing tailwinds, espresso, and the first swim of summer.",
+      "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     heroImage: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=80",
     heroImageAlt: "Cyclists riding along a coastal road just before sunrise.",
     publishedAt: "2024-06-21",
     body: [
-      "The plan was reckless: roll out of Villach after dinner, ride the Alpe-Adria trail through the night, and reach Grado in time for a sunrise swim.",
-      "Moonlight turned the Gailtal valley into grayscale. My only company between gelato stops was the hum of the chain and the occasional fox darting across the trail.",
-      "Grado greeted me with quiet streets and warm water. I plunged straight in with helmet hair and sticky eyes, then inhaled two espressos and a brioche before the tourists woke up.",
+      "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     ],
   },
   {
     slug: "makers-corner-workbench",
-    title: "Building the Maker's Workbench",
+    title: "Placeholder Title",
     kicker: "projects",
     summary:
-      "Designing a modular workbench for the studio: steel frame, CNC-cut birch, hidden casters, and enough power outlets to make the electrician wince.",
+      "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     heroImage: "https://images.unsplash.com/photo-1512427691650-1e0c24c75f17?auto=format&fit=crop&w=1600&q=80",
     heroImageAlt: "Workshop workbench with tools neatly organized on pegboards.",
     publishedAt: "2024-11-02",
     body: [
-      "The studio was begging for a proper work surface, so I sketched out a bench that could host soldering, bike wrenching, and the occasional plywood project.",
-      "I welded a simple square frame, added locking casters, and topped it with CNC-cut birch plywood sealed in matte varnish.",
-      "Power and storage were the final touches: flush-mounted outlets, under-shelf LED strips, and pegboards for days. It's now the nerve centre of the workshop.",
+      "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     ],
   },
 ];
