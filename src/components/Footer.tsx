@@ -60,6 +60,9 @@ export default function FofoFooter() {
             <a href="/about" className="hover:text-fofo-blue transition-colors">
               about
             </a>
+            <a href="/privacy" className="hover:text-fofo-blue transition-colors">
+              privacy
+            </a>
           </nav>
           <span className="text-fofo-black/50">·</span>
           <span className="font-pixel text-fofo-black/70">© {year} fofo club</span>
