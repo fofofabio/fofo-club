@@ -11,7 +11,7 @@ export const revalidate = 600;
 export default async function BlogPage({
   searchParams,
 }: {
-  searchParams?: { show?: string };
+  searchParams?: Promise<{ show?: string }>;
 }) {
   const resolvedParams = await searchParams;
   const show = Math.max(1, Math.min(Number(resolvedParams?.show) || 12, 60));
