@@ -57,9 +57,6 @@ export default function FofoFooter() {
             <a href="/blog" className="hover:text-fofo-blue transition-colors">
               blog
             </a>
-            <a href="/gear" className="hover:text-fofo-blue transition-colors">
-              gear
-            </a>
             <a href="/about" className="hover:text-fofo-blue transition-colors">
               about
             </a>
