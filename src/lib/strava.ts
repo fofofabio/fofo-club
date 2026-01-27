@@ -63,5 +63,5 @@ export const getStravaActivitiesCached = unstable_cache(
 
 // (optional) call this from a webhook/route to refresh immediately
 export function revalidateStrava() {
-  revalidateTag('strava', {});
+  revalidateTag('strava');
 }
