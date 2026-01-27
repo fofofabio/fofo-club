@@ -22,13 +22,40 @@ export default function Home() {
                 Fofo Club is a creative project of Fabio Unterholzer.
               </h2>
               <p className="mt-5 max-w-2xl text-white/90 text-lg md:text-xl">
-                fofo club started in 2024. it wasn’t supposed to be anything special. just a codename because i thought if you do something, anything at all, it’s better to do it with a name, a brand, a vibe. so i picked my nickname - fofo - and slapped on club because life is better when shared with others. and here we are. fofo club is my personal space to share my thoughts, projects, and passions with you. whether it’s sports, coding, or just exploring new ideas, fofo club is all about connection and community. welcome to the club. i’m glad you’re here.
+                fofo club started in 2024. at the time, it wasn’t meant to
+                become anything in particular. i just needed a name for things i
+                was working on, and using my nickname felt like the simplest
+                option. adding “club” wasn’t about creating a brand or a
+                community in the usual sense. it’s more about the idea that most
+                things in life are better when they’re shared, even if it’s just
+                sharing progress, thoughts, or half-finished ideas. what began
+                as a placeholder slowly turned into a space where i collect what
+                i’m working on at any given moment. sometimes that’s sports and
+                training, sometimes coding or design, sometimes ideas that don’t
+                go anywhere. not everything here is polished or finished, and
+                it’s not supposed to be. this space exists so things don’t stay
+                only in my head. fofo club isn’t a portfolio and it’s not a
+                statement. it’s closer to a notebook that happens to be public.
+                i use it to keep track of what i’m learning, what i’m trying,
+                and what interests me right now. if someone else finds something
+                useful, relatable, or inspiring along the way, that’s a bonus -
+                but it’s not the goal. there’s no expectation to understand
+                everything here or to follow along with all of it. you can dip
+                in, take what makes sense to you, and ignore the rest. that’s
+                fine. fofo club is simply a record of doing things, paying
+                attention, and sharing honestly.{" "}
               </p>
 
               <ul className="mt-10 grid gap-3 md:grid-cols-2">
-                <li className="meta-section">Tools → code, tools, prototypes</li>
-                <li className="meta-section">Projects → design, art, experiments</li>
-                <li className="meta-section">Blog → thoughts, projects, updates</li>
+                <li className="meta-section">
+                  Tools → code, tools, prototypes
+                </li>
+                <li className="meta-section">
+                  Projects → design, art, experiments
+                </li>
+                <li className="meta-section">
+                  Blog → thoughts, projects, updates
+                </li>
                 <li className="meta-section">Gear → apparel, prints, swag</li>
                 <li className="meta-section">About → who I am, what this is</li>
               </ul>
