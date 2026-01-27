@@ -28,6 +28,28 @@ export default function ToolsPage() {
 
             {/* Tool grid */}
             <motion.div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Halftone */}
+              <motion.div className="rounded-2xl border border-black/10 bg-white/70 p-5 shadow-sm opacity-90 transition hover:-translate-y-0.5 hover:shadow">
+                <div className="flex items-center gap-2">
+                  <span className="meta text-fofo-blue">HALFTONE</span>
+                </div>
+                <p className="mt-2 text-sm text-black/60">Dots, grids, print vibes.</p>
+                <Link href="/tools/halftone" className="mt-4 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-black/70 min-w-[88px] justify-center hover:-translate-y-0.5 hover:shadow transition">
+                  Open
+                </Link>
+              </motion.div>
+
+              {/* Image to ASCII */}
+              <motion.div className="rounded-2xl border border-black/10 bg-white/70 p-5 shadow-sm opacity-90 transition hover:-translate-y-0.5 hover:shadow">
+                <div className="flex items-center gap-2">
+                  <span className="meta text-fofo-blue">IMAGE TO ASCII</span>
+                </div>
+                <p className="mt-2 text-sm text-black/60">Turn images into text art.</p>
+                <Link href="/tools/ascii" className="mt-4 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-black/70 min-w-[88px] justify-center hover:-translate-y-0.5 hover:shadow transition">
+                  Open
+                </Link>
+              </motion.div>
+
               {/* Next up: Wordle */}
               <motion.div className="rounded-2xl border border-black/10 bg-white/70 p-5 shadow-sm opacity-90 transition hover:-translate-y-0.5 hover:shadow">
                 <div className="flex items-center gap-2">

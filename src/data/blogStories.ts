@@ -31,45 +31,6 @@ export const blogStories: BlogStory[] = [
       "I hung over the barricade for a while on the Rathausplatz cobbles, shoes dusted in blue confetti, soaking in the morning. Vienna City Half remains my favourite test: fast, honest, and close to home. Legs hurt, heart full, onto the next build.",
     ],
   },
-  {
-    slug: "alpine-gravel-overnighter",
-    title: "Placeholder Title",
-    kicker: "ride notes",
-    summary:
-      "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    heroImage: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
-    heroImageAlt: "Gravel bike resting beside an alpine hut at dawn.",
-    publishedAt: "2024-09-07",
-    body: [
-      "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    ],
-  },
-  {
-    slug: "night-ride-to-grado",
-    title: "Placeholder Title",
-    kicker: "ride notes",
-    summary:
-      "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    heroImage: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=80",
-    heroImageAlt: "Cyclists riding along a coastal road just before sunrise.",
-    publishedAt: "2024-06-21",
-    body: [
-      "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    ],
-  },
-  {
-    slug: "makers-corner-workbench",
-    title: "Placeholder Title",
-    kicker: "projects",
-    summary:
-      "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    heroImage: "https://images.unsplash.com/photo-1512427691650-1e0c24c75f17?auto=format&fit=crop&w=1600&q=80",
-    heroImageAlt: "Workshop workbench with tools neatly organized on pegboards.",
-    publishedAt: "2024-11-02",
-    body: [
-      "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    ],
-  },
 ];
 
 export const featuredStory: BlogStory | null =

@@ -22,7 +22,7 @@ export default function Home() {
                 Fofo Club is a creative project of Fabio Unterholzer.
               </h2>
               <p className="mt-5 max-w-2xl text-white/90 text-lg md:text-xl">
-                fofo club started in 2024. it wasn’t supposed to be anything — just a space to make things i like. design stuff, code things, print shirts for friends. it turned into a little world about movement, connection, and style. not serious, but honest. it’s about creating, sharing, and learning.
+                fofo club started in 2024. it wasn’t supposed to be anything special. just a codename because i thought if you do something, anything at all, it’s better to do it with a name, a brand, a vibe. so i picked my nickname - fofo - and slapped on club because life is better when shared with others. and here we are. fofo club is my personal space to share my thoughts, projects, and passions with you. whether it’s sports, coding, or just exploring new ideas, fofo club is all about connection and community. welcome to the club. i’m glad you’re here.
               </p>
 
               <ul className="mt-10 grid gap-3 md:grid-cols-2">

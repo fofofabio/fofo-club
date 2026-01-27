@@ -14,8 +14,7 @@ export default function AboutPage() {
             <div>
               <div className="meta text-fofo-blue/80 mb-3">about</div>
               <h1 className="font-display text-4xl md:text-6xl leading-[1.03] tracking-[-0.01em] max-w-[22ch]">
-                i’m fabio. i like to do cool things and have fun, design, code —
-                under fofo club.
+                i’m fabio. thanks for coming on my page. scroll down to learn a little more about me and my work.
               </h1>
               <p className="mt-5 text-lg text-black/80 max-w-2xl">
                 based in {profile.location}. — {profile.age} years old.
@@ -40,10 +39,26 @@ export default function AboutPage() {
             <div className="absolute inset-0 grid-bg mix-blend-multiply opacity-30" />
             <div className="relative mx-auto max-w-5xl px-6 py-14 text-white">
               <p className="text-xl md:text-2xl leading-relaxed max-w-3xl">
-                fofo club isn’t a portfolio or a brand — it’s something
-                personal, something real. i like things that feel light, sharp,
-                honest, loud, colorful. i like to create; sometimes the results
-                become shirts or tools my friends and i use.
+                fofo club isn’t a portfolio or a brand - it’s something
+                personal, something real. but what does it actually stand for?
+                well. . . fofo is just my nickname. it’s what my friends call me.
+                and club? that’s because i believe life is better when shared
+                with others. so fofo club is my way of inviting you into my
+                world - a space where i can share my thoughts, my projects, and
+                my passions with you. whether it’s sports, coding, or just
+                exploring new ideas, fofo club is all about connection and
+                community. so welcome to the club. i’m glad you’re here.
+                and i thought of a really cool abbreviation for it: 
+              </p>
+              {/* inside the blue panel there is a text that says "For Ordinary Fellows, Occasionally exceptional." it should stick out */}
+              <h2 className="font-display text-3xl md:text-4xl mt-8 mb-4">
+                For Ordinary Fellows, Occasionally exceptional.
+              </h2>
+              <p className="text-xl md:text-2xl leading-relaxed max-w-3xl">
+                because at the end of the day, we’re all just ordinary people
+                trying to do something extraordinary. and that’s what fofo club
+                is all about. 
+                
               </p>
             </div>
           </section>
