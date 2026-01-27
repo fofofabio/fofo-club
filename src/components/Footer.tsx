@@ -37,8 +37,8 @@ export default function FofoFooter() {
             local time{" "}
             {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </span>
-          <span>version 0.3.1</span>
-          <span>updated oct 2025</span>
+          <span>version 1.0.1</span>
+          <span>updated jan 2026</span>
         </div>
 
         {/* main line */}
