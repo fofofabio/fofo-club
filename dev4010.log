@@ -1,0 +1,17 @@
+
+> fofo-club@0.1.0 dev
+> next dev --port 4010
+
+   ▲ Next.js 15.5.10
+   - Local:        http://localhost:4010
+   - Network:      http://10.7.199.27:4010
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 3.1s
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 7.9s (1524 modules)
+ GET /admin 307 in 9154ms
+ ○ Compiling /admin/login ...
+ ✓ Compiled /admin/login in 5.6s (1561 modules)
+ GET /admin/login 200 in 5221ms

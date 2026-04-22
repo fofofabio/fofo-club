@@ -118,6 +118,10 @@ body { scrollbar-gutter: stable; }
         @apply px-6 pb-28;
     }
 
+    .page-shell-wide {
+        @apply w-full px-4 md:px-6 xl:px-8 2xl:px-10;
+    }
+
     .padding-bottom-hero {
         padding-bottom: 10rem;
     }
