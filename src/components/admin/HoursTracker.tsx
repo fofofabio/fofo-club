@@ -14,7 +14,6 @@ import {
   Trash2,
 } from "lucide-react";
 
-const STORAGE_KEY = "fofo-admin-hours-v1";
 const SLOT_MINUTES = 15;
 const VISIBLE_START_MINUTE = 6 * 60;
 const VISIBLE_END_MINUTE = 19 * 60;
@@ -36,22 +35,11 @@ type HourEntry = {
 };
 
 type ActiveSession = {
+  id: string;
   project: string;
   task: string;
   startedAt: string;
-};
-
-type DraftEntry = {
-  project: string;
-  task: string;
-  date: string;
-  start: string;
-  end: string;
-};
-
-type PersistedState = {
-  entries: HourEntry[];
-  activeSession: ActiveSession | null;
+  timezone: string;
 };
 
 type MinuteRange = {
@@ -74,6 +62,19 @@ type RecentActivity = {
   project: string;
   task: string;
   lastDate: string;
+};
+
+type DraftEntry = {
+  project: string;
+  task: string;
+  date: string;
+  start: string;
+  end: string;
+};
+
+type WorkspacePayload = {
+  entries: HourEntry[];
+  activeSession: ActiveSession | null;
 };
 
 function pad(value: number) {
@@ -253,31 +254,6 @@ function buildDefaultDraft(entries: HourEntry[], date = toDateKey(new Date())): 
   };
 }
 
-function parseStorage(rawValue: string | null): PersistedState {
-  if (!rawValue) {
-    return { entries: [], activeSession: null };
-  }
-
-  try {
-    const parsed = JSON.parse(rawValue) as Partial<PersistedState>;
-
-    return {
-      entries: Array.isArray(parsed.entries) ? parsed.entries : [],
-      activeSession: parsed.activeSession ?? null,
-    };
-  } catch {
-    return { entries: [], activeSession: null };
-  }
-}
-
-function createEntryId() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
 function isDraftValid(draft: DraftEntry) {
   return Boolean(draft.project.trim()) && timeToMinutes(draft.end) > timeToMinutes(draft.start);
 }
@@ -289,18 +265,6 @@ function normalizeRange(anchor: number, current: number): MinuteRange {
   return { start, end };
 }
 
-function createEntryFromDraft(draft: DraftEntry, editingId: string | null): HourEntry {
-  return {
-    id: editingId ?? createEntryId(),
-    project: draft.project.trim(),
-    task: draft.task.trim(),
-    date: draft.date,
-    start: draft.start,
-    end: draft.end,
-    createdAt: new Date().toISOString(),
-  };
-}
-
 function entryRange(entry: Pick<HourEntry, "start" | "end">): MinuteRange {
   return {
     start: timeToMinutes(entry.start),
@@ -310,6 +274,10 @@ function entryRange(entry: Pick<HourEntry, "start" | "end">): MinuteRange {
 
 function minuteToX(totalMinutes: number) {
   return ((totalMinutes - VISIBLE_START_MINUTE) / SLOT_MINUTES) * SLOT_WIDTH;
+}
+
+function minutesToWidth(durationMinutes: number) {
+  return (durationMinutes / SLOT_MINUTES) * SLOT_WIDTH;
 }
 
 function buildTimelineEntries(entries: HourEntry[]): { items: TimelineEntry[]; laneCount: number } {
@@ -371,6 +339,30 @@ function uniqueActivities(entries: HourEntry[]) {
   return activities.slice(0, 8);
 }
 
+function getBrowserTimeZone() {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Berlin";
+}
+
+async function requestJson<T>(input: RequestInfo, init?: RequestInit) {
+  const response = await fetch(input, {
+    ...init,
+    headers: {
+      ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      ...init?.headers,
+    },
+  });
+
+  const payload = (await response
+    .json()
+    .catch(() => ({ error: "Unexpected response." }))) as Record<string, unknown>;
+
+  if (!response.ok) {
+    throw new Error(typeof payload.error === "string" ? payload.error : "Request failed.");
+  }
+
+  return payload as T;
+}
+
 export default function HoursTracker() {
   const timelineViewportRef = useRef<HTMLDivElement | null>(null);
   const [entries, setEntries] = useState<HourEntry[]>([]);
@@ -386,27 +378,41 @@ export default function HoursTracker() {
   const [timerTick, setTimerTick] = useState(Date.now());
 
   useEffect(() => {
-    const stored = parseStorage(window.localStorage.getItem(STORAGE_KEY));
+    let cancelled = false;
     const todayKey = toDateKey(new Date());
-    setEntries(sortEntries(stored.entries));
-    setActiveSession(stored.activeSession);
-    setDraft(buildDefaultDraft(stored.entries, todayKey));
-    setSelectedDate(todayKey);
-    setHydrated(true);
-  }, []);
 
-  useEffect(() => {
-    if (!hydrated) {
-      return;
+    async function loadWorkspaceData() {
+      try {
+        const payload = await requestJson<WorkspacePayload>("/api/workspace/time-entries", {
+          cache: "no-store",
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        const sorted = sortEntries(payload.entries);
+        setEntries(sorted);
+        setActiveSession(payload.activeSession);
+        setDraft(buildDefaultDraft(sorted, todayKey));
+        setSelectedDate(todayKey);
+      } catch (error) {
+        if (!cancelled) {
+          setMessage(error instanceof Error ? error.message : "Failed to load workspace data.");
+        }
+      } finally {
+        if (!cancelled) {
+          setHydrated(true);
+        }
+      }
     }
 
-    const nextState: PersistedState = {
-      entries,
-      activeSession,
-    };
+    void loadWorkspaceData();
 
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
-  }, [activeSession, entries, hydrated]);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!message) {
@@ -427,13 +433,9 @@ export default function HoursTracker() {
   }, [copyState]);
 
   useEffect(() => {
-    if (!activeSession) {
-      return;
-    }
-
-    const interval = window.setInterval(() => setTimerTick(Date.now()), 1000);
+    const interval = window.setInterval(() => setTimerTick(Date.now()), 15000);
     return () => window.clearInterval(interval);
-  }, [activeSession]);
+  }, []);
 
   useEffect(() => {
     if (!dragState) {
@@ -456,7 +458,7 @@ export default function HoursTracker() {
         current
           ? {
               ...current,
-              current: snappedSlot * SLOT_MINUTES,
+              current: VISIBLE_START_MINUTE + snappedSlot * SLOT_MINUTES,
             }
           : current,
       );
@@ -539,6 +541,11 @@ export default function HoursTracker() {
     return Math.max(1, Math.round((timerTick - startedAt.getTime()) / 60000));
   }, [activeSession, timerTick]);
 
+  const currentMinute = useMemo(() => {
+    const now = new Date(timerTick);
+    return now.getHours() * 60 + now.getMinutes();
+  }, [timerTick]);
+
   const dailyTotals = useMemo(() => {
     const totals = new Map<string, number>();
 
@@ -613,88 +620,125 @@ export default function HoursTracker() {
     setSelectedRange(null);
   }
 
-  function saveDraft() {
+  async function saveDraft() {
     if (!isDraftValid(draft)) {
       setMessage("Add a project and a valid time range.");
       return;
     }
 
-    const normalizedEntry = createEntryFromDraft(draft, editingId);
-    const nextEntries = sortEntries(
-      editingId
-        ? entries.map((entry) => (entry.id === editingId ? normalizedEntry : entry))
-        : [...entries, normalizedEntry],
-    );
+    try {
+      const payload = await requestJson<{ entry: HourEntry }>(
+        editingId
+          ? `/api/workspace/time-entries/${editingId}`
+          : "/api/workspace/time-entries",
+        {
+          method: editingId ? "PATCH" : "POST",
+          body: JSON.stringify({
+            project: draft.project.trim(),
+            task: draft.task.trim(),
+            date: draft.date,
+            start: draft.start,
+            end: draft.end,
+          }),
+        },
+      );
 
-    setEntries(nextEntries);
-    setSelectedDate(draft.date);
-    resetDraft(nextEntries, draft.date);
-    setMessage(editingId ? "Entry updated." : "Block saved.");
+      const nextEntries = sortEntries(
+        editingId
+          ? entries.map((entry) => (entry.id === editingId ? payload.entry : entry))
+          : [...entries, payload.entry],
+      );
+
+      setEntries(nextEntries);
+      setSelectedDate(draft.date);
+      resetDraft(nextEntries, draft.date);
+      setMessage(editingId ? "Entry updated." : "Block saved.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Failed to save block.");
+    }
   }
 
-  function startTimer() {
+  async function startTimer() {
     if (!draft.project.trim()) {
       setMessage("Add a project before starting the timer.");
       return;
     }
 
-    setActiveSession({
-      project: draft.project.trim(),
-      task: draft.task.trim(),
-      startedAt: new Date().toISOString(),
-    });
-    setMessage("Timer started.");
+    try {
+      const payload = await requestJson<{ activeSession: ActiveSession }>(
+        "/api/workspace/active-session",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            project: draft.project.trim(),
+            task: draft.task.trim(),
+            timezone: getBrowserTimeZone(),
+          }),
+        },
+      );
+
+      setActiveSession(payload.activeSession);
+      setMessage("Timer started.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Failed to start timer.");
+    }
   }
 
-  function stopTimer() {
+  async function stopTimer() {
     if (!activeSession) {
       return;
     }
 
-    const startedAt = new Date(activeSession.startedAt);
-    const endedAt = new Date();
-    const nextEntry: HourEntry = {
-      id: createEntryId(),
-      project: activeSession.project,
-      task: activeSession.task,
-      date: toDateKey(startedAt),
-      start: toTimeValue(startedAt),
-      end: toTimeValue(endedAt),
-      createdAt: endedAt.toISOString(),
-    };
+    try {
+      const payload = await requestJson<{ entry: HourEntry; activeSessionId: string }>(
+        "/api/workspace/active-session",
+        {
+          method: "DELETE",
+        },
+      );
 
-    if (getDurationMinutes(nextEntry) <= 0) {
-      setMessage("Timer needs at least one minute before saving.");
-      return;
+      const nextEntries = sortEntries([...entries, payload.entry]);
+      setEntries(nextEntries);
+      setActiveSession(null);
+      setSelectedDate(payload.entry.date);
+      resetDraft(nextEntries, payload.entry.date);
+      setMessage("Timer saved.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Failed to stop timer.");
     }
-
-    const nextEntries = sortEntries([...entries, nextEntry]);
-    setEntries(nextEntries);
-    setActiveSession(null);
-    setSelectedDate(nextEntry.date);
-    resetDraft(nextEntries, nextEntry.date);
-    setMessage("Timer saved.");
   }
 
-  function resumeActivity(project: string, task: string) {
+  async function resumeActivity(project: string, task: string) {
     if (activeSession) {
       setMessage("Stop the current timer before continuing another activity.");
       return;
     }
 
-    setActiveSession({
-      project,
-      task,
-      startedAt: new Date().toISOString(),
-    });
-    setDraft((current) => ({
-      ...current,
-      project,
-      task,
-      date: todayKey,
-    }));
-    setSelectedDate(todayKey);
-    setMessage(`Continuing ${project}.`);
+    try {
+      const payload = await requestJson<{ activeSession: ActiveSession }>(
+        "/api/workspace/active-session",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            project,
+            task,
+            timezone: getBrowserTimeZone(),
+          }),
+        },
+      );
+
+      setActiveSession(payload.activeSession);
+      setDraft((current) => ({
+        ...current,
+        project,
+        task,
+        date: todayKey,
+      }));
+      setSelectedDate(todayKey);
+      setMessage(`Continuing ${project}.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Failed to continue activity.");
+    }
   }
 
   function editEntry(entry: HourEntry) {
@@ -711,15 +755,23 @@ export default function HoursTracker() {
     setMessage("Editing block.");
   }
 
-  function deleteEntry(entryId: string) {
-    const nextEntries = entries.filter((entry) => entry.id !== entryId);
-    setEntries(nextEntries);
+  async function deleteEntry(entryId: string) {
+    try {
+      await requestJson<{ ok: true }>(`/api/workspace/time-entries/${entryId}`, {
+        method: "DELETE",
+      });
 
-    if (editingId === entryId) {
-      resetDraft(nextEntries);
+      const nextEntries = entries.filter((entry) => entry.id !== entryId);
+      setEntries(nextEntries);
+
+      if (editingId === entryId) {
+        resetDraft(nextEntries);
+      }
+
+      setMessage("Block deleted.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Failed to delete block.");
     }
-
-    setMessage("Block deleted.");
   }
 
   function selectDate(dateKey: string) {
@@ -967,7 +1019,7 @@ export default function HoursTracker() {
                       className="pointer-events-none absolute top-0 bottom-0 rounded-[20px] border border-fofo-blue bg-fofo-blue/14"
                       style={{
                         left: `${minuteToX(timelineRange.start)}px`,
-                        width: `${minuteToX(timelineRange.end - timelineRange.start)}px`,
+                        width: `${minutesToWidth(timelineRange.end - timelineRange.start)}px`,
                       }}
                     />
                   ) : null}
@@ -977,18 +1029,18 @@ export default function HoursTracker() {
                       className="pointer-events-none absolute top-0 bottom-0 rounded-[20px] border border-lime-300 bg-lime-200/55"
                       style={{
                         left: `${minuteToX(liveRange.start)}px`,
-                        width: `${Math.max(minuteToX(liveRange.end - liveRange.start), 8)}px`,
+                        width: `${Math.max(minutesToWidth(liveRange.end - liveRange.start), 8)}px`,
                       }}
                     />
                   ) : null}
 
                   {selectedDate === todayKey &&
-                  new Date().getHours() * 60 + new Date().getMinutes() >= VISIBLE_START_MINUTE &&
-                  new Date().getHours() * 60 + new Date().getMinutes() <= VISIBLE_END_MINUTE ? (
+                  currentMinute >= VISIBLE_START_MINUTE &&
+                  currentMinute <= VISIBLE_END_MINUTE ? (
                     <div
                       className="pointer-events-none absolute inset-y-0 z-10 border-l-2 border-red-400/80"
                       style={{
-                        left: `${minuteToX(new Date().getHours() * 60 + new Date().getMinutes())}px`,
+                        left: `${minuteToX(currentMinute)}px`,
                       }}
                     />
                   ) : null}
@@ -1000,7 +1052,7 @@ export default function HoursTracker() {
 
                   {timeline.items.map((entry) => {
                     const left = minuteToX(entry.startMinute);
-                    const width = Math.max(minuteToX(entry.endMinute - entry.startMinute), 48);
+                    const width = Math.max(minutesToWidth(entry.endMinute - entry.startMinute), 48);
                     const top = TRACK_PADDING + entry.lane * LANE_HEIGHT;
                     const isCompact = width < 132;
 

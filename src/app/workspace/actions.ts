@@ -1,14 +1,8 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { AuthError } from "next-auth";
 
-import {
-  ADMIN_SESSION_COOKIE,
-  ADMIN_SESSION_MAX_AGE,
-  createAdminSessionToken,
-  getAdminPassword,
-} from "@/lib/adminAuth";
+import { signIn, signOut } from "@/auth";
 
 export type AdminAuthState = {
   error: string | null;
@@ -18,46 +12,32 @@ export async function loginAdminAction(
   _previousState: AdminAuthState,
   formData: FormData,
 ): Promise<AdminAuthState> {
-  const password = formData.get("password");
-  const normalizedPassword = typeof password === "string" ? password : "";
-  const configuredPassword = getAdminPassword();
+  const email = typeof formData.get("email") === "string" ? String(formData.get("email")).trim() : "";
+  const password = typeof formData.get("password") === "string" ? String(formData.get("password")) : "";
 
-  if (!configuredPassword) {
-    return { error: "Set ADMIN_PASSWORD in .env.local before using this page." };
+  if (!email || !password) {
+    return { error: "Email and password are required." };
   }
 
-  if (normalizedPassword !== configuredPassword) {
-    return { error: "Wrong passcode." };
+  try {
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo: "/workspace",
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return { error: "Wrong email or password." };
+    }
+
+    throw error;
   }
 
-  const cookieStore = await cookies();
-  const token = await createAdminSessionToken(configuredPassword);
-
-  cookieStore.set({
-    name: ADMIN_SESSION_COOKIE,
-    value: token,
-    httpOnly: true,
-    maxAge: ADMIN_SESSION_MAX_AGE,
-    path: "/",
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  });
-
-  redirect("/workspace");
+  return { error: null };
 }
 
 export async function logoutAdminAction() {
-  const cookieStore = await cookies();
-
-  cookieStore.set({
-    name: ADMIN_SESSION_COOKIE,
-    value: "",
-    httpOnly: true,
-    maxAge: 0,
-    path: "/",
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+  await signOut({
+    redirectTo: "/workspace/login",
   });
-
-  redirect("/workspace/login");
 }

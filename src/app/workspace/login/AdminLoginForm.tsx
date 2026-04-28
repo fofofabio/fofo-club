@@ -31,13 +31,25 @@ export default function AdminLoginForm() {
 
       <form action={formAction} className="mt-8 space-y-4">
         <label className="block">
-          <span className="meta text-fofo-blue">Passcode</span>
+          <span className="meta text-fofo-blue">Email</span>
+          <input
+            type="email"
+            name="email"
+            autoComplete="email"
+            className="mt-2 w-full rounded-2xl border border-black/15 bg-white px-4 py-3 text-base outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+            placeholder="name@example.com"
+            required
+          />
+        </label>
+
+        <label className="block">
+          <span className="meta text-fofo-blue">Password</span>
           <input
             type="password"
             name="password"
             autoComplete="current-password"
             className="mt-2 w-full rounded-2xl border border-black/15 bg-white px-4 py-3 text-base outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
-            placeholder="Enter workspace passcode"
+            placeholder="Enter password"
             required
           />
         </label>
@@ -55,11 +67,11 @@ export default function AdminLoginForm() {
             className="inline-flex min-w-[160px] items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-fofo-blue disabled:cursor-not-allowed disabled:opacity-60"
           >
             <ShieldCheck className="h-4 w-4" />
-            {pending ? "Unlocking..." : "Unlock"}
+            {pending ? "Signing in..." : "Sign in"}
           </button>
 
           <div className="rounded-full border border-black/10 bg-black/[0.03] px-3 py-2 text-xs uppercase tracking-[0.18em] text-black/45">
-            Local tools
+            Private
           </div>
         </div>
       </form>

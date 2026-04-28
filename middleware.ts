@@ -1,8 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { ADMIN_SESSION_COOKIE, isValidAdminSession } from "@/lib/adminAuth";
-
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -11,19 +9,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(nextPath, request.url));
   }
 
-  if (pathname === "/workspace/login") {
-    return NextResponse.next();
-  }
-
-  const sessionToken = request.cookies.get(ADMIN_SESSION_COOKIE)?.value;
-
-  if (await isValidAdminSession(sessionToken)) {
-    return NextResponse.next();
-  }
-
-  return NextResponse.redirect(new URL("/workspace/login", request.url));
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/workspace/:path*", "/admin/:path*"],
+  matcher: ["/admin/:path*"],
 };

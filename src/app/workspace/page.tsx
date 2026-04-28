@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Shield, ShieldOff } from "lucide-react";
 
+import { auth } from "@/auth";
 import PageTransition from "@/components/PageTransition";
 import HoursTracker from "@/components/admin/HoursTracker";
-import { ADMIN_SESSION_COOKIE, isValidAdminSession } from "@/lib/adminAuth";
 
 import { logoutAdminAction } from "./actions";
 
@@ -19,10 +18,9 @@ export const metadata: Metadata = {
 };
 
 export default async function WorkspacePage() {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
+  const session = await auth();
 
-  if (!(await isValidAdminSession(sessionToken))) {
+  if (!session?.user?.id) {
     redirect("/workspace/login");
   }
 
@@ -48,7 +46,7 @@ export default async function WorkspacePage() {
               </div>
 
               <p className="mt-3 max-w-3xl text-sm leading-6 text-black/65 md:text-base">
-                Hidden from public navigation, protected by a simple passcode, and
+                Hidden from public navigation, protected by a private sign-in, and
                 now shaped around one thing: seeing a day clearly and logging time
                 fast.
               </p>

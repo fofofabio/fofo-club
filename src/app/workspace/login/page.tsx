@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { auth } from "@/auth";
 import PageTransition from "@/components/PageTransition";
-import { ADMIN_SESSION_COOKIE, isValidAdminSession } from "@/lib/adminAuth";
 
 import AdminLoginForm from "./AdminLoginForm";
 
@@ -17,10 +16,9 @@ export const metadata: Metadata = {
 };
 
 export default async function WorkspaceLoginPage() {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
+  const session = await auth();
 
-  if (await isValidAdminSession(sessionToken)) {
+  if (session?.user?.id) {
     redirect("/workspace");
   }
 
