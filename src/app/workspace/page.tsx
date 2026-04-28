@@ -24,6 +24,11 @@ export default async function WorkspacePage() {
     redirect("/workspace/login");
   }
 
+  const displayName =
+    session.user.name ||
+    session.user.email?.split("@")[0] ||
+    "there";
+
   return (
     <PageTransition>
       <main className="relative isolate overflow-hidden py-8 pb-16">
@@ -46,9 +51,7 @@ export default async function WorkspacePage() {
               </div>
 
               <p className="mt-3 max-w-3xl text-sm leading-6 text-black/65 md:text-base">
-                Hidden from public navigation, protected by a private sign-in, and
-                now shaped around one thing: seeing a day clearly and logging time
-                fast.
+                Have a nice day, {displayName}.
               </p>
             </div>
 
