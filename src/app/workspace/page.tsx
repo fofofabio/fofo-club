@@ -4,7 +4,7 @@ import { Shield, ShieldOff } from "lucide-react";
 
 import { auth } from "@/auth";
 import PageTransition from "@/components/PageTransition";
-import HoursTracker from "@/components/admin/HoursTracker";
+import WorkspaceTabs from "@/components/admin/WorkspaceTabs";
 
 import { logoutAdminAction } from "./actions";
 
@@ -66,7 +66,7 @@ export default async function WorkspacePage() {
             </form>
           </header>
 
-          <HoursTracker />
+          <WorkspaceTabs />
         </div>
       </main>
     </PageTransition>

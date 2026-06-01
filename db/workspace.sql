@@ -34,3 +34,17 @@ create table if not exists workspace_active_sessions (
   timezone text not null default 'Europe/Berlin',
   created_at timestamptz not null default now()
 );
+
+create table if not exists workspace_todos (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references workspace_users(id) on delete cascade,
+  text text not null,
+  project_name text not null default '',
+  done boolean not null default false,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  done_at timestamptz
+);
+
+create index if not exists workspace_todos_user_idx
+  on workspace_todos (user_id, sort_order asc, created_at desc);

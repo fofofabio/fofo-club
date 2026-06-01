@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=1500 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -28,6 +28,7 @@
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
     "baseline-browser-mapping": "^2.9.17",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "^15.5.9",
     "postcss": "^8.5.6",
