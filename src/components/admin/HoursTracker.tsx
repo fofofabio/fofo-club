@@ -363,7 +363,12 @@ async function requestJson<T>(input: RequestInfo, init?: RequestInit) {
   return payload as T;
 }
 
-export default function HoursTracker() {
+type HoursTrackerProps = {
+  pendingDraft?: { project: string; task: string } | null;
+  onPendingDraftApplied?: () => void;
+};
+
+export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: HoursTrackerProps) {
   const timelineViewportRef = useRef<HTMLDivElement | null>(null);
   const [entries, setEntries] = useState<HourEntry[]>([]);
   const [activeSession, setActiveSession] = useState<ActiveSession | null>(null);
@@ -436,6 +441,13 @@ export default function HoursTracker() {
     const interval = window.setInterval(() => setTimerTick(Date.now()), 15000);
     return () => window.clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!pendingDraft) return;
+    setDraft((prev) => ({ ...prev, project: pendingDraft.project, task: pendingDraft.task }));
+    setMessage(`Pre-filled from To-Do: ${pendingDraft.project}`);
+    onPendingDraftApplied?.();
+  }, [pendingDraft]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!dragState) {

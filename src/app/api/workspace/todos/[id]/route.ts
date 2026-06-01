@@ -14,21 +14,25 @@ export async function PATCH(
   const session = await auth();
   const userId = session?.user?.id;
 
-  if (!userId) {
-    return unauthorized();
-  }
+  if (!userId) return unauthorized();
 
   const { id } = await context.params;
   const body = (await request.json()) as {
     text?: string;
     project?: string;
     done?: boolean;
+    pinned?: boolean;
+    dueDate?: string | null;
+    notes?: string;
   };
 
   const todo = await updateWorkspaceTodo(userId, id, {
     text: body.text,
     project: body.project,
     done: body.done,
+    pinned: body.pinned,
+    ...("dueDate" in body ? { dueDate: body.dueDate } : {}),
+    notes: body.notes,
   });
 
   if (!todo) {
@@ -45,9 +49,7 @@ export async function DELETE(
   const session = await auth();
   const userId = session?.user?.id;
 
-  if (!userId) {
-    return unauthorized();
-  }
+  if (!userId) return unauthorized();
 
   const { id } = await context.params;
   const deleted = await deleteWorkspaceTodo(userId, id);

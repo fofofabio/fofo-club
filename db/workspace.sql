@@ -48,3 +48,19 @@ create table if not exists workspace_todos (
 
 create index if not exists workspace_todos_user_idx
   on workspace_todos (user_id, sort_order asc, created_at desc);
+
+alter table workspace_todos add column if not exists due_date date;
+alter table workspace_todos add column if not exists pinned boolean not null default false;
+alter table workspace_todos add column if not exists notes text not null default '';
+
+create table if not exists workspace_todo_subtasks (
+  id uuid primary key default gen_random_uuid(),
+  todo_id uuid not null references workspace_todos(id) on delete cascade,
+  text text not null,
+  done boolean not null default false,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists workspace_todo_subtasks_todo_idx
+  on workspace_todo_subtasks (todo_id, sort_order asc, created_at asc);

@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { createWorkspaceTodo, listWorkspaceTodos } from "@/lib/workspaceTodos";
+import {
+  clearCompletedWorkspaceTodos,
+  createWorkspaceTodo,
+  listWorkspaceTodos,
+  reorderWorkspaceTodos,
+} from "@/lib/workspaceTodos";
 
 function unauthorized() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -11,9 +16,7 @@ export async function GET() {
   const session = await auth();
   const userId = session?.user?.id;
 
-  if (!userId) {
-    return unauthorized();
-  }
+  if (!userId) return unauthorized();
 
   const todos = await listWorkspaceTodos(userId);
 
@@ -24,11 +27,14 @@ export async function POST(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
 
-  if (!userId) {
-    return unauthorized();
-  }
+  if (!userId) return unauthorized();
 
-  const body = (await request.json()) as { text?: string; project?: string };
+  const body = (await request.json()) as {
+    text?: string;
+    project?: string;
+    dueDate?: string;
+  };
+
   const text = body.text?.trim() ?? "";
 
   if (!text) {
@@ -38,7 +44,36 @@ export async function POST(request: Request) {
   const todo = await createWorkspaceTodo(userId, {
     text,
     project: body.project,
+    dueDate: body.dueDate,
   });
 
   return NextResponse.json({ todo });
+}
+
+export async function PUT(request: Request) {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) return unauthorized();
+
+  const body = (await request.json()) as { order?: string[] };
+
+  if (!Array.isArray(body.order)) {
+    return NextResponse.json({ error: "order array required." }, { status: 400 });
+  }
+
+  await reorderWorkspaceTodos(userId, body.order);
+
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE() {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) return unauthorized();
+
+  await clearCompletedWorkspaceTodos(userId);
+
+  return NextResponse.json({ ok: true });
 }
