@@ -56,8 +56,12 @@ export default function Home() {
                 <li className="meta-section">
                   Blog → thoughts, projects, updates
                 </li>
-                <li className="meta-section">Gear → apparel, prints, swag</li>
-                <li className="meta-section">About → who I am, what this is</li>
+                <li className="meta-section">
+                  Videos → rides, trips, random days
+                </li>
+                <li className="meta-section">
+                  About → who I am, what this is
+                </li>
               </ul>
             </div>
           </section>

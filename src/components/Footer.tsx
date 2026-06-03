@@ -38,7 +38,7 @@ export default function FofoFooter() {
             {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </span>
           <span>version 1.0.1</span>
-          <span>updated jan 2026</span>
+          <span>updated jun 2026</span>
         </div>
 
         {/* main line */}
@@ -56,6 +56,9 @@ export default function FofoFooter() {
             </a>
             <a href="/blog" className="hover:text-fofo-blue transition-colors">
               blog
+            </a>
+            <a href="/videos" className="hover:text-fofo-blue transition-colors">
+              videos
             </a>
             <a href="/about" className="hover:text-fofo-blue transition-colors">
               about

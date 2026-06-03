@@ -32,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 ["tools", "/tools"],
                 ["projects", "/projects"],
                 ["blog", "/blog"],
+                ["videos", "/videos"],
                 ["about", "/about"],
               ].map(([label, href]) => (
                 <Link key={href} href={href as string} className="meta hover:text-fofo-blue/90">
