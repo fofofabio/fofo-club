@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, Sun, TriangleAlert } from "lucide-react";
+import { ArrowRight, CalendarDays, Sun, TriangleAlert } from "lucide-react";
 
 type Todo = {
   id: string;
@@ -28,6 +28,25 @@ function dateKeyBefore(n: number) {
   const d = new Date();
   d.setDate(d.getDate() - n);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function dateKeyAfter(n: number) {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function getWeekEnd(dateKey: string) {
+  const d = new Date(`${dateKey}T12:00:00`);
+  const day = d.getDay();
+  const toSunday = day === 0 ? 0 : 7 - day;
+  d.setDate(d.getDate() + toSunday);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function formatOutlookDate(dateKey: string) {
+  const d = new Date(`${dateKey}T12:00:00`);
+  return new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric" }).format(d);
 }
 
 function formatTodayLabel() {
@@ -108,6 +127,23 @@ export default function DailyBriefCard({ todos }: Props) {
     .sort((a, b) => ageDays(b.createdAt) - ageDays(a.createdAt))
     .slice(0, 3);
 
+  const thisWeekEnd = getWeekEnd(today);
+  const nextWeekEnd = getWeekEnd(dateKeyAfter(7));
+  const horizon = dateKeyAfter(14);
+
+  const upcomingGroups: { label: string; items: Todo[] }[] = [];
+  const upcoming = todos
+    .filter((t) => !t.done && t.dueDate && t.dueDate > today && t.dueDate <= horizon)
+    .sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""));
+
+  const thisWeek = upcoming.filter((t) => t.dueDate! <= thisWeekEnd);
+  const nextWeek = upcoming.filter((t) => t.dueDate! > thisWeekEnd && t.dueDate! <= nextWeekEnd);
+  const later = upcoming.filter((t) => t.dueDate! > nextWeekEnd);
+
+  if (thisWeek.length) upcomingGroups.push({ label: "This week", items: thisWeek });
+  if (nextWeek.length) upcomingGroups.push({ label: "Next week", items: nextWeek });
+  if (later.length) upcomingGroups.push({ label: "Later", items: later });
+
   const avgMinutes =
     weeklyDays > 0 && weeklyMinutes !== null
       ? Math.round(weeklyMinutes / weeklyDays)
@@ -124,8 +160,8 @@ export default function DailyBriefCard({ todos }: Props) {
         </div>
       </div>
 
-      {/* Three panels */}
-      <div className="grid divide-y divide-white/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      {/* Four panels */}
+      <div className="grid divide-y divide-white/10 lg:grid-cols-4 lg:divide-x lg:divide-y-0">
         {/* Due today */}
         <div className="px-6 py-5">
           <p className="meta text-white/45">DUE TODAY</p>
@@ -179,6 +215,37 @@ export default function DailyBriefCard({ todos }: Props) {
                 across {weeklyDays} day{weeklyDays !== 1 ? "s" : ""}
                 {avgMinutes ? ` · ~${formatDuration(avgMinutes)}/day` : ""}
               </p>
+            </div>
+          )}
+        </div>
+
+        {/* Outlook */}
+        <div className="px-6 py-5">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-3.5 w-3.5 text-white/45" />
+            <p className="meta text-white/45">OUTLOOK</p>
+          </div>
+          {upcomingGroups.length === 0 ? (
+            <p className="mt-3 text-sm text-white/40">Nothing scheduled in the next 2 weeks.</p>
+          ) : (
+            <div className="mt-3 space-y-3">
+              {upcomingGroups.map((group) => (
+                <div key={group.label}>
+                  <p className="mb-1.5 text-[11px] font-medium uppercase tracking-widest text-white/30">
+                    {group.label}
+                  </p>
+                  <ul className="space-y-2">
+                    {group.items.map((t) => (
+                      <li key={t.id} className="flex items-start gap-2">
+                        <span className="mt-[3px] shrink-0 rounded bg-white/10 px-1.5 py-0.5 font-mono text-[10px] text-white/50">
+                          {formatOutlookDate(t.dueDate!)}
+                        </span>
+                        <span className="truncate text-sm leading-snug text-white/75">{t.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           )}
         </div>
