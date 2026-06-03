@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import clsx from "clsx";
+import DailyBriefCard from "./DailyBriefCard";
 import {
   CalendarDays,
   Check,
@@ -94,6 +96,15 @@ function formatDueDate(dueDate: string) {
 }
 
 const ARCHIVE_DAYS = 7;
+
+function getAgingStyle(createdAt: string, done: boolean): CSSProperties {
+  if (done) return {};
+  const days = Math.floor((Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24));
+  if (days < 7) return {};
+  if (days < 14) return { filter: "saturate(0.75) brightness(0.97)" };
+  if (days < 21) return { filter: "saturate(0.55) brightness(0.94) sepia(0.08)" };
+  return { filter: "saturate(0.35) brightness(0.90) sepia(0.14)", opacity: 0.82 };
+}
 
 function isArchived(todo: Todo) {
   if (!todo.done || !todo.doneAt) return false;
@@ -444,6 +455,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
     <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       {/* Main column */}
       <div className="min-w-0 space-y-4">
+        {hydrated && <DailyBriefCard todos={todos} />}
         {/* Quick-add */}
         <div className="rounded-[28px] border border-black/10 bg-white/85 p-4 shadow-lg shadow-black/5 backdrop-blur md:p-5">
           <div className="flex items-center gap-3">
@@ -488,7 +500,14 @@ export default function TodoBoard({ onStartTimer }: Props) {
             <input
               type="date"
               value={draftDueDate}
-              onChange={(e) => setDraftDueDate(e.target.value)}
+              min="2000-01-01"
+              max="2099-12-31"
+              onChange={(e) => {
+                const year = parseInt(e.target.value.split("-")[0] ?? "0", 10);
+                if (!e.target.value || (year >= 2000 && year <= 2099)) {
+                  setDraftDueDate(e.target.value);
+                }
+              }}
               className="w-40 shrink-0 rounded-2xl border border-black/12 bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
             />
           </div>
@@ -789,6 +808,7 @@ function TodoRow({
   const [editingText, setEditingText] = useState(false);
   const [editText, setEditText] = useState(todo.text);
   const [showDateInput, setShowDateInput] = useState(false);
+  const [dueDateDraft, setDueDateDraft] = useState(todo.dueDate ?? "");
   const [subtaskDraft, setSubtaskDraft] = useState("");
   const overdue = isOverdue(todo.dueDate, todo.done);
   const dueToday = isDueToday(todo.dueDate, todo.done);
@@ -806,6 +826,7 @@ function TodoRow({
       onDragOver={onDragOver}
       onDrop={onDrop}
       onDragEnd={onDragEnd}
+      style={getAgingStyle(todo.createdAt, todo.done)}
       className={clsx(
         "rounded-2xl border transition",
         todo.done ? "border-black/8 bg-black/[0.02]" : "border-black/10 bg-white",
@@ -895,12 +916,26 @@ function TodoRow({
               <input
                 autoFocus
                 type="date"
-                defaultValue={todo.dueDate ?? ""}
-                onChange={(e) => {
-                  onUpdateDueDate(e.target.value || null);
+                value={dueDateDraft}
+                min="2000-01-01"
+                max="2099-12-31"
+                onChange={(e) => setDueDateDraft(e.target.value)}
+                onBlur={() => {
                   setShowDateInput(false);
+                  const year = parseInt(dueDateDraft.split("-")[0] ?? "0", 10);
+                  if (!dueDateDraft) onUpdateDueDate(null);
+                  else if (year >= 2000 && year <= 2099) onUpdateDueDate(dueDateDraft);
                 }}
-                onBlur={() => setShowDateInput(false)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") { setShowDateInput(false); }
+                  if (e.key === "Enter") {
+                    const year = parseInt(dueDateDraft.split("-")[0] ?? "0", 10);
+                    if (dueDateDraft && year >= 2000 && year <= 2099) {
+                      onUpdateDueDate(dueDateDraft);
+                      setShowDateInput(false);
+                    }
+                  }
+                }}
                 className="rounded-xl border border-fofo-blue px-2 py-0.5 text-xs outline-none ring-2 ring-fofo-blue/10"
               />
             )}
