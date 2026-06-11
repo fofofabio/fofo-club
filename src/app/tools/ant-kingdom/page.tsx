@@ -7,6 +7,7 @@ import SectionFade from "@/components/Sectionfade";
 import {
   COLS,
   DIG_FOOD_COST,
+  GRID_SIZES,
   ROOM_COST,
   ROWS,
   SIM_DT,
@@ -14,12 +15,16 @@ import {
   canDesignateRoom,
   canQueueDig,
   cellIndex,
+  createAutopilotState,
   createWorld,
   designateRoom,
   foodCapacity,
   isDay,
   step,
+  stepAutopilot,
   tryQueueDig,
+  type AutopilotState,
+  type GridSizeKey,
   type Role,
   type RoomType,
   type World,
@@ -28,6 +33,8 @@ import { drawWorld, ROLE_COLOR } from "./render";
 
 type Speed = 1 | 2 | 4;
 type Tool = "dig" | RoomType;
+
+const SIZE_KEYS: GridSizeKey[] = ["small", "medium", "large"];
 
 interface Hud {
   food: number;
@@ -88,11 +95,16 @@ export default function AntKingdomPage() {
   const pausedRef = useRef(false);
   const speedRef = useRef<Speed>(1);
   const toolRef = useRef<Tool>("dig");
+  const sizeRef = useRef<GridSizeKey>("medium");
+  const autopilotRef = useRef(false);
+  const apStateRef = useRef<AutopilotState>(createAutopilotState());
 
   const [hud, setHud] = useState<Hud | null>(null);
   const [paused, setPaused] = useState(false);
   const [speed, setSpeed] = useState<Speed>(1);
   const [tool, setTool] = useState<Tool>("dig");
+  const [size, setSize] = useState<GridSizeKey>("medium");
+  const [autopilot, setAutopilot] = useState(false);
   const [best, setBest] = useState(0);
 
   // Keep refs in sync with control state for the animation loop.
@@ -105,6 +117,9 @@ export default function AntKingdomPage() {
   useEffect(() => {
     toolRef.current = tool;
   }, [tool]);
+  useEffect(() => {
+    autopilotRef.current = autopilot;
+  }, [autopilot]);
 
   // Load best score.
   useEffect(() => {
@@ -147,7 +162,7 @@ export default function AntKingdomPage() {
 
   // Main loop: fixed-timestep simulation + render.
   useEffect(() => {
-    worldRef.current = createWorld();
+    worldRef.current = createWorld(Date.now(), sizeRef.current);
     setHud(readHud(worldRef.current));
     resize();
 
@@ -173,6 +188,9 @@ export default function AntKingdomPage() {
           step(world, SIM_DT);
           accRef.current -= SIM_DT;
           n++;
+        }
+        if (autopilotRef.current && n > 0) {
+          stepAutopilot(world, apStateRef.current, n * SIM_DT);
         }
       } else {
         accRef.current = 0;
@@ -259,14 +277,26 @@ export default function AntKingdomPage() {
     setHud(readHud(world));
   }, []);
 
-  const reset = useCallback(() => {
-    const world = createWorld();
+  const reset = useCallback((sizeKey?: GridSizeKey) => {
+    const key = sizeKey ?? sizeRef.current;
+    const world = createWorld(Date.now(), key);
     worldRef.current = world;
     accRef.current = 0;
     lastRef.current = 0;
+    apStateRef.current = createAutopilotState();
     setHud(readHud(world));
     setPaused(false);
-  }, []);
+    resize();
+  }, [resize]);
+
+  const chooseSize = useCallback(
+    (key: GridSizeKey) => {
+      sizeRef.current = key;
+      setSize(key);
+      reset(key);
+    },
+    [reset],
+  );
 
   return (
     <PageTransition>
@@ -386,7 +416,7 @@ export default function AntKingdomPage() {
                     <p className="meta text-white/70">COLONY FALLEN</p>
                     <p className="mt-1 text-3xl font-semibold">Peak: {hud.peak} ants</p>
                     <button
-                      onClick={reset}
+                      onClick={() => reset()}
                       className="mt-4 rounded-full bg-white px-5 py-2 text-sm font-medium text-black hover:-translate-y-0.5 hover:shadow transition"
                     >
                       New colony
@@ -449,6 +479,16 @@ export default function AntKingdomPage() {
               <div className="rounded-2xl border border-black/10 bg-white/70 p-4 shadow-sm">
                 <div className="flex flex-wrap items-center gap-2">
                   <button
+                    onClick={() => setAutopilot((a) => !a)}
+                    className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                      autopilot
+                        ? "border-transparent bg-fofo-blue text-white shadow-sm"
+                        : "border-black/10 bg-white text-black/70 hover:-translate-y-0.5 hover:shadow"
+                    }`}
+                  >
+                    {autopilot ? "🤖 Autopilot on" : "🤖 Autopilot"}
+                  </button>
+                  <button
                     onClick={() => setPaused((p) => !p)}
                     className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm text-black/70 hover:-translate-y-0.5 hover:shadow transition"
                   >
@@ -470,11 +510,30 @@ export default function AntKingdomPage() {
                     ))}
                   </div>
                   <button
-                    onClick={reset}
+                    onClick={() => reset()}
                     className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm text-black/70 hover:-translate-y-0.5 hover:shadow transition"
                   >
                     New colony
                   </button>
+                </div>
+                {/* Map size */}
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="text-xs text-black/50">Map</span>
+                  <div className="flex overflow-hidden rounded-full border border-black/10">
+                    {SIZE_KEYS.map((key) => (
+                      <button
+                        key={key}
+                        onClick={() => chooseSize(key)}
+                        className={`px-3 py-1.5 text-sm transition ${
+                          size === key
+                            ? "bg-fofo-blue text-white"
+                            : "bg-white text-black/70 hover:bg-black/5"
+                        }`}
+                      >
+                        {GRID_SIZES[key].label}
+                      </button>
+                    ))}
+                  </div>
                   <span className="ml-auto text-xs text-black/50">
                     Dig cost: {DIG_FOOD_COST} food
                   </span>

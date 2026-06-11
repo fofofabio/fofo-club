@@ -3,6 +3,7 @@
 export * from "./constants";
 export * from "./types";
 export { createWorld, step } from "./world";
+export { stepAutopilot, createAutopilotState, type AutopilotState } from "./autopilot";
 export {
   tryQueueDig,
   canQueueDig,

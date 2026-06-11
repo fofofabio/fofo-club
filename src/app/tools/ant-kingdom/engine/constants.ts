@@ -3,10 +3,29 @@
 // Positions in the engine are in *cell* units (not pixels); the renderer
 // multiplies by a cellSize derived from the canvas width.
 
-export const COLS = 44;
-export const ROWS = 30;
+// Grid dimensions are mutable so the map can be resized at runtime. They are
+// `let` exports: ES module live bindings mean every importer sees the current
+// value after `setGridSize` (all engine code reads COLS/ROWS at call time, not
+// at import time). Only one world exists at a time, so global grid dims are safe.
+export let COLS = 44;
+export let ROWS = 30;
+
+export type GridSizeKey = "small" | "medium" | "large";
+
+export const GRID_SIZES: Record<GridSizeKey, { cols: number; rows: number; label: string }> = {
+  small: { cols: 36, rows: 24, label: "Small" },
+  medium: { cols: 44, rows: 30, label: "Medium" },
+  large: { cols: 60, rows: 40, label: "Large" },
+};
+
+export function setGridSize(key: GridSizeKey): void {
+  COLS = GRID_SIZES[key].cols;
+  ROWS = GRID_SIZES[key].rows;
+}
 
 // Row layout: sky on top, a single surface lane the ants walk on, then soil.
+// These are independent of grid width/height, so a bigger ROWS just means a
+// deeper nest to dig.
 export const GROUND_ROW = 9; // first underground (soil) row
 export const SURFACE_ROW = GROUND_ROW - 1; // ants walk here when above ground
 

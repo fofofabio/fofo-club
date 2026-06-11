@@ -19,6 +19,7 @@ import {
   START_ANTS,
   START_FOOD,
   SURFACE_ROW,
+  setGridSize,
 } from "./constants";
 import { behaviorByRole } from "./behaviors";
 import { antCell, cellIndex } from "./nav";
@@ -33,36 +34,40 @@ import {
   spawnAnt,
   spawnFood,
 } from "./helpers";
+import type { GridSizeKey } from "./constants";
 import type { CellType, Colony, World } from "./types";
 
-const CENTER_COL = Math.floor(COLS / 2);
+// Queen sits this many rows below the surface. Independent of grid size, so a
+// taller map simply leaves more room to dig beneath her.
 const CHAMBER_ROW = GROUND_ROW + 9;
 
-function digStartingNest(grid: CellType[]): number {
+function digStartingNest(grid: CellType[], centerCol: number): number {
   // Vertical shaft from the surface entrance down to the queen's chamber.
   for (let row = GROUND_ROW; row <= CHAMBER_ROW; row++) {
-    grid[cellIndex(CENTER_COL, row)] = "tunnel";
+    grid[cellIndex(centerCol, row)] = "tunnel";
   }
   // 3-wide, 3-tall royal chamber.
   for (let r = CHAMBER_ROW - 1; r <= CHAMBER_ROW + 1; r++) {
-    for (let c = CENTER_COL - 1; c <= CENTER_COL + 1; c++) {
+    for (let c = centerCol - 1; c <= centerCol + 1; c++) {
       grid[cellIndex(c, r)] = "chamber";
     }
   }
-  return cellIndex(CENTER_COL, CHAMBER_ROW);
+  return cellIndex(centerCol, CHAMBER_ROW);
 }
 
-export function createWorld(seed = Date.now()): World {
+export function createWorld(seed = Date.now(), size?: GridSizeKey): World {
+  if (size) setGridSize(size);
   const rng = makeRng(seed);
+  const centerCol = Math.floor(COLS / 2);
   const grid: CellType[] = new Array(COLS * ROWS).fill("soil");
-  const queenCell = digStartingNest(grid);
+  const queenCell = digStartingNest(grid, centerCol);
   const startingDug = grid.reduce((n, c) => (c === "soil" ? n : n + 1), 0);
 
   const colony: Colony = {
     id: 0,
     food: START_FOOD,
     eggTimer: EGG_INTERVAL,
-    queenCol: CENTER_COL,
+    queenCol: centerCol,
     queenRow: CHAMBER_ROW,
     queenCell,
     roleWeights: { forager: 3, builder: 1, soldier: 0 },
