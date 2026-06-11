@@ -71,6 +71,17 @@ export default function ToolsPage() {
                   Open
                 </Link>
               </motion.div>
+
+              {/* Ant Kingdom */}
+              <motion.div className="rounded-2xl border border-black/10 bg-white/70 p-5 shadow-sm opacity-90 transition hover:-translate-y-0.5 hover:shadow">
+                <div className="flex items-center gap-2">
+                  <span className="meta text-fofo-blue">ANT KINGDOM</span>
+                </div>
+                <p className="mt-2 text-sm text-black/60">Grow a pixel ant colony.</p>
+                <Link href="/tools/ant-kingdom" className="mt-4 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-black/70 min-w-[88px] justify-center hover:-translate-y-0.5 hover:shadow transition">
+                  Open
+                </Link>
+              </motion.div>
             </motion.div>
           </SectionFade>
         </main>
