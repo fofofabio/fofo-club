@@ -195,18 +195,18 @@ export default function HalftonePage() {
           <SectionFade once threshold={0.12}>
             <header className="mb-6 sm:mb-8 flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="meta text-fofo-blue">TOOLS / HALFTONE</p>
-                <h1 className="mt-1 font-semibold leading-tight tracking-tight text-3xl sm:text-4xl">
+                <span className="nb-eyebrow">Tools / Halftone</span>
+                <h1 className="mt-3 font-display font-bold leading-none tracking-tight text-4xl sm:text-5xl">
                   Halftone
                 </h1>
-                <p className="mt-2 max-w-2xl text-black/60">
+                <p className="mt-3 max-w-2xl text-black/60">
                   Print-style dots with adjustable rhythm, contrast, and color.
                 </p>
               </div>
               <Link
                 href="/tools"
                 aria-label="Back to tools"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-fofo-blue text-white shadow-sm transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fofo-blue/60"
+                className="inline-flex h-11 w-11 items-center justify-center border-[2.5px] border-black bg-fofo-blue text-white transition-all hover:-translate-y-0.5 hover:shadow-brutal-sm focus:outline-none"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -238,14 +238,14 @@ export default function HalftonePage() {
                   <button
                     type="button"
                     onClick={loadSample}
-                    className="inline-flex items-center rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs text-black/70 transition hover:-translate-y-0.5 hover:shadow"
+                    className="inline-flex items-center border-[2px] border-black bg-white px-3 py-1.5 font-pixel text-[11px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white hover:shadow-brutal-sm"
                   >
                     Use sample
                   </button>
                   <button
                     type="button"
                     onClick={clearImage}
-                    className="inline-flex items-center rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs text-black/70 transition hover:-translate-y-0.5 hover:shadow"
+                    className="inline-flex items-center border-[2px] border-black bg-white px-3 py-1.5 font-pixel text-[11px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white hover:shadow-brutal-sm"
                   >
                     Clear
                   </button>
@@ -255,7 +255,7 @@ export default function HalftonePage() {
                   <img
                     src={imageUrl}
                     alt="Selected preview"
-                    className="mt-4 w-full rounded-xl border border-black/10 object-cover"
+                    className="mt-4 w-full border-[2.5px] border-black object-cover"
                   />
                 ) : (
                   <p className="mt-4 text-sm text-black/50">Pick an image or try the sample.</p>
@@ -352,7 +352,7 @@ export default function HalftonePage() {
                   <select
                     value={colorMode}
                     onChange={(event) => setColorMode(event.target.value as ColorMode)}
-                    className="mt-2 w-full rounded-md border border-black/10 bg-white px-2 py-1.5 text-sm text-black/70"
+                    className="mt-2 w-full border-[2px] border-black bg-white px-2 py-1.5 text-sm text-black/80"
                   >
                     <option value="mono">Mono</option>
                     <option value="color">Color</option>
@@ -382,10 +382,10 @@ export default function HalftonePage() {
 
                 <div
                   ref={outputRef}
-                  className="mt-4 min-h-[55vh] max-h-[70vh] overflow-auto rounded-xl border border-black/10 bg-white p-3"
+                  className="mt-4 min-h-[55vh] max-h-[70vh] overflow-auto border-[2.5px] border-black bg-white p-3"
                 >
                   {image ? (
-                    <canvas ref={canvasRef} className="w-full h-auto rounded-lg" />
+                    <canvas ref={canvasRef} className="w-full h-auto" />
                   ) : (
                     <p className="text-sm text-black/50">No output yet.</p>
                   )}

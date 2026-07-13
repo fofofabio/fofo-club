@@ -17,32 +17,27 @@ export default function NotFoundClient() {
           />
         </div>
 
-        <h1 id="notfound-title" className="mt-6 text-7xl font-bold">404</h1>
-        <p className="mt-2 text-lg text-fofo-mist">We can't find that page.</p>
-        <p className="mt-3 text-sm text-fofo-mist/80">Maybe one of these will help:</p>
+        <h1 id="notfound-title" className="mt-6 font-display text-8xl font-bold tracking-tighter">404</h1>
+        <p className="mt-2 text-lg text-black/70">we can&apos;t find that page.</p>
+        <p className="mt-3 font-pixel text-[11px] uppercase tracking-widest text-black/50">maybe one of these will help</p>
 
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <a
-            href="/"
-            className="inline-block px-4 py-2 rounded-md border border-black/10 bg-white hover:shadow-md"
-          >
-            Home
-          </a>
-          <a
-            href="/blog"
-            className="inline-block px-4 py-2 rounded-md border border-black/10 bg-white hover:shadow-md"
-          >
-            Blog
-          </a>
-          <a
-            href="/about"
-            className="inline-block px-4 py-2 rounded-md border border-black/10 bg-white hover:shadow-md"
-          >
-            About
-          </a>
+          {[
+            ["home", "/"],
+            ["blog", "/blog"],
+            ["about", "/about"],
+          ].map(([label, href]) => (
+            <a
+              key={href}
+              href={href}
+              className="inline-block border-[2px] border-black bg-white px-4 py-2 font-pixel text-[11px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white hover:shadow-brutal-sm"
+            >
+              {label}
+            </a>
+          ))}
         </div>
 
-        <p className="mt-6 text-xs text-fofo-mist/60">Or press your browser back button to return.</p>
+        <p className="mt-6 font-pixel text-[10px] uppercase tracking-widest text-black/40">or press your browser back button to return.</p>
       </div>
     </main>
   );

@@ -52,20 +52,20 @@ export default async function BlogStoryPage({
     <PageTransition>
       <article className="mx-auto max-w-2xl px-6 pb-24">
         <SectionFade once threshold={0.12}>
-          <div className="mb-8 mt-10 flex flex-col gap-4 text-black">
+          <div className="mb-8 mt-10 flex flex-col items-start gap-4 text-black">
             <Link
               href="/blog"
-              className="meta inline-flex items-center gap-2 text-fofo-blue transition hover:text-fofo-blue/80"
+              className="border-[2px] border-black bg-white px-3 py-1.5 font-pixel text-[11px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white hover:shadow-brutal-sm"
             >
-              back to blog
+              ← back to blog
             </Link>
             {story.kicker && (
-              <span className="meta text-black/50">{story.kicker}</span>
+              <span className="nb-eyebrow">{story.kicker}</span>
             )}
-            <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+            <h1 className="font-display text-4xl font-bold tracking-tight md:text-6xl">
               {story.title}
             </h1>
-            <time className="text-sm uppercase tracking-widest text-black/40">
+            <time className="font-pixel text-xs uppercase tracking-widest text-black/50">
               {new Date(story.publishedAt).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
@@ -74,7 +74,7 @@ export default async function BlogStoryPage({
             </time>
           </div>
 
-          <div className="relative mb-12 overflow-hidden rounded-3xl bg-black/60">
+          <div className="relative mb-12 overflow-hidden border-[2.5px] border-black bg-black/60 shadow-brutal">
             <div className="relative aspect-[20/9] w-full">
               <img
                 src={story.heroImage}

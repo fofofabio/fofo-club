@@ -1,89 +1,73 @@
 "use client";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import SectionFade from "@/components/Sectionfade";
+import PageHeader from "@/components/PageHeader";
 import WeatherCard from "@/components/WeatherCard";
 import Footer from "@/components/Footer";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+
+type Tool = {
+  label: string;
+  desc: string;
+  href: string;
+  tone?: "blue" | "pink" | "black";
+};
+
+const TOOLS: Tool[] = [
+  { label: "Halftone", desc: "Dots, grids, print vibes.", href: "/tools/halftone", tone: "blue" },
+  { label: "Image to ASCII", desc: "Turn images into text art.", href: "/tools/ascii" },
+  { label: "Wordle", desc: "Daily 5-letter puzzle.", href: "/tools/wordle", tone: "pink" },
+  { label: "2048", desc: "Merge tiles to reach 2048.", href: "/tools/2048" },
+  { label: "Ant Kingdom", desc: "Grow a pixel ant colony.", href: "/tools/ant-kingdom", tone: "black" },
+];
+
+const chipTone: Record<NonNullable<Tool["tone"]>, string> = {
+  blue: "nb-chip",
+  pink: "nb-chip nb-chip-pink",
+  black: "nb-chip nb-chip-black",
+};
 
 export default function ToolsPage() {
   return (
     <PageTransition>
       <div className="flex min-h-dvh flex-col">
-        <main className="relative isolate mx-auto max-w-5xl px-6 py-16 lg:py-24 flex-1">
-          <SectionFade once threshold={0.12}>
-            <header className="mb-10">
-              <p className="meta text-fofo-blue">TOOLS</p>
-              <h1 className="mt-2 font-semibold leading-tight tracking-tight text-4xl md:text-5xl">
-                Playground
-              </h1>
-              <p className="mt-3 max-w-2xl text-black/60">
-                Small utilities & games.
-              </p>
-            </header>
-            {/* Always-on weather */}
-            <div className="mt-6">
-              <WeatherCard defaultCity="Graz" />
-            </div>
+        <PageHeader
+          eyebrow="Tools"
+          title="Playground"
+          description="Small utilities & games — built to poke at ideas."
+        />
 
-            {/* Tool grid */}
-            <motion.div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {/* Halftone */}
-              <motion.div className="rounded-2xl border border-black/10 bg-white/70 p-5 shadow-sm opacity-90 transition hover:-translate-y-0.5 hover:shadow">
-                <div className="flex items-center gap-2">
-                  <span className="meta text-fofo-blue">HALFTONE</span>
-                </div>
-                <p className="mt-2 text-sm text-black/60">Dots, grids, print vibes.</p>
-                <Link href="/tools/halftone" className="mt-4 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-black/70 min-w-[88px] justify-center hover:-translate-y-0.5 hover:shadow transition">
-                  Open
-                </Link>
-              </motion.div>
+        <main className="relative isolate flex-1">
+          <div className="absolute inset-0 nb-dots pointer-events-none opacity-60" />
+          <div className="relative mx-auto max-w-6xl px-6 py-16">
+            <SectionFade once threshold={0.12}>
+              <div className="mb-10">
+                <WeatherCard defaultCity="Graz" />
+              </div>
 
-              {/* Image to ASCII */}
-              <motion.div className="rounded-2xl border border-black/10 bg-white/70 p-5 shadow-sm opacity-90 transition hover:-translate-y-0.5 hover:shadow">
-                <div className="flex items-center gap-2">
-                  <span className="meta text-fofo-blue">IMAGE TO ASCII</span>
-                </div>
-                <p className="mt-2 text-sm text-black/60">Turn images into text art.</p>
-                <Link href="/tools/ascii" className="mt-4 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-black/70 min-w-[88px] justify-center hover:-translate-y-0.5 hover:shadow transition">
-                  Open
-                </Link>
-              </motion.div>
+              <div className="mb-6">
+                <span className="nb-eyebrow">01 — The bench</span>
+              </div>
 
-              {/* Next up: Wordle */}
-              <motion.div className="rounded-2xl border border-black/10 bg-white/70 p-5 shadow-sm opacity-90 transition hover:-translate-y-0.5 hover:shadow">
-                <div className="flex items-center gap-2">
-                  <span className="meta text-fofo-blue">WORDLE</span>
-                </div>
-                <p className="mt-2 text-sm text-black/60">Daily 5-letter puzzle.</p>
-                <Link href="/tools/wordle" className="mt-4 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-black/70 min-w-[88px] justify-center hover:-translate-y-0.5 hover:shadow transition">
-                  Open
-                </Link>
+              <motion.div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {TOOLS.map((tool) => (
+                  <Link
+                    key={tool.href}
+                    href={tool.href}
+                    className="nb-card nb-card-press group flex min-h-[180px] flex-col justify-between bg-white p-5"
+                  >
+                    <div className="flex items-start justify-between">
+                      <span className={chipTone[tool.tone ?? "blue"]}>{tool.label}</span>
+                      <ArrowUpRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </div>
+                    <p className="mt-6 text-sm text-black/70">{tool.desc}</p>
+                  </Link>
+                ))}
               </motion.div>
-
-              {/* Next up: 2048 */}
-              <motion.div className="rounded-2xl border border-black/10 bg-white/70 p-5 shadow-sm opacity-90 transition hover:-translate-y-0.5 hover:shadow">
-                <div className="flex items-center gap-2">
-                  <span className="meta text-fofo-blue">2048</span>
-                </div>
-                <p className="mt-2 text-sm text-black/60">Merge tiles to reach 2048.</p>
-                <Link href="/tools/2048" className="mt-4 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-black/70 min-w-[88px] justify-center hover:-translate-y-0.5 hover:shadow transition">
-                  Open
-                </Link>
-              </motion.div>
-
-              {/* Ant Kingdom */}
-              <motion.div className="rounded-2xl border border-black/10 bg-white/70 p-5 shadow-sm opacity-90 transition hover:-translate-y-0.5 hover:shadow">
-                <div className="flex items-center gap-2">
-                  <span className="meta text-fofo-blue">ANT KINGDOM</span>
-                </div>
-                <p className="mt-2 text-sm text-black/60">Grow a pixel ant colony.</p>
-                <Link href="/tools/ant-kingdom" className="mt-4 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-black/70 min-w-[88px] justify-center hover:-translate-y-0.5 hover:shadow transition">
-                  Open
-                </Link>
-              </motion.div>
-            </motion.div>
-          </SectionFade>
+            </SectionFade>
+          </div>
         </main>
 
         <SectionFade once threshold={0.12}>

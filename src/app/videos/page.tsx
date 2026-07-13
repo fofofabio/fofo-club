@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Camera, Music, Play, Scissors, Smartphone, Sun } from "lucide-react";
 import PageTransition from "@/components/PageTransition";
 import SectionFade from "@/components/Sectionfade";
+import PageHeader from "@/components/PageHeader";
 import Footer from "@/components/Footer";
 import { videos } from "@/data/videos";
 
@@ -26,17 +27,11 @@ export default function VideosPage() {
       <main className="pb-24">
 
         {/* Header */}
-        <SectionFade once threshold={0.1}>
-          <div className="page-shell-wide pt-10 pb-10">
-            <p className="meta text-fofo-blue">VIDEOS</p>
-            <h1 className="mt-2 font-display text-5xl tracking-tight text-black md:text-6xl">
-              Film
-            </h1>
-            <p className="mt-3 max-w-xl text-base leading-relaxed text-black/55">
-              Rides, trips, random afternoons. Stuff I wanted to remember.
-            </p>
-          </div>
-        </SectionFade>
+        <PageHeader
+          eyebrow="Videos"
+          title="Film"
+          description="Rides, trips, random afternoons. Stuff I wanted to remember."
+        />
 
         {/* Featured — full-bleed dark strip */}
         {featured && (
@@ -46,7 +41,7 @@ export default function VideosPage() {
                 <div className="grid gap-8 lg:grid-cols-[1fr_260px] lg:items-center">
 
                   {/* Embed */}
-                  <div className="aspect-video w-full overflow-hidden rounded-2xl">
+                  <div className="aspect-video w-full overflow-hidden border-[2.5px] border-white">
                     <iframe
                       src={`https://www.youtube-nocookie.com/embed/${featured.youtubeId}?rel=0&modestbranding=1`}
                       title={featured.title}
@@ -90,15 +85,15 @@ export default function VideosPage() {
         {rest.length > 0 && (
           <SectionFade once threshold={0.1}>
             <div className="page-shell-wide mt-12">
-              <p className="meta mb-6 text-fofo-blue">MORE</p>
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mb-6"><span className="nb-eyebrow">More</span></div>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {rest.map((video) => (
                   <a
                     key={`${video.youtubeId}-${video.date}`}
                     href={`https://www.youtube.com/watch?v=${video.youtubeId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group overflow-hidden rounded-[20px] border border-black/10 bg-black transition hover:border-black/20"
+                    className="nb-card group overflow-hidden bg-black p-0"
                   >
                     <div className="relative aspect-video overflow-hidden">
                       <img
@@ -143,8 +138,8 @@ export default function VideosPage() {
           <div className="page-shell-wide mt-16">
 
             {/* Summer 2026 callout */}
-            <div className="mb-6 overflow-hidden rounded-[28px] border border-fofo-blue/20 bg-fofo-blue px-6 py-6 text-white md:px-8">
-              <p className="meta text-white/60">PROJECT · SUMMER 2026</p>
+            <div className="mb-8 overflow-hidden border-[2.5px] border-black bg-fofo-blue px-6 py-8 text-white shadow-brutal md:px-8">
+              <span className="nb-chip nb-chip-black">Project · Summer 2026</span>
               <h2 className="mt-2 font-display text-2xl tracking-tight md:text-3xl">
                 One full summer, on camera.
               </h2>
@@ -160,8 +155,8 @@ export default function VideosPage() {
             <div className="grid gap-5 md:grid-cols-2">
 
               {/* Why */}
-              <div className="rounded-[28px] border border-black/10 bg-white/85 px-6 py-6 shadow-lg shadow-black/5 backdrop-blur md:px-7">
-                <p className="meta text-fofo-blue">WHY I FILM</p>
+              <div className="nb-card bg-white px-6 py-6 md:px-7">
+                <span className="nb-eyebrow">Why I film</span>
                 <h3 className="mt-2 font-display text-2xl tracking-tight text-black">
                   The small stuff matters.
                 </h3>
@@ -179,15 +174,15 @@ export default function VideosPage() {
               </div>
 
               {/* Setup */}
-              <div className="rounded-[28px] border border-black/10 bg-white/85 px-6 py-6 shadow-lg shadow-black/5 backdrop-blur md:px-7">
-                <p className="meta text-fofo-blue">SETUP</p>
+              <div className="nb-card bg-white px-6 py-6 md:px-7">
+                <span className="nb-eyebrow">Setup</span>
                 <h3 className="mt-2 font-display text-2xl tracking-tight text-black">
                   What I shoot with.
                 </h3>
 
                 <div className="mt-5 space-y-4">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-black/10 bg-black/[0.03]">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center border-[2px] border-black bg-fofo-paper">
                       <Camera className="h-4 w-4 text-black/50" />
                     </div>
                     <div>
@@ -200,7 +195,7 @@ export default function VideosPage() {
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-black/10 bg-black/[0.03]">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center border-[2px] border-black bg-fofo-paper">
                       <Smartphone className="h-4 w-4 text-black/50" />
                     </div>
                     <div>
@@ -213,7 +208,7 @@ export default function VideosPage() {
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-black/10 bg-black/[0.03]">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center border-[2px] border-black bg-fofo-paper">
                       <Scissors className="h-4 w-4 text-black/50" />
                     </div>
                     <div>
@@ -226,7 +221,7 @@ export default function VideosPage() {
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-black/10 bg-black/[0.03]">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center border-[2px] border-black bg-fofo-paper">
                       <Sun className="h-4 w-4 text-black/50" />
                     </div>
                     <div>

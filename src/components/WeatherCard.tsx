@@ -235,7 +235,7 @@ export default function WeatherCard({ defaultCity }: { defaultCity: string }) {
   const iconBgColor = useMemo(() => iconBgColorFor(today?.weather?.[0]?.main), [today]);
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-black/10 bg-white">
+    <section className="relative overflow-hidden border-[2.5px] border-black bg-white shadow-brutal">
       {/* two layered animated backgrounds for a more noticeable effect */}
       <motion.div
         className="pointer-events-none absolute inset-0"
@@ -256,8 +256,8 @@ export default function WeatherCard({ defaultCity }: { defaultCity: string }) {
         {/* Left — hero */}
         <div className="flex flex-col justify-between">
           <div className="flex items-center gap-3">
-            <span className="meta text-fofo-blue">WEATHER</span>
-            <div className="h-px flex-1 bg-black/10" />
+            <span className="nb-eyebrow">Weather</span>
+            <div className="h-[2px] flex-1 bg-black/80" />
           </div>
 
           <div className="mt-6 flex items-end gap-3">
@@ -265,7 +265,7 @@ export default function WeatherCard({ defaultCity }: { defaultCity: string }) {
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder="Type a city…"
-              className="w-full max-w-md rounded-full border border-black/10 bg-white/70 px-5 py-3 text-base outline-none transition focus:border-fofo-blue/70"
+              className="w-full max-w-md border-[2.5px] border-black bg-white px-5 py-3 text-base outline-none transition focus:shadow-brutal-sm"
             />
           </div>
 
@@ -351,7 +351,7 @@ export default function WeatherCard({ defaultCity }: { defaultCity: string }) {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="group rounded-2xl border border-black/10 bg-white/70 p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow"
+                className="group border-[2px] border-black bg-white p-3 text-center transition hover:-translate-y-0.5 hover:shadow-brutal-sm"
               >
                 {f ? (
                   <>

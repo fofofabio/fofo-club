@@ -3,8 +3,11 @@
 @tailwind utilities;
 
 :root {
-    --bg: #ffffff; /* base */
+    --bg: #f2efe6; /* warm neo-brutalist paper */
     --fg: #000000;
+    --fofo-blue: #0008ff;
+    --fofo-pink: #ff3dbe;
+    --fofo-yellow: #ffe14d;
 }
 
 html,
@@ -149,9 +152,107 @@ body { scrollbar-gutter: stable; }
   transition: opacity 1s ease, transform 1s ease;
 }
 
-/* keep them minimal + soft */
-.card { @apply rounded-2xl border border-black/10 bg-white shadow-sm; }
-.card:hover { @apply shadow-md; }
+/* ---------------------------------------------------------------------------
+   NEO-BRUTALIST DESIGN LANGUAGE
+   Hard borders, blur-less offset shadows, filled chips, stickers, marquees.
+   Keeps the fofo palette: blue #0008FF, pink #FF3DBE, pixel type.
+--------------------------------------------------------------------------- */
+@layer components {
+    /* Panel/card: thick black border + hard offset shadow, sharp corners */
+    .nb-card {
+        @apply relative border-[2.5px] border-black bg-white shadow-brutal;
+        transition:
+            transform 0.12s ease,
+            box-shadow 0.12s ease;
+    }
+    .nb-card:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 9px 9px 0 0 #000;
+    }
+    /* Pressable interactive card — collapses the shadow on hover */
+    .nb-card-press:hover {
+        transform: translate(3px, 3px);
+        box-shadow: 3px 3px 0 0 #000;
+    }
 
-.badge { @apply rounded-full border border-black/15 px-2 py-0.5 text-[10px] tracking-wide uppercase text-black/60; }
-.meta  { @apply uppercase tracking-wider text-[10px] text-fofo-blue; }
+    /* Filled category chip (TYPE / TOOL / SYSTEM / BRAND) */
+    .nb-chip {
+        @apply inline-flex items-center gap-1 border-[2px] border-black bg-fofo-blue
+            px-2.5 py-1 font-pixel text-[11px] uppercase tracking-widest text-white;
+    }
+    .nb-chip-pink { @apply bg-fofo-pink; }
+    .nb-chip-black { @apply bg-black; }
+
+    /* Outline tag pill (JUNIOR IT PM, JS · PYTHON · REACT) */
+    .nb-tag {
+        @apply inline-flex items-center border-[2px] border-black bg-white px-3 py-1.5
+            font-pixel text-[11px] uppercase tracking-widest text-black shadow-brutal-sm;
+    }
+    .nb-tag-blue { @apply bg-fofo-blue text-white; }
+    .nb-tag-pink { @apply bg-fofo-pink text-white; }
+
+    /* Rotated sticker badge */
+    .nb-sticker {
+        @apply border-[2.5px] border-black bg-fofo-blue px-4 py-3 font-pixel text-[11px]
+            uppercase leading-snug tracking-widest text-white shadow-brutal;
+    }
+
+    /* Marker highlight behind inline text */
+    .nb-mark {
+        background: linear-gradient(transparent 55%, var(--fofo-yellow, #ffe14d) 55%);
+        padding: 0 0.1em;
+    }
+
+    /* Section eyebrow label, filled */
+    .nb-eyebrow {
+        @apply inline-block border-[2px] border-black bg-fofo-blue px-2.5 py-1
+            font-pixel text-[11px] uppercase tracking-widest text-white;
+    }
+}
+
+/* Dotted paper texture (neo-brutalist ground) */
+.nb-dots {
+    background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.4px, transparent 1.4px);
+    background-size: 22px 22px;
+}
+
+/* Decorative pixel star */
+.nb-star {
+    display: inline-block;
+    color: var(--fofo-blue, #0008ff);
+    line-height: 1;
+    user-select: none;
+}
+@keyframes nb-twinkle {
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+    50% { transform: scale(1.25) rotate(20deg); opacity: 1; }
+}
+.nb-star-twinkle { animation: nb-twinkle 4s ease-in-out infinite; }
+
+/* Scrolling marquee ticker */
+.nb-marquee {
+    @apply overflow-hidden border-y-[2.5px] border-black bg-fofo-blue text-white;
+}
+.nb-marquee__track {
+    display: inline-flex;
+    white-space: nowrap;
+    will-change: transform;
+    animation: nb-marquee 26s linear infinite;
+}
+.nb-marquee:hover .nb-marquee__track {
+    animation-play-state: paused;
+}
+@keyframes nb-marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .nb-marquee__track { animation: none; }
+}
+
+/* Re-skin legacy helpers to the neo-brutalist look so existing pages inherit it */
+.card { @apply border-[2.5px] border-black bg-white shadow-brutal rounded-none; }
+.card:hover { box-shadow: 9px 9px 0 0 #000; }
+
+.badge { @apply rounded-none border-[2px] border-black px-2 py-0.5 text-[10px] tracking-widest uppercase text-black; }
+.meta  { @apply uppercase tracking-widest text-[10px] text-fofo-blue; }

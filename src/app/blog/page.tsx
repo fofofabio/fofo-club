@@ -32,7 +32,7 @@ export default async function BlogPage({
               <SectionFade key={story.slug} once threshold={0.12} className="block">
                 <Link
                   href={`/blog/${story.slug}`}
-                  className="group block w-full overflow-hidden bg-black text-white"
+                  className="group block w-full overflow-hidden border-b-[2.5px] border-black bg-black text-white"
                   aria-label={`Read story: ${story.title}`}
                 >
                   <div className="relative h-[32vh] min-h-[300px] sm:h-[40vh]">

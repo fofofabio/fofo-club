@@ -128,19 +128,19 @@ function canMove(tiles: Tile[]): boolean {
 
 function tileClasses(value: number) {
   const map: Record<number, string> = {
-    2: "bg-amber-50 text-black",
-    4: "bg-amber-100 text-black",
-    8: "bg-amber-300 text-white",
-    16: "bg-orange-400 text-white",
-    32: "bg-orange-500 text-white",
-    64: "bg-orange-600 text-white",
-    128: "bg-amber-400 text-white",
-    256: "bg-amber-500 text-white",
-    512: "bg-amber-600 text-white",
-    1024: "bg-yellow-500 text-white",
-    2048: "bg-yellow-600 text-white",
+    2: "bg-white text-black",
+    4: "bg-fofo-yellow text-black",
+    8: "bg-orange-400 text-black",
+    16: "bg-fofo-pink text-white",
+    32: "bg-purple-500 text-white",
+    64: "bg-fofo-blue text-white",
+    128: "bg-blue-700 text-white",
+    256: "bg-indigo-800 text-white",
+    512: "bg-black text-white",
+    1024: "bg-black text-fofo-yellow",
+    2048: "bg-fofo-blue text-fofo-yellow",
   };
-  return map[value] || "bg-yellow-700 text-white";
+  return map[value] || "bg-black text-fofo-pink";
 }
 
 export default function Game2048Page() {
@@ -254,14 +254,14 @@ export default function Game2048Page() {
           <SectionFade once threshold={0.12}>
             <header className="mb-6 sm:mb-8 flex items-center justify-between gap-3">
               <div>
-                <p className="meta text-fofo-blue">TOOLS • 2048</p>
-                <h1 className="mt-2 font-semibold leading-tight tracking-tight text-3xl sm:text-4xl">2048</h1>
+                <span className="nb-eyebrow">Tools • 2048</span>
+                <h1 className="mt-3 font-display font-bold leading-none tracking-tight text-4xl sm:text-5xl">2048</h1>
                 <p className="mt-3 text-black/60">Swipe or use arrow keys. Merge to 2048.</p>
               </div>
               <Link
                 href="/tools"
                 aria-label="Back to tools"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-fofo-blue text-white shadow-sm transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fofo-blue/60"
+                className="inline-flex h-11 w-11 items-center justify-center border-[2.5px] border-black bg-fofo-blue text-white transition-all hover:-translate-y-0.5 hover:shadow-brutal-sm focus:outline-none"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -279,15 +279,15 @@ export default function Game2048Page() {
               {/* Score */}
               <div className="mb-3 flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="rounded-md bg-black/5 px-2 py-1 text-black/70">Score: {score}</span>
-                  <span className="rounded-md bg-black/5 px-2 py-1 text-black/70">Best: {best}</span>
+                  <span className="border-[2px] border-black bg-white px-2.5 py-1 font-pixel text-[11px] uppercase tracking-widest">Score {score}</span>
+                  <span className="border-[2px] border-black bg-fofo-blue px-2.5 py-1 font-pixel text-[11px] uppercase tracking-widest text-white">Best {best}</span>
                 </div>
-                <button onClick={reset} className="rounded-full border border-black/10 bg-white px-3 py-1 shadow-sm text-black/70 hover:-translate-y-0.5 hover:shadow transition">New game</button>
+                <button onClick={reset} className="border-[2px] border-black bg-white px-3 py-1.5 font-pixel text-[11px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:bg-fofo-pink hover:text-white hover:shadow-brutal-sm">New game</button>
               </div>
 
               {/* Board */}
               <div
-                className="relative rounded-2xl bg-black/5 p-2 sm:p-3"
+                className="relative border-[2.5px] border-black bg-fofo-paper p-2 shadow-brutal sm:p-3"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
@@ -296,7 +296,7 @@ export default function Game2048Page() {
                 {/* Background grid */}
                 <div className="grid grid-cols-4 gap-2 sm:gap-3">
                   {Array.from({ length: 16 }).map((_, i) => (
-                    <div key={i} className="aspect-square rounded-xl border border-black/10 bg-white/50" />
+                    <div key={i} className="aspect-square border-[2px] border-black/25 bg-white/60" />
                   ))}
                 </div>
 
@@ -316,7 +316,7 @@ export default function Game2048Page() {
                             scale: merged ? { type: "tween", duration: 0.22, ease: "easeOut", times: [0, 0.5, 1] } : { type: "tween", duration: 0 }
                           }}
                           style={{ gridColumnStart: t.col + 1, gridRowStart: t.row + 1 }}
-                          className={`w-full h-full rounded-xl shadow-sm font-semibold text-lg sm:text-2xl grid place-items-center ${tileClasses(t.value)}`}
+                          className={`w-full h-full border-[2.5px] border-black font-display font-bold text-lg sm:text-2xl grid place-items-center ${tileClasses(t.value)}`}
                         >
                           {t.value}
                         </motion.div>

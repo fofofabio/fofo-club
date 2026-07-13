@@ -375,18 +375,18 @@ export default function AsciiToolPage() {
           <SectionFade once threshold={0.12}>
             <header className="mb-6 sm:mb-8 flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="meta text-fofo-blue">TOOLS / ASCII</p>
-                <h1 className="mt-1 font-semibold leading-tight tracking-tight text-3xl sm:text-4xl">
+                <span className="nb-eyebrow">Tools / ASCII</span>
+                <h1 className="mt-3 font-display font-bold leading-none tracking-tight text-4xl sm:text-5xl">
                   Image to ASCII
                 </h1>
-                <p className="mt-2 max-w-2xl text-black/60">
+                <p className="mt-3 max-w-2xl text-black/60">
                   Upload a photo, tune the knobs, and build your own text art vibe.
                 </p>
               </div>
               <Link
                 href="/tools"
                 aria-label="Back to tools"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-fofo-blue text-white shadow-sm transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fofo-blue/60"
+                className="inline-flex h-11 w-11 items-center justify-center border-[2.5px] border-black bg-fofo-blue text-white transition-all hover:-translate-y-0.5 hover:shadow-brutal-sm focus:outline-none"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -418,14 +418,14 @@ export default function AsciiToolPage() {
                   <button
                     type="button"
                     onClick={loadSample}
-                    className="inline-flex items-center rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs text-black/70 transition hover:-translate-y-0.5 hover:shadow"
+                    className="inline-flex items-center border-[2px] border-black bg-white px-3 py-1.5 font-pixel text-[11px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white hover:shadow-brutal-sm"
                   >
                     Use sample
                   </button>
                   <button
                     type="button"
                     onClick={clearImage}
-                    className="inline-flex items-center rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs text-black/70 transition hover:-translate-y-0.5 hover:shadow"
+                    className="inline-flex items-center border-[2px] border-black bg-white px-3 py-1.5 font-pixel text-[11px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white hover:shadow-brutal-sm"
                   >
                     Clear
                   </button>
@@ -435,7 +435,7 @@ export default function AsciiToolPage() {
                   <img
                     src={imageUrl}
                     alt="Selected preview"
-                    className="mt-4 w-full rounded-xl border border-black/10 object-cover"
+                    className="mt-4 w-full border-[2.5px] border-black object-cover"
                   />
                 ) : (
                   <p className="mt-4 text-sm text-black/50">Pick an image or try the sample.</p>
@@ -465,7 +465,7 @@ export default function AsciiToolPage() {
                       onChange={(event) =>
                         setColumns(clamp(Number(event.target.value), MIN_COLS, MAX_COLS))
                       }
-                      className="w-20 rounded-md border border-black/10 px-2 py-1 text-sm text-black/70"
+                      className="w-20 border-[2px] border-black px-2 py-1 text-sm text-black/80"
                     />
                   </div>
 
@@ -473,7 +473,7 @@ export default function AsciiToolPage() {
                   <select
                     value={charsetKey}
                     onChange={(event) => setCharsetKey(event.target.value as CharsetKey)}
-                    className="mt-2 w-full rounded-md border border-black/10 bg-white px-2 py-1.5 text-sm text-black/70"
+                    className="mt-2 w-full border-[2px] border-black bg-white px-2 py-1.5 text-sm text-black/80"
                   >
                     <option value="standard">Standard</option>
                     <option value="dense">Dense</option>
@@ -639,7 +639,7 @@ export default function AsciiToolPage() {
                     type="button"
                     onClick={onCopy}
                     disabled={!ascii}
-                    className="inline-flex items-center rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs text-black/70 transition hover:-translate-y-0.5 hover:shadow disabled:opacity-50"
+                    className="inline-flex items-center border-[2px] border-black bg-white px-3 py-1.5 font-pixel text-[11px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:bg-fofo-pink hover:text-white hover:shadow-brutal-sm disabled:opacity-50"
                   >
                     {copied ? "Copied" : "Copy"}
                   </button>
@@ -647,7 +647,7 @@ export default function AsciiToolPage() {
 
                 <div
                   ref={outputRef}
-                  className="relative mt-4 min-h-[55vh] max-h-[70vh] overflow-auto rounded-xl border border-black/10 bg-white p-3"
+                  className="relative mt-4 min-h-[55vh] max-h-[70vh] overflow-auto border-[2.5px] border-black bg-white p-3"
                 >
                   <span
                     ref={measureRef}

@@ -64,7 +64,7 @@ export default function PaceGrid({
       {/* header row */}
       <SectionFade once threshold={0.15}>
         <div className="mb-6 flex items-baseline justify-between">
-          <h1 className="text-3xl font-bold">latest on strava</h1>
+          <h1 className="font-display text-3xl font-bold md:text-4xl">latest on strava</h1>
           <div className="flex items-center gap-6">
             <span className="meta text-fofo-blue hidden sm:inline">
               movement log — last {Math.min(SHOW, filtered.length)} sessions
@@ -76,15 +76,16 @@ export default function PaceGrid({
 
       {/* tabs */}
       <SectionFade once threshold={0.15}>
-        <div className="mb-4 flex gap-4">
+        <div className="mb-4 flex gap-3">
           {["all","run","ride"].map((t) => (
             <button
               key={t}
               onClick={() => setTab(t as any)}
               className={clsx(
-                "meta",
-                t==="run"  ? "!text-fofo-blue" : t==="ride" ? "!text-fofo-pink" : "text-black/50",
-                tab===t ? "opacity-100" : "opacity-60 hover:opacity-100"
+                "border-[2px] border-black px-3 py-1.5 font-pixel text-[11px] uppercase tracking-widest transition-colors",
+                tab===t
+                  ? t==="run" ? "bg-fofo-blue text-white" : t==="ride" ? "bg-fofo-pink text-white" : "bg-black text-white"
+                  : "bg-white text-black hover:bg-black hover:text-white"
               )}
             >
               {t}
@@ -113,10 +114,10 @@ export default function PaceGrid({
                   <RouteSpark
                     polyline={a.map ?? null}
                     variant={isR ? "run" : "ride"}
-                    className="aspect-[4/3] w-full rounded-2xl md:rounded-3xl"
+                    className="aspect-[4/3] w-full border-[2.5px] border-black shadow-brutal-sm transition-transform group-hover:-translate-y-1"
                   />
                   <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs opacity-0 transition-opacity group-hover:opacity-100">
-                    <span className={clsx("meta rounded-full bg-white/70 px-2 py-1 backdrop-blur", isR ? "text-fofo-blue" : "!text-fofo-pink")}>
+                    <span className={clsx("meta border-[2px] border-black bg-white px-2 py-1", isR ? "text-fofo-blue" : "!text-fofo-pink")}>
                       open in strava
                     </span>
                   </span>

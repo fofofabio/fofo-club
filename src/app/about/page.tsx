@@ -12,11 +12,12 @@ export default function AboutPage() {
         <SectionFade once threshold={0.2}>
           <section className="mx-auto max-w-5xl px-6 pt-16 pb-10 grid gap-10 md:grid-cols-[1fr_auto] md:items-center">
             <div>
-              <div className="meta text-fofo-blue/80 mb-3">about</div>
-              <h1 className="font-display text-4xl md:text-6xl leading-[1.03] tracking-[-0.01em] max-w-[22ch]">
-                i’m fabio. thanks for coming on my page. scroll down to learn a little more about me and my work.
+              <span className="nb-eyebrow mb-5">About</span>
+              <h1 className="mt-5 font-display font-bold text-4xl md:text-6xl leading-[1.0] tracking-[-0.01em] max-w-[22ch]">
+                i’m fabio. thanks for coming on my page.{" "}
+                <span className="nb-mark">scroll down</span> to learn a little more about me and my work.
               </h1>
-              <p className="mt-5 text-lg text-black/80 max-w-2xl">
+              <p className="mt-6 text-lg text-black/80 max-w-2xl">
                 based in {profile.location}. — {profile.age} years old.
               </p>
             </div>
@@ -26,7 +27,7 @@ export default function AboutPage() {
               <img
                 src="/me.png"
                 alt="Fabio Unterholzer portrait"
-                className="w-40 h-40 md:w-56 md:h-56 rounded-2xl object-cover border border-black/10 shadow-sm"
+                className="w-40 h-40 md:w-56 md:h-56 object-cover border-[2.5px] border-black shadow-brutal"
               />
             </div>
           </section>
@@ -34,7 +35,7 @@ export default function AboutPage() {
 
         {/* BLUE PANEL */}
         <SectionFade once threshold={0.2}>
-          <section className="relative isolate overflow-hidden">
+          <section className="relative isolate overflow-hidden border-y-[2.5px] border-black">
             <div className="absolute inset-0 bg-fofo-blue" />
             <div className="absolute inset-0 grid-bg mix-blend-multiply opacity-30" />
             <div className="relative mx-auto max-w-5xl px-6 py-14 text-white">
@@ -51,7 +52,7 @@ export default function AboutPage() {
                 and i thought of a really cool abbreviation for it: 
               </p>
               {/* inside the blue panel there is a text that says "For Ordinary Fellows, Occasionally exceptional." it should stick out */}
-              <h2 className="font-display text-3xl md:text-4xl mt-8 mb-4">
+              <h2 className="inline-block font-display font-bold text-2xl md:text-4xl mt-8 mb-4 border-[2.5px] border-black bg-white px-4 py-3 text-black shadow-brutal -rotate-1">
                 For Ordinary Fellows, Occasionally exceptional.
               </h2>
               <p className="text-xl md:text-2xl leading-relaxed max-w-3xl">

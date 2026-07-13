@@ -305,8 +305,8 @@ export default function AntKingdomPage() {
           <SectionFade once threshold={0.12}>
             <header className="mb-6 flex items-start justify-between gap-3">
               <div>
-                <p className="meta text-fofo-blue">TOOLS • ANT KINGDOM</p>
-                <h1 className="mt-2 font-semibold leading-tight tracking-tight text-3xl sm:text-4xl">
+                <span className="nb-eyebrow">Tools • Ant Kingdom</span>
+                <h1 className="mt-3 font-display font-bold leading-none tracking-tight text-4xl sm:text-5xl">
                   Ant Kingdom
                 </h1>
                 <p className="mt-3 max-w-xl text-black/60">
@@ -318,7 +318,7 @@ export default function AntKingdomPage() {
               <Link
                 href="/tools"
                 aria-label="Back to tools"
-                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-fofo-blue text-white shadow-sm transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fofo-blue/60"
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center border-[2.5px] border-black bg-fofo-blue text-white transition-all hover:-translate-y-0.5 hover:shadow-brutal-sm focus:outline-none"
               >
                 <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
                   <path
@@ -348,13 +348,13 @@ export default function AntKingdomPage() {
               />
               <Stat label="Peak" value={hud?.peak ?? 0} />
               <Stat label="Best" value={best} />
-              <span className="rounded-md bg-black/5 px-2 py-1 text-black/70">
+              <span className="border-[2px] border-black bg-white px-2 py-1 text-black/80">
                 {hud?.day ? "☀ Day" : "☾ Night"}
                 {hud?.weather === "rain" ? " · 🌧 Rain" : ""}
                 {hud?.spider ? " · 🕷 Spider!" : ""}
               </span>
               {hud?.atCapacity && (
-                <span className="rounded-md bg-amber-100 px-2 py-1 text-amber-700">
+                <span className="border-[2px] border-black bg-fofo-yellow px-2 py-1 font-medium text-black">
                   Nest full — dig more space
                 </span>
               )}
@@ -371,10 +371,10 @@ export default function AntKingdomPage() {
                     key={t.id}
                     onClick={() => setTool(t.id)}
                     title={t.hint}
-                    className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition ${
+                    className={`flex items-center gap-2 border-[2px] border-black px-3 py-1.5 text-sm transition-all ${
                       active
-                        ? "border-transparent text-white shadow-sm"
-                        : "border-black/10 bg-white text-black/70 hover:-translate-y-0.5 hover:shadow"
+                        ? "text-white shadow-brutal-sm"
+                        : "bg-white text-black/80 hover:-translate-y-0.5 hover:shadow-brutal-sm"
                     }`}
                     style={active ? { background: t.color } : undefined}
                   >
@@ -401,7 +401,7 @@ export default function AntKingdomPage() {
             {/* Canvas */}
             <div
               ref={containerRef}
-              className="relative w-full overflow-hidden rounded-2xl border border-black/10 bg-[#1a1208] shadow-sm"
+              className="relative w-full overflow-hidden border-[2.5px] border-black bg-[#1a1208] shadow-brutal"
             >
               <canvas
                 ref={canvasRef}
@@ -417,7 +417,7 @@ export default function AntKingdomPage() {
                     <p className="mt-1 text-3xl font-semibold">Peak: {hud.peak} ants</p>
                     <button
                       onClick={() => reset()}
-                      className="mt-4 rounded-full bg-white px-5 py-2 text-sm font-medium text-black hover:-translate-y-0.5 hover:shadow transition"
+                      className="mt-4 border-[2.5px] border-white bg-white px-5 py-2 font-pixel text-[11px] uppercase tracking-widest text-black transition-all hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white"
                     >
                       New colony
                     </button>
@@ -429,7 +429,7 @@ export default function AntKingdomPage() {
             {/* Controls */}
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {/* Workforce */}
-              <div className="rounded-2xl border border-black/10 bg-white/70 p-4 shadow-sm">
+              <div className="border-[2.5px] border-black bg-white p-4 shadow-brutal-sm">
                 <p className="meta text-fofo-blue">WORKFORCE MIX</p>
                 <p className="mt-1 text-xs text-black/50">
                   New eggs hatch toward these weights.
@@ -444,7 +444,7 @@ export default function AntKingdomPage() {
                       <span className="w-16 text-sm capitalize text-black/70">{role}</span>
                       <button
                         onClick={() => adjustWeight(role, -1)}
-                        className="h-7 w-7 rounded-full border border-black/10 bg-white text-black/70 hover:shadow transition"
+                        className="h-7 w-7 border-[2px] border-black bg-white text-black/80 transition-all hover:bg-fofo-blue hover:text-white"
                         aria-label={`Fewer ${role}s`}
                       >
                         −
@@ -462,7 +462,7 @@ export default function AntKingdomPage() {
                       </div>
                       <button
                         onClick={() => adjustWeight(role, 1)}
-                        className="h-7 w-7 rounded-full border border-black/10 bg-white text-black/70 hover:shadow transition"
+                        className="h-7 w-7 border-[2px] border-black bg-white text-black/80 transition-all hover:bg-fofo-blue hover:text-white"
                         aria-label={`More ${role}s`}
                       >
                         +
@@ -476,25 +476,25 @@ export default function AntKingdomPage() {
               </div>
 
               {/* Play controls + log */}
-              <div className="rounded-2xl border border-black/10 bg-white/70 p-4 shadow-sm">
+              <div className="border-[2.5px] border-black bg-white p-4 shadow-brutal-sm">
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setAutopilot((a) => !a)}
-                    className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                    className={`border-[2px] border-black px-3 py-1.5 text-sm transition-all ${
                       autopilot
-                        ? "border-transparent bg-fofo-blue text-white shadow-sm"
-                        : "border-black/10 bg-white text-black/70 hover:-translate-y-0.5 hover:shadow"
+                        ? "bg-fofo-blue text-white shadow-brutal-sm"
+                        : "bg-white text-black/80 hover:-translate-y-0.5 hover:shadow-brutal-sm"
                     }`}
                   >
                     {autopilot ? "🤖 Autopilot on" : "🤖 Autopilot"}
                   </button>
                   <button
                     onClick={() => setPaused((p) => !p)}
-                    className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm text-black/70 hover:-translate-y-0.5 hover:shadow transition"
+                    className="border-[2px] border-black bg-white px-3 py-1.5 text-sm text-black/80 transition-all hover:-translate-y-0.5 hover:shadow-brutal-sm"
                   >
                     {paused ? "▶ Resume" : "⏸ Pause"}
                   </button>
-                  <div className="flex overflow-hidden rounded-full border border-black/10">
+                  <div className="flex overflow-hidden border-[2px] border-black">
                     {([1, 2, 4] as Speed[]).map((s) => (
                       <button
                         key={s}
@@ -511,7 +511,7 @@ export default function AntKingdomPage() {
                   </div>
                   <button
                     onClick={() => reset()}
-                    className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm text-black/70 hover:-translate-y-0.5 hover:shadow transition"
+                    className="border-[2px] border-black bg-white px-3 py-1.5 text-sm text-black/80 transition-all hover:-translate-y-0.5 hover:shadow-brutal-sm"
                   >
                     New colony
                   </button>
@@ -519,7 +519,7 @@ export default function AntKingdomPage() {
                 {/* Map size */}
                 <div className="mt-3 flex items-center gap-2">
                   <span className="text-xs text-black/50">Map</span>
-                  <div className="flex overflow-hidden rounded-full border border-black/10">
+                  <div className="flex overflow-hidden border-[2px] border-black">
                     {SIZE_KEYS.map((key) => (
                       <button
                         key={key}
@@ -538,7 +538,7 @@ export default function AntKingdomPage() {
                     Dig cost: {DIG_FOOD_COST} food
                   </span>
                 </div>
-                <div className="mt-3 rounded-xl bg-black/5 p-3 text-xs leading-relaxed text-black/60">
+                <div className="mt-3 border-[2px] border-black bg-fofo-paper p-3 text-xs leading-relaxed text-black/70">
                   {(hud?.log ?? []).length === 0 ? (
                     <span className="text-black/40">The colony is quiet…</span>
                   ) : (
@@ -566,8 +566,8 @@ export default function AntKingdomPage() {
 
 function Stat({ label, value, tint }: { label: string; value: number; tint?: string }) {
   return (
-    <span className="rounded-md bg-black/5 px-2 py-1 text-black/70">
-      {label}: <span className={`font-semibold tabular-nums ${tint ?? ""}`}>{value}</span>
+    <span className="border-[2px] border-black bg-white px-2 py-1 text-black/80">
+      {label}: <span className={`font-bold tabular-nums ${tint ?? ""}`}>{value}</span>
     </span>
   );
 }
@@ -586,9 +586,9 @@ function CapStat({
   warn?: boolean;
 }) {
   return (
-    <span className={`rounded-md px-2 py-1 text-black/70 ${warn ? "bg-amber-100" : "bg-black/5"}`}>
+    <span className={`border-[2px] border-black px-2 py-1 text-black/80 ${warn ? "bg-fofo-yellow" : "bg-white"}`}>
       {label}:{" "}
-      <span className={`font-semibold tabular-nums ${tint ?? ""}`}>{value}</span>
+      <span className={`font-bold tabular-nums ${tint ?? ""}`}>{value}</span>
       <span className="text-black/40"> / {cap}</span>
     </span>
   );

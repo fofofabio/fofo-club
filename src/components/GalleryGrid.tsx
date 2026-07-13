@@ -91,19 +91,22 @@ export default function GalleryGridJustified({
 
   return (
     <section className="relative isolate">
-      <div className="absolute inset-0 grid-bg pointer-events-none" />
-      <div ref={wrapRef} className="relative mx-auto max-w-5xl px-6 py-16">
+      <div className="absolute inset-0 nb-dots pointer-events-none" />
+      <div ref={wrapRef} className="relative mx-auto max-w-6xl px-6 py-20">
+        <div className="mb-8">
+          <span className="nb-eyebrow">04 — In the wild</span>
+        </div>
         <div className="flex flex-col gap-[--g]" style={{ ["--g" as any]: `${gap}px` }}>
           {rows.map((row, r) => (
             <div key={r} className="flex gap-[--g]">
               {row.items.map((it, i) => (
                 <figure
                   key={i}
-                  className="relative overflow-hidden rounded-xl"
+                  className="group relative overflow-hidden border-[2.5px] border-black shadow-brutal-sm transition-transform hover:-translate-y-1"
                   style={{ width: it.wPx, height: it.hPx }}
                 >
                   <Image src={it.src} alt={it.alt ?? ""} fill className="object-cover" sizes={`${it.wPx}px`} />
-                  <div className="absolute inset-0 bg-fofo-blue mix-blend-multiply opacity-20" />
+                  <div className="absolute inset-0 bg-fofo-blue mix-blend-multiply opacity-20 transition-opacity group-hover:opacity-0" />
                 </figure>
               ))}
             </div>

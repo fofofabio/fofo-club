@@ -1,109 +1,73 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { Mail, Github, Linkedin, Instagram } from "lucide-react";
 
 export default function FofoFooter() {
-  const lineRef = useRef<HTMLDivElement>(null);
-
-  // animate the blue line once
-  useEffect(() => {
-    const el = lineRef.current;
-    if (!el) return;
-    el.animate(
-      [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
-      { duration: 600, easing: "cubic-bezier(.2,.8,.2,1)", fill: "forwards" }
-    );
-  }, []);
-
   const year = new Date().getFullYear();
 
+  const links = [
+    ["tools", "/tools"],
+    ["blog", "/blog"],
+    ["videos", "/videos"],
+    ["about", "/about"],
+    ["privacy", "/privacy"],
+  ];
+
+  const socials = [
+    { Icon: Instagram, href: "https://instagram.com/sirfabioo", label: "Instagram" },
+    { Icon: Linkedin, href: "https://linkedin.com/in/fabio-unterholzer", label: "LinkedIn" },
+    { Icon: Github, href: "https://github.com/fofofabio", label: "GitHub" },
+    { Icon: Mail, href: "mailto:hi@fofoclub.com", label: "Email" },
+  ];
+
   return (
-    <footer className="relative isolate overflow-hidden">
-      {/* wired background */}
-      <div className="absolute inset-0 grid-bg pointer-events-none" />
-
-      {/* track-line */}
-      <div
-        ref={lineRef}
-        className="origin-left h-[2px] bg-fofo-blue mx-auto w-full max-w-5xl mt-20"
-      />
-
-      <div className="relative mx-auto max-w-5xl px-6 py-8 flex flex-col items-center gap-3 text-fofo-black">
-        {/* top meta rail */}
-        <div className="meta text-xs text-fofo-black/60 flex flex-wrap justify-center gap-x-4 gap-y-1">
-          <span>graz</span>
-          <span>
-            local time{" "}
-            {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+    <footer className="relative isolate border-t-[2.5px] border-black bg-fofo-blue text-white">
+      <div className="mx-auto max-w-6xl px-6 py-16">
+        {/* giant wordmark */}
+        <div className="flex items-center gap-3 leading-none">
+          <span className="font-display text-[15vw] font-bold tracking-tighter md:text-[9rem]">
+            fofo club
           </span>
-          <span>version 1.0.1</span>
-          <span>updated jun 2026</span>
+          <span className="nb-star text-white text-4xl md:text-6xl">✳</span>
         </div>
 
-        {/* main line */}
-        <div className="flex flex-wrap justify-center items-center gap-x-3 text-sm mt-1">
-          <span className="font-pixel tracking-widest text-fofo-black/70">
-            built &amp; run by fabio unterholzer
-          </span>
-          <span className="text-fofo-black/50">·</span>
-          <nav className="flex gap-x-3 font-pixel text-fofo-black/70">
-            <a href="/tools" className="hover:text-fofo-blue transition-colors">
-              tools
-            </a>
-            <a href="/projects" className="hover:text-fofo-blue transition-colors">
-              projects
-            </a>
-            <a href="/blog" className="hover:text-fofo-blue transition-colors">
-              blog
-            </a>
-            <a href="/videos" className="hover:text-fofo-blue transition-colors">
-              videos
-            </a>
-            <a href="/about" className="hover:text-fofo-blue transition-colors">
-              about
-            </a>
-            <a href="/privacy" className="hover:text-fofo-blue transition-colors">
-              privacy
-            </a>
+        <p className="mt-4 max-w-md font-pixel text-[11px] uppercase tracking-widest text-white/70">
+          for ordinary fellows, occasionally exceptional.
+        </p>
+
+        {/* rails */}
+        <div className="mt-12 grid gap-8 border-t-[2.5px] border-white/40 pt-8 md:grid-cols-[1fr_auto] md:items-end">
+          <nav className="flex flex-wrap gap-3">
+            {links.map(([label, href]) => (
+              <a
+                key={href}
+                href={href}
+                className="border-[2px] border-white bg-transparent px-3 py-1.5 font-pixel text-[11px] uppercase tracking-widest transition-colors hover:bg-white hover:text-fofo-blue"
+              >
+                {label}
+              </a>
+            ))}
           </nav>
-          <span className="text-fofo-black/50">·</span>
-          <span className="font-pixel text-fofo-black/70">© {year} fofo club</span>
+
+          <div className="flex gap-3">
+            {socials.map(({ Icon, href, label }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={label}
+                className="flex h-10 w-10 items-center justify-center border-[2px] border-white transition-colors hover:bg-white hover:text-fofo-blue"
+              >
+                <Icon className="h-5 w-5" />
+              </a>
+            ))}
+          </div>
         </div>
 
-        {/* icon rail */}
-        <div className="mt-3 flex gap-5">
-          <a
-            href="https://instagram.com/sirfabioo"
-            target="_blank"
-            className="transition hover:scale-110"
-            aria-label="Instagram"
-          >
-            <Instagram className="w-5 h-5 text-fofo-blue opacity-70 hover:opacity-100" />
-          </a>
-          <a
-            href="https://linkedin.com/in/fabio-unterholzer"
-            target="_blank"
-            className="transition hover:scale-110"
-            aria-label="LinkedIn"
-          >
-            <Linkedin className="w-5 h-5 text-fofo-blue opacity-70 hover:opacity-100" />
-          </a>
-          <a
-            href="https://github.com/fofofabio"
-            target="_blank"
-            className="transition hover:scale-110"
-            aria-label="GitHub"
-          >
-            <Github className="w-5 h-5 text-fofo-blue opacity-70 hover:opacity-100" />
-          </a>
-          <a
-            href="mailto:hi@fofoclub.com"
-            className="transition hover:scale-110"
-            aria-label="Email"
-          >
-            <Mail className="w-5 h-5 text-fofo-blue opacity-70 hover:opacity-100" />
-          </a>
+        <div className="mt-10 flex flex-wrap justify-between gap-x-4 gap-y-1 font-pixel text-[10px] uppercase tracking-widest text-white/60">
+          <span>built &amp; run by fabio unterholzer</span>
+          <span>graz · v1.0.1 · © {year} fofo club</span>
         </div>
       </div>
     </footer>

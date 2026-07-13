@@ -58,13 +58,13 @@ function evaluateGuess(solution: string, guess: string): CellState[] {
 function classForState(state: CellState): string {
   switch (state) {
     case "correct":
-      return "bg-green-500 text-white border-green-500";
+      return "bg-fofo-blue text-white border-black";
     case "present":
-      return "bg-amber-500 text-white border-amber-500";
+      return "bg-fofo-yellow text-black border-black";
     case "absent":
-      return "bg-black/20 text-white border-black/20";
+      return "bg-black text-white border-black";
     default:
-      return "bg-white/80 text-black border-black/10";
+      return "bg-white text-black border-black";
   }
 }
 
@@ -221,15 +221,15 @@ export default function WordlePage() {
           <SectionFade once threshold={0.12}>
             <header className="mb-5 sm:mb-6 flex items-center justify-between gap-3">
               <div>
-                <p className="meta text-fofo-blue">TOOLS • WORDLE</p>
-                <h1 className="mt-1 font-semibold leading-tight tracking-tight text-3xl sm:text-4xl">
+                <span className="nb-eyebrow">Tools • Wordle</span>
+                <h1 className="mt-3 font-display font-bold leading-none tracking-tight text-4xl sm:text-5xl">
                   Wordle
                 </h1>
               </div>
               <Link
                 href="/tools"
                 aria-label="Back to tools"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-fofo-blue text-white shadow-sm transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fofo-blue/60"
+                className="inline-flex h-11 w-11 items-center justify-center border-[2.5px] border-black bg-fofo-blue text-white transition-all hover:-translate-y-0.5 hover:shadow-brutal-sm focus:outline-none"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -269,7 +269,7 @@ export default function WordlePage() {
                         const ch = guess[c] ?? "";
                         const st = evalRowStates[c];
                         const revealed = r < evaluations.length; // tile has evaluation assigned
-                        const colorClass = revealed ? classForState(st) : "bg-white/80 text-black border-black/10";
+                        const colorClass = revealed ? classForState(st) : "bg-white text-black border-black";
                         const delay = isRevealSequence ? c * 0.14 : 0;
                         const pulse = winRow === r;
 
@@ -285,7 +285,7 @@ export default function WordlePage() {
                                   scale: pulse ? { delay: 0.05 * c, duration: 0.35 } : undefined,
                                 }
                               : { type: "spring", stiffness: 500, damping: 28, mass: 0.2 }}
-                            className={`aspect-square rounded-md border text-center text-lg sm:text-2xl font-semibold grid place-items-center ${colorClass}`}
+                            className={`aspect-square border-[2.5px] text-center text-lg sm:text-2xl font-bold uppercase grid place-items-center ${colorClass}`}
                             style={{ transformOrigin: "center", backfaceVisibility: "hidden" }}
                           >
                             <span>{ch}</span>
@@ -303,13 +303,13 @@ export default function WordlePage() {
                   <div key={idx} className="mt-1.5 flex justify-center gap-1 sm:gap-1.5 text-sm sm:text-base">
                     {row.map((k) => {
                       const state = keyStates.get(k);
-                      const color = state ? classForState(state) : "bg-white/80 text-black border-black/10";
+                      const color = state ? classForState(state) : "bg-white text-black border-black";
                       const width = k.length > 1 ? "w-16 sm:w-20" : "w-8 sm:w-9";
                       return (
                         <button
                           key={k}
                           onClick={() => onKey(k)}
-                          className={`h-9 sm:h-10 ${width} inline-flex items-center justify-center rounded-md border shadow-sm transition active:scale-[0.98] leading-none ${color}`}
+                          className={`h-11 sm:h-12 ${width} inline-flex items-center justify-center border-[2px] border-black font-pixel text-[11px] sm:text-xs uppercase transition active:translate-y-0.5 leading-none ${color}`}
                           aria-label={k}
                         >
                           {k}
