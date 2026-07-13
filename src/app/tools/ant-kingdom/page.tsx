@@ -355,7 +355,7 @@ export default function AntKingdomPage() {
               </span>
               {hud?.atCapacity && (
                 <span className="border-[2px] border-black bg-fofo-yellow px-2 py-1 font-medium text-black">
-                  Nest full — dig more space
+                  Nest full, dig more space
                 </span>
               )}
             </div>

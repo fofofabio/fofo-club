@@ -2,7 +2,7 @@ const STATS: { value: string; label: string; tone?: "blue" | "pink" }[] = [
   { value: "2024", label: "club founded" },
   { value: "∞", label: "half-finished ideas", tone: "pink" },
   { value: "1", label: "ordinary fellow" },
-  { value: "48", label: "workspace / graz", tone: "blue" },
+  { value: "5", label: "live experiments", tone: "blue" },
 ];
 
 export default function StatsStrip() {
@@ -28,8 +28,8 @@ export default function StatsStrip() {
               {s.value}
             </span>
             <span
-              className={`font-pixel text-[10px] uppercase tracking-widest ${
-                s.tone ? "text-white/80" : "text-black/60"
+              className={`font-pixel text-[11px] uppercase tracking-wide ${
+                s.tone ? "text-white/90" : "text-black/75"
               }`}
             >
               {s.label}

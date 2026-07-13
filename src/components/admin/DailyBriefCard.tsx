@@ -166,7 +166,7 @@ export default function DailyBriefCard({ todos }: Props) {
         <div className="px-6 py-5">
           <p className="meta text-white/45">DUE TODAY</p>
           {dueToday.length === 0 ? (
-            <p className="mt-3 text-sm text-white/40">Nothing due — clear day.</p>
+            <p className="mt-3 text-sm text-white/40">Nothing due, clear day.</p>
           ) : (
             <ul className="mt-3 space-y-2.5">
               {dueToday.map((t) => (

@@ -18,7 +18,7 @@ export default function AboutPage() {
                 <span className="nb-mark">scroll down</span> to learn a little more about me and my work.
               </h1>
               <p className="mt-6 text-lg text-black/80 max-w-2xl">
-                based in {profile.location}. — {profile.age} years old.
+                based in {profile.location} · {profile.age} years old.
               </p>
             </div>
 
@@ -70,7 +70,7 @@ export default function AboutPage() {
           <section className="relative isolate">
             <div className="absolute inset-0 grid-bg pointer-events-none" />
             <div className="relative mx-auto max-w-5xl px-6 py-12">
-              <div className="meta mb-3">cv — experience</div>
+              <div className="meta mb-3">cv · experience</div>
               <ul className="space-y-6">
                 {experience.map((job, i) => (
                   <li key={i} className="card p-5">

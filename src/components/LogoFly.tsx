@@ -282,57 +282,26 @@ export default function LogoFly() {
         img.style.transition = "transform 0.9s cubic-bezier(0.7, 0, 0.3, 1)";
         img.style.transform = `translate(0px, 0px) scale(1) rotate(-360deg)`;
 
+        // Safety net: if transitionend never fires (tab blur, interrupted
+        // transition, missed event) the state would stay stuck on "retracting"
+        // and the wheel handler would keep blocking scroll forever. Force-settle.
+        let fallbackId = 0;
         const done = (e?: TransitionEvent) => {
             if (e && e.propertyName !== "transform") return;
+            clearTimeout(fallbackId);
             img.removeEventListener("transitionend", done);
+            img.removeEventListener("transitioncancel", interrupted);
             setAnimState("collapsed");
             setVisibility("collapsed");
         };
         const interrupted = () => {
+            clearTimeout(fallbackId);
             img.removeEventListener("transitioncancel", interrupted);
             cleanupAnimation();
         };
         img.addEventListener("transitionend", done);
         img.addEventListener("transitioncancel", interrupted);
-    };
-
-    // ---- expand: spring-like overshoot easing
-    const expand = () => {
-        const img = imgRef.current;
-        const m = measure();
-        if (!img || !m || state === "expanding" || state === "expanded") return;
-
-        const wasCollapsed = state === "collapsed";
-
-        setAnimState("expanding");
-        setVisibility("expanding");
-
-        img.style.transition = "none";
-        // Normalize to 0° when fully collapsed so every expand is a consistent ~390° spin.
-        // Skip when re-expanding mid-retraction to avoid a position jump.
-        if (wasCollapsed) {
-            img.style.transform = `translate(0px, 0px) scale(1) rotate(0deg)`;
-        }
-        void img.offsetWidth;
-
-        img.style.transition = "transform 0.9s cubic-bezier(0.2, 1.1, 0.4, 1)";
-        img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(${m.scale}) rotate(390deg)`;
-
-        const done = (e?: TransitionEvent) => {
-            if (e && e.propertyName !== "transform") return;
-            img.removeEventListener("transitionend", done);
-            setAnimState("expanded");
-            setVisibility("expanded");
-            consumedFirstScroll.current = false;
-            startContinuousSpin(m);
-            try { sessionStorage.setItem("fofoLogoInit", "1"); } catch {}
-        };
-        const interrupted = () => {
-            img.removeEventListener("transitioncancel", interrupted);
-            cleanupAnimation();
-        };
-        img.addEventListener("transitionend", done);
-        img.addEventListener("transitioncancel", interrupted);
+        fallbackId = window.setTimeout(() => done(), 1100);
     };
 
     // ---- gestures
@@ -353,10 +322,8 @@ export default function LogoFly() {
                 e.preventDefault();
                 return;
             }
-            if ((state === "collapsed" || state === "retracting") && atTop && e.deltaY < 0) {
-                expand();
-                return;
-            }
+            // Intro plays once: after the logo retracts into the navbar it stays
+            // docked — scrolling back to the top no longer re-expands it.
         };
 
         const onTouchStart = (e: TouchEvent) => {
@@ -381,10 +348,7 @@ export default function LogoFly() {
                 e.preventDefault();
                 return;
             }
-            if ((state === "collapsed" || state === "retracting") && atTop && dy < -6) {
-                expand();
-                return;
-            }
+            // Intro plays once — no re-expand on scroll back to top.
         };
 
         window.addEventListener("wheel", onWheel, { passive: false });

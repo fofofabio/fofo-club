@@ -12,33 +12,33 @@ export default function Home() {
   return (
     <PageTransition>
       <main className="mx-auto max-w-[100vw]">
-        <SectionFade once={false} threshold={0.6}>
+        <SectionFade once threshold={0.4}>
           <HeroUnit /> {/* text + right-aligned logo centered as a unit */}
+        </SectionFade>
+
+        {/* Play something — real tools, surfaced right below the fold */}
+        <SectionFade once threshold={0.15}>
+          <SelectedWork />
         </SectionFade>
 
         {/* scrolling ticker */}
         <Marquee />
 
         {/* punchy numbers */}
-        <SectionFade once={false} threshold={0.2}>
+        <SectionFade once threshold={0.2}>
           <div className="py-16">
             <StatsStrip />
           </div>
         </SectionFade>
 
-        {/* Selected work — neo-brutalist card grid */}
-        <SectionFade once={false} threshold={0.15}>
-          <SelectedWork />
-        </SectionFade>
-
         {/* ABOUT — editorial blue block */}
-        <SectionFade once={false} threshold={0.25}>
+        <SectionFade once threshold={0.25}>
           <section className="relative snap-start overflow-hidden border-y-[2.5px] border-black bg-fofo-blue text-white">
             <div className="relative z-10 mx-auto grid max-w-6xl gap-12 px-6 py-24 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
               {/* left: the statement */}
               <div>
                 <div className="mb-6">
-                  <span className="nb-chip nb-chip-black">01 — About</span>
+                  <span className="nb-chip nb-chip-black">02 · About</span>
                 </div>
                 <h2 className="font-display text-4xl font-bold leading-[0.95] tracking-tight md:text-6xl">
                   not a portfolio.
@@ -47,7 +47,7 @@ export default function Home() {
                 </h2>
                 <p className="mt-8 max-w-md text-lg text-white/90">
                   fofo club is the creative project of{" "}
-                  <span className="font-bold">fabio unterholzer</span> — a place to
+                  <span className="font-bold">fabio unterholzer</span>, a place to
                   keep track of what he&apos;s learning, trying, and running toward,
                   out loud and in public.
                 </p>
@@ -62,17 +62,17 @@ export default function Home() {
               <div className="nb-card bg-white p-6 text-black md:p-8">
                 <p className="text-[15px] leading-relaxed text-black/80">
                   fofo club started in 2024. at the time, it wasn&apos;t meant to
-                  become anything in particular — i just needed a name for things i
+                  become anything in particular. i just needed a name for things i
                   was working on. adding &ldquo;club&rdquo; wasn&apos;t about
                   building a brand; it&apos;s the idea that most things are better
                   when they&apos;re shared, even if it&apos;s just progress or
                   half-finished ideas. what began as a placeholder turned into a
                   space where i collect what i&apos;m working on at any given
-                  moment — sometimes training, sometimes code or design, sometimes
+                  moment: sometimes training, sometimes code or design, sometimes
                   ideas that go nowhere. not everything here is polished, and it
                   isn&apos;t supposed to be. it&apos;s closer to a notebook that
                   happens to be public. if someone else finds something useful,
-                  relatable, or inspiring along the way — that&apos;s a bonus, not
+                  relatable, or inspiring along the way, that&apos;s a bonus, not
                   the goal.
                 </p>
               </div>
@@ -81,12 +81,12 @@ export default function Home() {
         </SectionFade>
 
         {/* THE INDEX — bold navigation */}
-        <SectionFade once={false} threshold={0.15}>
+        <SectionFade once threshold={0.15}>
           <ExploreIndex />
         </SectionFade>
 
         {/* IMAGE GRID — wired background + blue duotone */}
-        <SectionFade once={false} threshold={0.15}>
+        <SectionFade once threshold={0.15}>
           <GalleryGrid
             maxPerRow={4}
             targetRowH={250}

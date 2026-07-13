@@ -36,7 +36,7 @@ export default function ToolsPage() {
         <PageHeader
           eyebrow="Tools"
           title="Playground"
-          description="Small utilities & games — built to poke at ideas."
+          description="Small utilities & games, built to poke at ideas."
         />
 
         <main className="relative isolate flex-1">
@@ -48,7 +48,7 @@ export default function ToolsPage() {
               </div>
 
               <div className="mb-6">
-                <span className="nb-eyebrow">01 — The bench</span>
+                <span className="nb-eyebrow">01 · The bench</span>
               </div>
 
               <motion.div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

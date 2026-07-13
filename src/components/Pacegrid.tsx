@@ -67,7 +67,7 @@ export default function PaceGrid({
           <h1 className="font-display text-3xl font-bold md:text-4xl">latest on strava</h1>
           <div className="flex items-center gap-6">
             <span className="meta text-fofo-blue hidden sm:inline">
-              movement log — last {Math.min(SHOW, filtered.length)} sessions
+              movement log · last {Math.min(SHOW, filtered.length)} sessions
             </span>
             <span className="meta text-black/40 hidden sm:inline">fabio unterholzer</span>
           </div>
@@ -143,12 +143,12 @@ export default function PaceGrid({
       {/* micro-summary + credit */}
       <SectionFade once threshold={0.1}>
         <p className="meta mt-8 text-center text-black/50">
-          this month — <span className="text-fofo-blue">{Math.round(totalRunKm)} km run</span>
+          this month · <span className="text-fofo-blue">{Math.round(totalRunKm)} km run</span>
           {" · "}
           <span className="!text-fofo-pink">{Math.round(totalRideKm)} km ride</span>
         </p>
         <p className="meta mt-2 text-center text-black/30">
-          data via strava api — refreshed every 10 min
+          data via strava api · refreshed every 10 min
         </p>
       </SectionFade>
     </div>

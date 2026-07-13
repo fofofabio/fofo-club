@@ -29,15 +29,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
             <nav className="ml-auto flex items-center gap-2 sm:gap-3">
               {[
-                ["tools", "/tools", false],
+                ["tools", "/tools", true],
                 ["blog", "/blog", false],
                 ["videos", "/videos", false],
-                ["about", "/about", true],
+                ["about", "/about", false],
               ].map(([label, href, filled]) => (
                 <Link
                   key={href as string}
                   href={href as string}
-                  className={`border-[2px] border-black px-3 py-1.5 font-pixel text-[11px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:shadow-brutal-sm ${
+                  className={`border-[2px] border-black px-3 py-1.5 font-pixel text-[12px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:shadow-brutal-sm ${
                     filled
                       ? "bg-fofo-blue text-white"
                       : "bg-white text-black hover:bg-fofo-blue hover:text-white"

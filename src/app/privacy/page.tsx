@@ -3,7 +3,7 @@ import SectionFade from "@/components/Sectionfade";
 import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "Fofo Club — Privacy",
+  title: "Fofo Club · Privacy",
   description: "Privacy notes for Fofo Club.",
 };
 

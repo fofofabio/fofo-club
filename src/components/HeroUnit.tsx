@@ -30,7 +30,7 @@ export default function HeroUnit({
   const size = Math.max(180, Math.min(blockH, 420));
 
   return (
-    <section className="relative mx-auto w-full max-w-6xl px-6 min-h-screen flex items-center padding-bottom-hero">
+    <section className="relative mx-auto w-full max-w-6xl px-6 min-h-[82vh] flex items-center pb-20">
       <Stars />
       {/* rotated sticker, top-right */}
       <SectionFade once threshold={0.25} delay={200}>
@@ -61,17 +61,10 @@ export default function HeroUnit({
           </h1>
 
           <p className="mt-7 max-w-xl text-base sm:text-lg text-black/80">
-            the public notebook of <span className="font-bold">fabio</span> —
-            builds things, runs too much, keeps half-finished ideas in public.{" "}
-            <span className="nb-mark font-medium">and proud of it.</span>
+            heya! im <span className="font-bold">fabio</span>. this is where i
+            keep what i&apos;m working on.{" "}
+            <span className="nb-mark font-medium">out loud and in public.</span>
           </p>
-
-          {/* tags */}
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            <span className="nb-tag">Junior IT PM</span>
-            <span className="nb-tag">JS · Python · React</span>
-            <span className="nb-tag nb-tag-pink">Runs a lot</span>
-          </div>
         </div>
 
         {/* animated logo */}
