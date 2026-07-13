@@ -31,7 +31,7 @@ export default function FofoFooter() {
           <span className="nb-star text-white text-4xl md:text-6xl">✳</span>
         </div>
 
-        <p className="mt-4 max-w-md font-pixel text-[11px] uppercase tracking-widest text-white/70">
+        <p className="mt-4 max-w-md font-mono text-[11px] uppercase tracking-widest text-white/70">
           for ordinary fellows, occasionally exceptional.
         </p>
 
@@ -42,7 +42,7 @@ export default function FofoFooter() {
               <a
                 key={href}
                 href={href}
-                className="border-[2px] border-white bg-transparent px-3 py-1.5 font-pixel text-[11px] uppercase tracking-widest transition-colors hover:bg-white hover:text-fofo-blue"
+                className="border-[2px] border-white bg-transparent px-3 py-1.5 font-mono text-[11px] uppercase tracking-widest transition-colors hover:bg-white hover:text-fofo-blue"
               >
                 {label}
               </a>
@@ -65,9 +65,10 @@ export default function FofoFooter() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap justify-between gap-x-4 gap-y-1 font-pixel text-[10px] uppercase tracking-widest text-white/60">
+        {/* colophon — the machine hand signs off in mono */}
+        <div className="mt-10 flex flex-wrap justify-between gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white/60">
           <span>built &amp; run by fabio unterholzer</span>
-          <span>graz · v1.0.1 · © {year} fofo club</span>
+          <span>graz · v1.0.1 · main · © {year} fofo club</span>
         </div>
       </div>
     </footer>

@@ -387,7 +387,7 @@ export default function LogoFly() {
                     style={{ opacity: state === "expanded" ? 1 : 0 }}
                 >
                     <div className="flex flex-col items-center gap-1.5">
-                        <span className="font-pixel text-[9px] tracking-[0.2em] text-white/35 uppercase">
+                        <span className="font-mono text-[9px] tracking-[0.2em] text-white/35 uppercase">
                             scroll
                         </span>
                         <svg

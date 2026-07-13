@@ -46,8 +46,11 @@ export default function Home() {
                   <br />
                   finally believe it
                 </span>
-                <div className="mb-6">
+                <div className="mb-6 flex items-center gap-3">
                   <span className="nb-chip nb-chip-black">02 · About</span>
+                  <span aria-hidden className="font-mono text-[10px] lowercase tracking-[0.1em] text-white/45">
+                    // section: about
+                  </span>
                 </div>
                 <h2 className="fc-revised font-display text-4xl font-bold leading-[0.95] tracking-tight md:text-6xl">
                   not a <s>portfolio</s>.

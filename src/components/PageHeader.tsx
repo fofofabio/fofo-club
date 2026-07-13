@@ -21,7 +21,12 @@ export default function PageHeader({
     <section className="relative isolate border-b-[2.5px] border-black bg-fofo-paper">
       <Stars field={STAR_FIELD} />
       <div className="relative mx-auto max-w-6xl px-6 py-16 md:py-20">
-        <span className="nb-eyebrow">{eyebrow}</span>
+        <div className="flex items-center gap-3">
+          <span className="nb-eyebrow">{eyebrow}</span>
+          <span aria-hidden className="fc-src">
+            // {title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}
+          </span>
+        </div>
         <h1 className="mt-5 font-display text-5xl font-bold leading-[0.9] tracking-tight md:text-7xl">
           {title}
         </h1>

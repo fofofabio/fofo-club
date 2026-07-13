@@ -12,6 +12,10 @@ export default function HeroUnit({
   return (
     <section className="relative mx-auto w-full max-w-6xl px-6 min-h-[82vh] flex items-center pb-20">
       <Stars />
+      {/* source label — the machine hand, faced against the sticker's human voice */}
+      <span aria-hidden className="fc-src absolute left-6 top-20 hidden md:block">
+        &lt;hero/&gt;
+      </span>
       {/* rotated sticker, top-right */}
       <SectionFade once threshold={0.25} delay={200}>
         <div className="pointer-events-none absolute right-6 top-24 hidden md:block">
@@ -41,7 +45,10 @@ export default function HeroUnit({
             <span className="fc-revised block">
               not a <s>brand</s>.
             </span>
-            <span className="block text-fofo-blue">a notebook.</span>
+            <span className="inline-flex items-stretch text-fofo-blue">
+              a notebook.
+              <i className="fc-caret" aria-hidden />
+            </span>
           </h1>
 
           <p className="mt-7 max-w-xl text-base sm:text-lg text-black/80">
@@ -49,6 +56,17 @@ export default function HeroUnit({
             keep what i&apos;m working on.{" "}
             <span className="nb-mark font-medium">out loud and in public.</span>
           </p>
+
+          {/* keyboard shortcuts — the web as a place you love. Wired in KeyboardNav. */}
+          <nav
+            aria-label="keyboard shortcuts"
+            className="mt-7 flex flex-wrap gap-2"
+          >
+            <span className="fc-key"><b>[t]</b> tools</span>
+            <span className="fc-key"><b>[b]</b> blog</span>
+            <span className="fc-key"><b>[v]</b> videos</span>
+            <span className="fc-key"><b>[?]</b> about</span>
+          </nav>
         </div>
 
         {/* animated logo */}

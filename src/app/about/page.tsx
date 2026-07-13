@@ -1,5 +1,5 @@
 import SectionFade from "@/components/Sectionfade";
-import Link from "next/link";
+import FcLink from "@/components/FcLink";
 import { profile, experience, education, skills } from "@/data/cv";
 import PageTransition from "@/components/PageTransition";
 import Footer from "@/components/Footer";
@@ -131,34 +131,19 @@ export default function AboutPage() {
 
                 <div className="mt-6 meta mb-2">contact</div>
                 <div className="card p-5 flex flex-wrap items-center gap-4">
-                  <Link
-                    href="mailto:fabio.unterholzer@outlook.com"
-                    className="hover:text-fofo-blue transition"
-                  >
+                  <FcLink href="mailto:fabio.unterholzer@outlook.com">
                     hi@fofoclub
-                  </Link>
+                  </FcLink>
                   <span className="text-black/30">·</span>
-                  <Link
-                    href="https://github.com/fofofabio"
-                    className="hover:text-fofo-blue transition"
-                  >
-                    github
-                  </Link>
+                  <FcLink href="https://github.com/fofofabio">github</FcLink>
                   <span className="text-black/30">·</span>
-                  <Link
-                    href="https://www.linkedin.com/in/fabio-unterholzer"
-                    className="hover:text-fofo-blue transition"
-                  >
+                  <FcLink href="https://www.linkedin.com/in/fabio-unterholzer">
                     linkedin
-                  </Link>
+                  </FcLink>
                   <span className="text-black/30">·</span>
-                  <Link
-                    href="/LebenslaufUnterholzer.pdf"
-                    className="hover:text-fofo-blue transition"
-                    download
-                  >
+                  <FcLink href="/LebenslaufUnterholzer.pdf" download>
                     download pdf
-                  </Link>
+                  </FcLink>
                 </div>
               </div>
             </div>

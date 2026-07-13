@@ -1,9 +1,10 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { inter, grotesk, tiny5, caveat } from "./fonts";
+import { inter, grotesk, tiny5, caveat, spaceMono } from "./fonts";
 import LogoFly from "@/components/LogoFly";           // client component (ok to use here)
 import RouteTransitions from "@/components/RouteTransitions"; // client wrapper
+import KeyboardNav from "@/components/KeyboardNav";   // global [t]/[b]/[v]/[?] shortcuts
 
 export const metadata: Metadata = {
   title: "Fofo Club",
@@ -12,9 +13,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${grotesk.variable} ${tiny5.variable} ${caveat.variable}`}>
+    <html lang="en" className={`${inter.variable} ${grotesk.variable} ${tiny5.variable} ${caveat.variable} ${spaceMono.variable}`}>
       <body className="min-h-dvh antialiased bg-fofo-paper text-black">
         <LogoFly />
+        <KeyboardNav />
         {/* Header */}
         <header className="sticky top-0 z-50 border-b-[2.5px] border-black bg-fofo-paper/90 backdrop-blur">
           <div className="flex w-full items-center justify-between pl-6 pr-6 py-3">

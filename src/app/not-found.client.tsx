@@ -19,7 +19,7 @@ export default function NotFoundClient() {
 
         <h1 id="notfound-title" className="mt-6 font-display text-8xl font-bold tracking-tighter">404</h1>
         <p className="mt-2 text-lg text-black/70">we can&apos;t find that page.</p>
-        <p className="mt-3 font-pixel text-[11px] uppercase tracking-widest text-black/50">maybe one of these will help</p>
+        <p className="mt-3 font-mono text-[11px] uppercase tracking-widest text-black/50">maybe one of these will help</p>
 
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           {[
@@ -30,14 +30,14 @@ export default function NotFoundClient() {
             <a
               key={href}
               href={href}
-              className="inline-block border-[2px] border-black bg-white px-4 py-2 font-pixel text-[11px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white hover:shadow-brutal-sm"
+              className="inline-block border-[2px] border-black bg-white px-4 py-2 font-mono text-[11px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white hover:shadow-brutal-sm"
             >
               {label}
             </a>
           ))}
         </div>
 
-        <p className="mt-6 font-pixel text-[10px] uppercase tracking-widest text-black/40">or press your browser back button to return.</p>
+        <p className="mt-6 font-mono text-[10px] uppercase tracking-widest text-black/40">or press your browser back button to return.</p>
       </div>
     </main>
   );

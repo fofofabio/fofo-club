@@ -15,7 +15,7 @@ export default function Marquee({
   const seq = [...items, ...items];
   return (
     <div className="nb-marquee py-2.5">
-      <div className="nb-marquee__track font-pixel text-[12px] uppercase tracking-widest">
+      <div className="nb-marquee__track font-mono text-[12px] uppercase tracking-widest">
         {seq.map((item, i) => (
           <span key={i} className="flex items-center">
             <span className="px-4">{item}</span>

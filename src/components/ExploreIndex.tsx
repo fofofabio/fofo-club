@@ -21,7 +21,12 @@ export default function ExploreIndex() {
     <section className="relative w-[100vw] ml-[calc(50%-50vw)] border-y-[2.5px] border-black bg-black text-white">
       <div className="mx-auto w-full max-w-6xl px-6 py-24 md:py-32">
         <div className="mb-10 flex items-end justify-between gap-4">
-          <span className="nb-eyebrow">03 · The Index</span>
+          <div className="flex items-center gap-3">
+            <span className="nb-eyebrow">03 · The Index</span>
+            <span aria-hidden className="font-mono text-[10px] lowercase tracking-[0.1em] text-white/45">
+              // section: index
+            </span>
+          </div>
           <p className="hidden max-w-xs text-right text-sm text-white/60 sm:block">
             four doors into the club. dip in, take what makes sense, ignore the rest.
           </p>
@@ -40,7 +45,7 @@ export default function ExploreIndex() {
                     : "hover:text-white/60"
               }`}
             >
-              <span className="font-pixel text-sm tracking-widest text-white/40">{s.num}</span>
+              <span className="font-mono text-sm tracking-widest text-white/40">{s.num}</span>
               <span className="font-display text-4xl font-bold leading-none tracking-tight sm:text-7xl">
                 {s.label}
               </span>

@@ -287,6 +287,59 @@ body { scrollbar-gutter: stable; }
     }
 }
 
+/* ---------------------------------------------------------------------------
+   PAPER & WIRE — the "wire" voice
+   The machine hand: monospace chrome, source labels, a blinking caret, and
+   hypertext-honest links. Lives in the margins + metadata only; headlines and
+   body stay Bricolage/Inter. See DESIGN.md.
+--------------------------------------------------------------------------- */
+@layer components {
+    /* Machine chrome: mono, caps, tracked. Metadata, labels, keyboard hints. */
+    .wire {
+        @apply font-mono text-[11px] uppercase tracking-[0.12em] text-black/55;
+    }
+    .wire-blue { @apply text-fofo-blue; }
+
+    /* Source label — the machine's marginalia, faced against a Caveat note.
+       e.g. <hero/>, // section: play. Decorative — mark aria-hidden where used. */
+    .fc-src {
+        @apply pointer-events-none select-none font-mono text-[10px] lowercase
+            tracking-[0.1em] text-fofo-blue/50;
+    }
+
+    /* Keyboard hint chip — [t] tools. The bracketed key is the "live" signal. */
+    .fc-key {
+        @apply inline-flex items-center gap-1.5 border-[2px] border-black bg-white
+            px-2 py-1 font-mono text-[11px] uppercase tracking-[0.06em] text-black/60;
+    }
+    .fc-key b { @apply font-bold text-fofo-blue; }
+
+    /* Hypertext link — the web as a place you love. Blue = interactive/current;
+       hover lifts the offset underline. Real destination shown via .fc-link-url. */
+    .fc-link {
+        @apply text-fofo-blue underline decoration-fofo-blue/40 decoration-2
+            underline-offset-4 transition-colors;
+    }
+    .fc-link:hover { @apply decoration-fofo-blue; }
+}
+
+/* Blinking caret — text-editor cursor AND terminal prompt in one mark. */
+.fc-caret {
+    display: inline-block;
+    width: 0.5ch;
+    align-self: stretch;
+    background: var(--fofo-blue, #0008ff);
+    margin-left: 0.12em;
+    animation: fc-blink 1.1s steps(1) infinite;
+}
+@keyframes fc-blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .fc-caret { animation: none; }
+}
+
 /* Dotted paper texture (neo-brutalist ground) */
 .nb-dots {
     background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.4px, transparent 1.4px);

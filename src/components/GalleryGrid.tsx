@@ -93,8 +93,9 @@ export default function GalleryGridJustified({
     <section className="relative isolate">
       <div className="absolute inset-0 nb-dots pointer-events-none" />
       <div ref={wrapRef} className="relative mx-auto max-w-6xl px-6 py-20">
-        <div className="mb-8">
+        <div className="mb-8 flex items-center gap-3">
           <span className="nb-eyebrow">04 · In the wild</span>
+          <span aria-hidden className="fc-src">// section: wild</span>
         </div>
         <div className="flex flex-col gap-[--g]" style={{ ["--g" as any]: `${gap}px` }}>
           {rows.map((row, r) => (

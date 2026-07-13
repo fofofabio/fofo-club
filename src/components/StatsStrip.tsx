@@ -28,7 +28,7 @@ export default function StatsStrip() {
               {s.value}
             </span>
             <span
-              className={`font-pixel text-[11px] uppercase tracking-wide ${
+              className={`font-mono text-[11px] uppercase tracking-[0.12em] ${
                 s.tone ? "text-white/90" : "text-black/75"
               }`}
             >

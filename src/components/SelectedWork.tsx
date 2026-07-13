@@ -108,7 +108,10 @@ export default function SelectedWork() {
     >
       {/* header hugs the left five columns and stays put */}
       <div className="col-span-12 md:col-span-4 md:self-start md:pt-4">
-        <span className="nb-eyebrow">01 · Play something</span>
+        <div className="flex items-center gap-3">
+          <span className="nb-eyebrow">01 · Play something</span>
+          <span aria-hidden className="fc-src">// section: play</span>
+        </div>
         <h2 className="mt-5 font-display text-4xl font-bold leading-[0.9] tracking-tight md:text-5xl">
           real,
           <br />
