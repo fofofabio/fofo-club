@@ -9,7 +9,7 @@ export default function AboutPage() {
     <PageTransition>
       <main className="mx-auto max-w-[100vw]">
         {/* INTRO */}
-        <SectionFade once threshold={0.2}>
+        <SectionFade once threshold={0.2} baseClass="fc-stamp" inClass="fc-stamp-in">
           <section className="mx-auto max-w-5xl px-6 pt-16 pb-10 grid gap-10 md:grid-cols-[1fr_auto] md:items-center">
             <div>
               <span className="nb-eyebrow mb-5">About</span>
@@ -39,8 +39,8 @@ export default function AboutPage() {
             <div className="absolute inset-0 bg-fofo-blue" />
             <div className="absolute inset-0 grid-bg mix-blend-multiply opacity-30" />
             <div className="relative mx-auto max-w-5xl px-6 py-14 text-white">
-              <p className="text-xl md:text-2xl leading-relaxed max-w-3xl">
-                fofo club isn’t a portfolio or a brand - it’s something
+              <p className="fc-revised text-xl md:text-2xl leading-relaxed max-w-3xl">
+                fofo club isn’t a <s>portfolio</s> or a <s>brand</s> - it’s something
                 personal, something real. but what does it actually stand for?
                 well. . . fofo is just my nickname. it’s what my friends call me.
                 and club? that’s because i believe life is better when shared

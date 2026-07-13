@@ -42,7 +42,7 @@ export default function ToolsPage() {
         <main className="relative isolate flex-1">
           <div className="absolute inset-0 nb-dots pointer-events-none opacity-60" />
           <div className="relative mx-auto max-w-6xl px-6 py-16">
-            <SectionFade once threshold={0.12}>
+            <SectionFade once threshold={0.12} baseClass="fc-stamp" inClass="fc-stamp-in">
               <div className="mb-10">
                 <WeatherCard defaultCity="Graz" />
               </div>
@@ -56,7 +56,7 @@ export default function ToolsPage() {
                   <Link
                     key={tool.href}
                     href={tool.href}
-                    className="nb-card nb-card-press group flex min-h-[180px] flex-col justify-between bg-white p-5"
+                    className="nb-card fc-dogear group flex min-h-[180px] flex-col justify-between overflow-hidden bg-white p-5"
                   >
                     <div className="flex items-start justify-between">
                       <span className={chipTone[tool.tone ?? "blue"]}>{tool.label}</span>
