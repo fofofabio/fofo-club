@@ -8,6 +8,15 @@
     --fofo-blue: #0008ff;
     --fofo-pink: #ff3dbe;
     --fofo-yellow: #ffe14d;
+
+    /* "fofo physics" — one shared motion vocabulary so every animation rhymes
+       with the LogoFly signature instead of feeling like disconnected effects. */
+    --fc-ease-yank: cubic-bezier(0.7, 0, 0.3, 1); /* LogoFly retract curve */
+    --fc-ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1); /* expand / blur curve */
+    --fc-dur-fast: 140ms;
+    --fc-dur-med: 420ms;
+    --fc-dur-slow: 900ms;
+    --fc-ink: #0008ff;
 }
 
 html,
@@ -104,14 +113,20 @@ body { scrollbar-gutter: stable; }
     .logo-retract {
         animation: fofo-retract 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     }
-    /* Backdrop blur layer driven by a root class on <html> */
+    /* Backdrop blur layer driven by a root class on <html>.
+       PERF: the gaussian radius is STATIC (cheap to keep composited); we fade
+       the layer's opacity instead of animating blur() every frame. Animating
+       the radius re-rasterizes the whole viewport per frame — the old jank. */
     .fc-blur-layer {
         position: fixed;
         inset: 0;
         z-index: 59; /* just under the logo (z-[60]) */
         pointer-events: none;
-        backdrop-filter: blur(var(--fc-blur, 0px));
-        transition: backdrop-filter var(--fc-blur-dur, 450ms)
+        opacity: 0;
+        backdrop-filter: blur(120px);
+        -webkit-backdrop-filter: blur(120px);
+        will-change: opacity;
+        transition: opacity var(--fc-blur-dur, 450ms)
             var(--fc-blur-ease, cubic-bezier(0.2, 0.8, 0.2, 1));
     }
 }
@@ -130,11 +145,10 @@ body { scrollbar-gutter: stable; }
     }
 }
 
-/* Toggle this class from LogoFly to turn blur on/off */
-.fc-blur-on {
-    --fc-blur: 200px; /* blur amount — tweak */
-    --fc-blur-dur: 1s; /* animation duration */
-    --fc-blur-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+/* Toggle this class on <html> from LogoFly to reveal the blur veil.
+   Radius is fixed on .fc-blur-layer; here we only flip opacity. */
+.fc-blur-on .fc-blur-layer {
+    opacity: 1;
 }
 
 .fc-section {
@@ -150,6 +164,68 @@ body { scrollbar-gutter: stable; }
   opacity: 1;
   transform: translateY(12px);
   transition: opacity 1s ease, transform 1s ease;
+}
+
+/* "Ink-settle" reveal — sections arrive over-scaled + rotated, then snap
+   upright on the LogoFly yank curve, like a stamp pressed into paper.
+   Drop-in for SectionFade via baseClass="fc-stamp" inClass="fc-stamp-in". */
+.fc-stamp {
+  opacity: 0;
+  transform: scale(1.06) rotate(-1.2deg);
+  transform-origin: left top;
+  transition:
+    opacity var(--fc-dur-med) var(--fc-ease-soft),
+    transform var(--fc-dur-slow) var(--fc-ease-yank);
+}
+.fc-stamp-in {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+/* Dog-ear — the card's top-right corner folds like a page, and folds
+   further on hover. Pure CSS, no image. Pair with .nb-card. */
+.fc-dogear::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 24px 24px;
+  border-color: transparent transparent #000 transparent;
+  transition: border-width var(--fc-dur-fast) var(--fc-ease-yank);
+  pointer-events: none;
+}
+.fc-dogear:hover::after {
+  border-width: 0 0 40px 40px;
+}
+
+/* Struck-through "revision" — show the edit instead of describing it.
+   The crossed word is a real <s> so it stays selectable/accessible. */
+.fc-revised s {
+  text-decoration-line: line-through;
+  text-decoration-thickness: 3px;
+  text-decoration-color: var(--fofo-pink, #ff3dbe);
+  color: color-mix(in srgb, currentColor 45%, transparent);
+}
+
+/* Handwritten margin note living in the section gutter. Decorative — mark
+   the element aria-hidden where used. */
+.fc-margin-note {
+  @apply pointer-events-none select-none font-hand text-lg leading-tight text-fofo-blue/70;
+}
+
+/* Honor reduced-motion for every new signature effect. */
+@media (prefers-reduced-motion: reduce) {
+  .fc-blur-layer,
+  .fc-stamp,
+  .fc-dogear::after {
+    transition: none !important;
+    animation: none !important;
+  }
+  .fc-blur-layer { opacity: 0 !important; }
+  .fc-stamp { opacity: 1; transform: none; }
 }
 
 /* ---------------------------------------------------------------------------
@@ -191,10 +267,11 @@ body { scrollbar-gutter: stable; }
     .nb-tag-blue { @apply bg-fofo-blue text-white; }
     .nb-tag-pink { @apply bg-fofo-pink text-white; }
 
-    /* Rotated sticker badge */
+    /* Rotated sticker badge — carries the tagline VOICE, so it speaks in
+       Bricolage (display), not the pixel stamp font. */
     .nb-sticker {
-        @apply border-[2.5px] border-black bg-fofo-blue px-4 py-3 font-pixel text-[11px]
-            uppercase leading-snug tracking-widest text-white shadow-brutal;
+        @apply border-[2.5px] border-black bg-fofo-blue px-4 py-3 font-display text-[15px]
+            font-semibold leading-tight tracking-tight text-white shadow-brutal;
     }
 
     /* Marker highlight behind inline text */

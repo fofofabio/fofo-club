@@ -1,4 +1,4 @@
-import { Inter, Bricolage_Grotesque, Tiny5 } from "next/font/google";
+import { Inter, Bricolage_Grotesque, Tiny5, Caveat } from "next/font/google";
 
 
 export const inter = Inter({
@@ -19,5 +19,12 @@ export const tiny5 = Tiny5({
 weight: "400",
 subsets: ["latin"],
 variable: "--font-tiny5",
+display: "swap",
+});
+
+
+export const caveat = Caveat({
+subsets: ["latin"],
+variable: "--font-caveat",
 display: "swap",
 });

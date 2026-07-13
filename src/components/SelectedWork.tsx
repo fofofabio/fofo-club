@@ -102,20 +102,32 @@ const PLAY: Play[] = [
 
 export default function SelectedWork() {
   return (
-    <section id="play" className="mx-auto w-full max-w-6xl scroll-mt-24 px-6 py-24">
-      <div className="mb-8 flex items-end justify-between gap-4">
+    <section
+      id="play"
+      className="mx-auto grid w-full max-w-7xl scroll-mt-24 grid-cols-12 gap-x-6 gap-y-10 px-6 py-28 md:py-36"
+    >
+      {/* header hugs the left five columns and stays put */}
+      <div className="col-span-12 md:col-span-4 md:self-start md:pt-4">
         <span className="nb-eyebrow">01 · Play something</span>
-        <p className="hidden max-w-xs text-right text-sm text-black/75 sm:block">
-          real, half-finished toys. pick one and poke at it.
+        <h2 className="mt-5 font-display text-4xl font-bold leading-[0.9] tracking-tight md:text-5xl">
+          real,
+          <br />
+          half-finished
+          <br />
+          toys.
+        </h2>
+        <p className="mt-5 max-w-xs text-sm text-black/70">
+          pick one and poke at it. nothing here is precious.
         </p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {/* cards start at column 6 and bleed a touch past the grid on the right */}
+      <div className="col-span-12 grid gap-6 sm:grid-cols-2 md:col-span-7 md:col-start-6 md:-mr-8 lg:-mr-16">
         {PLAY.map((p) => (
           <Link
             key={p.href}
             href={p.href}
-            className="nb-card nb-card-press group flex flex-col overflow-hidden bg-white"
+            className="nb-card fc-dogear group flex flex-col overflow-hidden bg-white"
           >
             <div
               className={`flex h-36 items-center justify-center ${coverTone[p.tone]}`}

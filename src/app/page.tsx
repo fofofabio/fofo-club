@@ -11,13 +11,13 @@ import PageTransition from "@/components/PageTransition"; // <-- add this
 export default function Home() {
   return (
     <PageTransition>
-      <main className="mx-auto max-w-[100vw]">
+      <main className="mx-auto max-w-[100vw] overflow-x-clip">
         <SectionFade once threshold={0.4}>
           <HeroUnit /> {/* text + right-aligned logo centered as a unit */}
         </SectionFade>
 
         {/* Play something — real tools, surfaced right below the fold */}
-        <SectionFade once threshold={0.15}>
+        <SectionFade once threshold={0.15} baseClass="fc-stamp" inClass="fc-stamp-in">
           <SelectedWork />
         </SectionFade>
 
@@ -25,7 +25,7 @@ export default function Home() {
         <Marquee />
 
         {/* punchy numbers */}
-        <SectionFade once threshold={0.2}>
+        <SectionFade once threshold={0.2} baseClass="fc-stamp" inClass="fc-stamp-in">
           <div className="py-16">
             <StatsStrip />
           </div>
@@ -34,14 +34,23 @@ export default function Home() {
         {/* ABOUT — editorial blue block */}
         <SectionFade once threshold={0.25}>
           <section className="relative snap-start overflow-hidden border-y-[2.5px] border-black bg-fofo-blue text-white">
-            <div className="relative z-10 mx-auto grid max-w-6xl gap-12 px-6 py-24 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+            <div className="relative z-10 mx-auto grid max-w-6xl gap-12 px-6 py-28 md:py-40 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
               {/* left: the statement */}
-              <div>
+              <div className="relative">
+                {/* handwritten margin note in the gutter */}
+                <span
+                  aria-hidden
+                  className="fc-margin-note absolute -left-4 top-16 hidden -rotate-6 text-white/60 md:block lg:-left-12"
+                >
+                  ← kept saying this,
+                  <br />
+                  finally believe it
+                </span>
                 <div className="mb-6">
                   <span className="nb-chip nb-chip-black">02 · About</span>
                 </div>
-                <h2 className="font-display text-4xl font-bold leading-[0.95] tracking-tight md:text-6xl">
-                  not a portfolio.
+                <h2 className="fc-revised font-display text-4xl font-bold leading-[0.95] tracking-tight md:text-6xl">
+                  not a <s>portfolio</s>.
                   <br />
                   <span className="nb-mark text-black">a public notebook.</span>
                 </h2>
@@ -81,7 +90,7 @@ export default function Home() {
         </SectionFade>
 
         {/* THE INDEX — bold navigation */}
-        <SectionFade once threshold={0.15}>
+        <SectionFade once threshold={0.15} baseClass="fc-stamp" inClass="fc-stamp-in">
           <ExploreIndex />
         </SectionFade>
 

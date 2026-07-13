@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
 import SectionFade from "./Sectionfade";
 import Stars from "./Stars";
 
@@ -10,25 +9,6 @@ export default function HeroUnit({
 }: {
   logoSrc?: string;
 }) {
-  const wordsRef = useRef<HTMLDivElement>(null);
-  const [blockH, setBlockH] = useState(0);
-
-  useEffect(() => {
-    const el = wordsRef.current;
-    if (!el) return;
-    const update = () => setBlockH(el.offsetHeight);
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    window.addEventListener("resize", update);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", update);
-    };
-  }, []);
-
-  const size = Math.max(180, Math.min(blockH, 420));
-
   return (
     <section className="relative mx-auto w-full max-w-6xl px-6 min-h-[82vh] flex items-center pb-20">
       <Stars />
@@ -45,7 +25,7 @@ export default function HeroUnit({
 
       <div className="grid w-full items-center gap-10 md:grid-cols-[minmax(0,1fr)_auto]">
         {/* headline block */}
-        <div ref={wordsRef} className="text-left">
+        <div className="text-left">
           <h1
             className="
               font-display font-bold
@@ -55,9 +35,13 @@ export default function HeroUnit({
               [text-wrap:balance]
             "
           >
-            <span className="block">not a portfolio.</span>
-            <span className="block">not a brand.</span>
-            <span className="block text-fofo-blue">an experience.</span>
+            <span className="fc-revised block">
+              not a <s>portfolio</s>.
+            </span>
+            <span className="fc-revised block">
+              not a <s>brand</s>.
+            </span>
+            <span className="block text-fofo-blue">a notebook.</span>
           </h1>
 
           <p className="mt-7 max-w-xl text-base sm:text-lg text-black/80">
@@ -70,7 +54,9 @@ export default function HeroUnit({
         {/* animated logo */}
         <SectionFade once threshold={0.25} delay={120}>
           <div className="flex flex-shrink-0 justify-center md:justify-end">
-            <div className="relative" style={{ width: size, height: size }}>
+            {/* Sized with clamp() — tracks the viewport natively, no
+                ResizeObserver → setState → measure reflow loop. */}
+            <div className="relative aspect-square w-[clamp(180px,32vw,420px)]">
               <Image
                 src={logoSrc}
                 alt="Fofo Club logo"

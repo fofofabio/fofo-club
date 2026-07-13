@@ -16,39 +16,41 @@ const SECTIONS: {
 
 export default function ExploreIndex() {
   return (
-    <section className="mx-auto w-full max-w-6xl px-6 py-24">
-      <div className="mb-8 flex items-end justify-between gap-4">
-        <span className="nb-eyebrow">03 · The Index</span>
-        <p className="hidden max-w-xs text-right text-sm text-black/75 sm:block">
-          four doors into the club. dip in, take what makes sense, ignore the rest.
-        </p>
-      </div>
+    /* Full-bleed black band — the "drop". Breaks out of the contained paper
+       rhythm above and below it, with oversized type. */
+    <section className="relative w-[100vw] ml-[calc(50%-50vw)] border-y-[2.5px] border-black bg-black text-white">
+      <div className="mx-auto w-full max-w-6xl px-6 py-24 md:py-32">
+        <div className="mb-10 flex items-end justify-between gap-4">
+          <span className="nb-eyebrow">03 · The Index</span>
+          <p className="hidden max-w-xs text-right text-sm text-white/60 sm:block">
+            four doors into the club. dip in, take what makes sense, ignore the rest.
+          </p>
+        </div>
 
-      <div className="border-[2.5px] border-black bg-white shadow-brutal">
-        {SECTIONS.map((s, i) => (
-          <Link
-            key={s.href}
-            href={s.href}
-            className={`group flex items-center gap-4 px-5 py-6 transition-colors sm:gap-8 sm:px-8 ${
-              i !== 0 ? "border-t-[2.5px] border-black" : ""
-            } ${
-              s.tone === "blue"
-                ? "hover:bg-fofo-blue hover:text-white"
-                : s.tone === "pink"
-                  ? "hover:bg-fofo-pink hover:text-white"
-                  : "hover:bg-black hover:text-white"
-            }`}
-          >
-            <span className="font-pixel text-sm tracking-widest opacity-50">{s.num}</span>
-            <span className="font-display text-3xl font-bold tracking-tight sm:text-5xl">
-              {s.label}
-            </span>
-            <span className="ml-auto hidden font-pixel text-[11px] uppercase tracking-wide opacity-75 md:block">
-              {s.desc}
-            </span>
-            <ArrowUpRight className="h-6 w-6 flex-shrink-0 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-          </Link>
-        ))}
+        <div className="border-t-[2.5px] border-white/25">
+          {SECTIONS.map((s) => (
+            <Link
+              key={s.href}
+              href={s.href}
+              className={`group flex items-center gap-4 border-b-[2.5px] border-white/25 py-7 transition-colors sm:gap-8 ${
+                s.tone === "blue"
+                  ? "hover:text-fofo-blue"
+                  : s.tone === "pink"
+                    ? "hover:text-fofo-pink"
+                    : "hover:text-white/60"
+              }`}
+            >
+              <span className="font-pixel text-sm tracking-widest text-white/40">{s.num}</span>
+              <span className="font-display text-4xl font-bold leading-none tracking-tight sm:text-7xl">
+                {s.label}
+              </span>
+              <span className="ml-auto hidden font-sans text-sm lowercase tracking-normal text-white/50 md:block">
+                {s.desc}
+              </span>
+              <ArrowUpRight className="h-6 w-6 flex-shrink-0 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 sm:h-8 sm:w-8" />
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );

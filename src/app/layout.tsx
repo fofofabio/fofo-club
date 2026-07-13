@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { inter, grotesk, tiny5 } from "./fonts";
+import { inter, grotesk, tiny5, caveat } from "./fonts";
 import LogoFly from "@/components/LogoFly";           // client component (ok to use here)
 import RouteTransitions from "@/components/RouteTransitions"; // client wrapper
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${grotesk.variable} ${tiny5.variable}`}>
+    <html lang="en" className={`${inter.variable} ${grotesk.variable} ${tiny5.variable} ${caveat.variable}`}>
       <body className="min-h-dvh antialiased bg-fofo-paper text-black">
         <LogoFly />
         {/* Header */}
@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link
                   key={href as string}
                   href={href as string}
-                  className={`border-[2px] border-black px-3 py-1.5 font-pixel text-[12px] uppercase tracking-widest transition-all hover:-translate-y-0.5 hover:shadow-brutal-sm ${
+                  className={`border-[2px] border-black px-3 py-1.5 font-sans text-[13px] font-semibold uppercase tracking-wide transition-all hover:-translate-y-0.5 hover:shadow-brutal-sm ${
                     filled
                       ? "bg-fofo-blue text-white"
                       : "bg-white text-black hover:bg-fofo-blue hover:text-white"

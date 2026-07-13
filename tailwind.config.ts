@@ -24,6 +24,7 @@ fontFamily: {
 sans: ["var(--font-inter)", "system-ui", "sans-serif"],
 display: ["var(--font-grotesk)", "var(--font-inter)", "sans-serif"],
 pixel: ["var(--font-tiny5)", "monospace"],
+hand: ["var(--font-caveat)", "cursive"],
 },
 letterSpacing: {
 wide2: ".08em",
