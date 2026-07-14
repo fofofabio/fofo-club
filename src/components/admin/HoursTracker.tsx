@@ -385,6 +385,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
   const [timerTick, setTimerTick] = useState(Date.now());
   const [focusMinute, setFocusMinute] = useState<number | null>(null);
   const [justSavedId, setJustSavedId] = useState<string | null>(null);
+  const [showAllPaused, setShowAllPaused] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -932,79 +933,64 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
   return (
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
       <div className="min-w-0 space-y-4">
-        <div className="rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-            <div>
-              <p className="meta text-fofo-blue">HOURS TRACKER</p>
-              <h2 className="mt-1 font-display font-bold lowercase text-3xl tracking-tight text-black md:text-4xl">
-                Day timeline
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-black/60">
-                drag across the day to carve out a block. or punch one in by
-                hand for a day you forgot about.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => selectDate(addDays(selectedDate, -1))}
-                className="inline-flex items-center gap-2 rounded-none border-[2px] border-black bg-white px-4 py-2 font-mono text-[12px] uppercase tracking-wide text-black shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                prev
-              </button>
-
-              <button
-                type="button"
-                onClick={() => selectDate(todayKey)}
-                className="rounded-none border-[2px] border-black bg-black px-4 py-2 font-mono text-[12px] uppercase tracking-wide text-white shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-fofo-blue"
-              >
-                today
-              </button>
-
-              <button
-                type="button"
-                onClick={() => selectDate(addDays(selectedDate, 1))}
-                className="inline-flex items-center gap-2 rounded-none border-[2px] border-black bg-white px-4 py-2 font-mono text-[12px] uppercase tracking-wide text-black shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white"
-              >
-                next
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
+        <div className="flex flex-col gap-4 px-1 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="meta text-fofo-blue">HOURS TRACKER</p>
+            <h2 className="mt-1 font-display font-bold lowercase text-3xl tracking-tight text-black md:text-4xl">
+              Day timeline
+            </h2>
+            <p className="mt-1.5 max-w-md text-sm leading-6 text-black/55">
+              drag across the day to carve out a block — or punch one in by hand.
+            </p>
           </div>
 
-          <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_11rem_11rem]">
-            <label className="block">
-              <span className="meta text-fofo-blue">Selected day</span>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(event) => selectDate(event.target.value)}
-                className="mt-2 w-full rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
-              />
-            </label>
-
-            <div className="relative rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-4">
-              <p className="meta text-fofo-blue">Day total</p>
-              <div className="mt-2 font-display font-bold lowercase text-3xl tracking-tight text-black">
+          <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+            <div className="relative">
+              <p className="meta text-fofo-blue">Day</p>
+              <div className="font-display font-bold lowercase text-3xl tracking-tight text-black">
                 {formatDuration(selectedDayMinutes + (selectedDate === todayKey ? activeMinutes : 0))}
               </div>
               {selectedDayMinutes + (selectedDate === todayKey ? activeMinutes : 0) >= 360 ? (
                 <span
                   aria-hidden
-                  className="ws-stamp pointer-events-none absolute -right-2 -top-3 select-none border-[2.5px] border-fofo-pink px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-tight text-fofo-pink"
+                  className="ws-stamp pointer-events-none absolute -right-8 -top-2 select-none border-[2.5px] border-fofo-pink px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-tight text-fofo-pink"
                 >
                   good day
                 </span>
               ) : null}
             </div>
 
-            <div className="rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-4">
-              <p className="meta text-fofo-blue">Week total</p>
-              <div className="mt-2 font-display font-bold lowercase text-3xl tracking-tight text-black">
+            <div>
+              <p className="meta text-fofo-blue">Week</p>
+              <div className="font-display font-bold lowercase text-3xl tracking-tight text-black/60">
                 {formatDuration(selectedWeekMinutes)}
               </div>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => selectDate(addDays(selectedDate, -1))}
+                aria-label="Previous day"
+                className="inline-flex items-center justify-center rounded-none border-[2px] border-black bg-white p-2 text-black transition hover:bg-fofo-blue hover:text-white"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => selectDate(todayKey)}
+                className="rounded-none border-[2px] border-black bg-black px-3 py-2 font-mono text-[12px] uppercase tracking-wide text-white transition hover:bg-fofo-blue"
+              >
+                today
+              </button>
+              <button
+                type="button"
+                onClick={() => selectDate(addDays(selectedDate, 1))}
+                aria-label="Next day"
+                className="inline-flex items-center justify-center rounded-none border-[2px] border-black bg-white p-2 text-black transition hover:bg-fofo-blue hover:text-white"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -1241,8 +1227,8 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
         {/* Memory panels — reference material lives under the canvas so the
             action rail (timer + editor) stays short and the page doesn't leave a
             tall empty gap beside a short timeline. */}
-        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-          <div className="rounded-none border-[2.5px] border-black bg-white p-5 shadow-brutal">
+        <div className="grid items-start gap-4 lg:grid-cols-2 xl:grid-cols-3">
+          <div className="rounded-none border border-black/12 bg-white p-4">
             <div className="flex items-center gap-3">
               <TimerReset className="h-4 w-4 text-black/45" />
               <div>
@@ -1255,7 +1241,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
 
             <div className="mt-4 space-y-3">
               {recentActivities.length ? (
-                recentActivities.map((activity) => (
+                (showAllPaused ? recentActivities : recentActivities.slice(0, 4)).map((activity) => (
                   <div
                     key={`${activity.project}:${activity.task}`}
                     className="rounded-none border border-black/15 bg-white px-4 py-4"
@@ -1280,10 +1266,19 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                   No previous activities to continue yet.
                 </div>
               )}
+              {recentActivities.length > 4 ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAllPaused((v) => !v)}
+                  className="w-full font-mono text-[11px] uppercase tracking-wide text-fofo-blue transition hover:text-black"
+                >
+                  {showAllPaused ? "show fewer" : `+ ${recentActivities.length - 4} more`}
+                </button>
+              ) : null}
             </div>
           </div>
 
-          <div className="rounded-none border-[2.5px] border-black bg-white p-5 shadow-brutal">
+          <div className="rounded-none border border-black/12 bg-white p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="meta text-fofo-blue">WEEK SUMMARY</p>
@@ -1348,7 +1343,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             </div>
           </div>
 
-          <div className="rounded-none border-[2.5px] border-black bg-white p-5 shadow-brutal">
+          <div className="rounded-none border border-black/12 bg-white p-4">
             <div className="flex items-center gap-3">
               <FolderKanban className="h-4 w-4 text-black/45" />
               <div>
@@ -1460,7 +1455,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
           </button>
         </div>
 
-        <div className="rounded-none border-[2.5px] border-black bg-white p-5 shadow-brutal">
+        <div className="rounded-none border border-black/12 bg-white p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="meta text-fofo-blue">BLOCK EDITOR</p>
