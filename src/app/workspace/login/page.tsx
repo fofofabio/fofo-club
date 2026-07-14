@@ -24,11 +24,10 @@ export default async function WorkspaceLoginPage() {
 
   return (
     <PageTransition>
-      <main className="relative isolate min-h-[calc(100dvh-6rem)] overflow-hidden px-6 py-12">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(0,8,255,0.16),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(134,239,172,0.18),_transparent_35%)]" />
-        <div className="pointer-events-none absolute inset-0 grid-bg opacity-60" />
+      <main className="relative isolate min-h-[calc(100dvh-6rem)] overflow-hidden bg-fofo-paper px-6 py-12">
+        <div className="pointer-events-none absolute inset-0 nb-dots opacity-70" />
 
-        <div className="relative mx-auto flex min-h-[70dvh] max-w-xl items-center justify-center">
+        <div className="relative mx-auto flex min-h-[70dvh] max-w-md items-center justify-center">
           <AdminLoginForm />
         </div>
       </main>

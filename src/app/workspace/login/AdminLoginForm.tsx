@@ -14,48 +14,67 @@ export default function AdminLoginForm() {
   const [state, formAction, pending] = useActionState(loginAdminAction, initialState);
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-black/10 bg-white/92 p-8 shadow-xl shadow-black/5 backdrop-blur">
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-fofo-blue via-cyan-400 to-lime-300" />
+    <div className="relative w-full border-[2.5px] border-black bg-white p-7 shadow-brutal md:p-9">
+      {/* solid signal bar replaces the old cyan→lime gradient */}
+      <div className="absolute inset-x-0 top-0 h-2 bg-fofo-blue" />
 
       <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-black/10 bg-black text-white">
+        <div className="flex h-12 w-12 items-center justify-center border-[2.5px] border-black bg-black text-white">
           <LockKeyhole className="h-5 w-5" />
         </div>
         <div>
-          <p className="meta text-fofo-blue">PRIVATE</p>
-          <h1 className="mt-1 font-display text-3xl tracking-tight text-black md:text-4xl">
-            Workspace
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-fofo-blue">
+            // private
+          </span>
+          <h1 className="font-display text-3xl font-bold tracking-tight text-black md:text-4xl">
+            workspace
           </h1>
         </div>
       </div>
 
-      <form action={formAction} className="mt-8 space-y-4">
-        <label className="block">
-          <span className="meta text-fofo-blue">Email</span>
+      <form action={formAction} className="mt-8 space-y-5">
+        <div>
+          <label
+            htmlFor="workspace-email"
+            className="font-mono text-[11px] uppercase tracking-[0.12em] text-black/55"
+          >
+            email
+          </label>
           <input
+            id="workspace-email"
             type="email"
             name="email"
-            autoComplete="email"
-            className="mt-2 w-full rounded-2xl border border-black/15 bg-white px-4 py-3 text-base outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+            autoComplete="username"
+            inputMode="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            className="mt-2 w-full border-[2.5px] border-black bg-white px-4 py-3 text-base outline-none transition focus:-translate-y-0.5 focus:shadow-brutal-sm"
             placeholder="name@example.com"
             required
           />
-        </label>
+        </div>
 
-        <label className="block">
-          <span className="meta text-fofo-blue">Password</span>
+        <div>
+          <label
+            htmlFor="workspace-password"
+            className="font-mono text-[11px] uppercase tracking-[0.12em] text-black/55"
+          >
+            password
+          </label>
           <input
+            id="workspace-password"
             type="password"
             name="password"
             autoComplete="current-password"
-            className="mt-2 w-full rounded-2xl border border-black/15 bg-white px-4 py-3 text-base outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
-            placeholder="Enter password"
+            className="mt-2 w-full border-[2.5px] border-black bg-white px-4 py-3 text-base outline-none transition focus:-translate-y-0.5 focus:shadow-brutal-sm"
+            placeholder="enter password"
             required
           />
-        </label>
+        </div>
 
         {state.error ? (
-          <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p className="border-[2px] border-black bg-fofo-pink px-4 py-3 font-mono text-[12px] uppercase tracking-wide text-white">
             {state.error}
           </p>
         ) : null}
@@ -64,15 +83,15 @@ export default function AdminLoginForm() {
           <button
             type="submit"
             disabled={pending}
-            className="inline-flex min-w-[160px] items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-fofo-blue disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-w-[160px] items-center justify-center gap-2 border-[2.5px] border-black bg-black px-5 py-3 text-sm font-bold uppercase tracking-wide text-white shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-fofo-blue disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
           >
             <ShieldCheck className="h-4 w-4" />
-            {pending ? "Signing in..." : "Sign in"}
+            {pending ? "signing in…" : "sign in"}
           </button>
 
-          <div className="rounded-full border border-black/10 bg-black/[0.03] px-3 py-2 text-xs uppercase tracking-[0.18em] text-black/45">
-            Private
-          </div>
+          <span className="border-[2px] border-black bg-white px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-black/50">
+            private
+          </span>
         </div>
       </form>
     </div>

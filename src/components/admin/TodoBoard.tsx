@@ -457,9 +457,9 @@ export default function TodoBoard({ onStartTimer }: Props) {
       <div className="min-w-0 space-y-4">
         {hydrated && <DailyBriefCard todos={todos} />}
         {/* Quick-add */}
-        <div className="rounded-[28px] border border-black/10 bg-white/85 p-4 shadow-lg shadow-black/5 backdrop-blur md:p-5">
+        <div className="rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 bg-black/[0.03]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-none border-[2.5px] border-black bg-black/[0.03]">
               <ListTodo className="h-4 w-4 text-black/50" />
             </div>
             <div>
@@ -478,13 +478,13 @@ export default function TodoBoard({ onStartTimer }: Props) {
                 onChange={(e) => setDraftText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") addTodo(); }}
                 placeholder="Add a task and press Enter… (press T to focus)"
-                className="w-full rounded-2xl border border-black/12 bg-white px-4 py-3 pr-12 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+                className="w-full rounded-none border-[2.5px] border-black bg-white px-4 py-3 pr-12 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
               />
               <button
                 type="button"
                 onClick={addTodo}
                 disabled={!draftText.trim()}
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-fofo-blue text-white transition hover:scale-105 disabled:opacity-30"
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-none bg-fofo-blue text-white transition hover:scale-105 disabled:opacity-30"
               >
                 <Plus className="h-4 w-4" />
               </button>
@@ -494,7 +494,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
               value={draftProject}
               onChange={(e) => setDraftProject(e.target.value)}
               placeholder="Project"
-              className="w-36 shrink-0 rounded-2xl border border-black/12 bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+              className="w-36 shrink-0 rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
             />
 
             <input
@@ -508,13 +508,13 @@ export default function TodoBoard({ onStartTimer }: Props) {
                   setDraftDueDate(e.target.value);
                 }
               }}
-              className="w-40 shrink-0 rounded-2xl border border-black/12 bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+              className="w-40 shrink-0 rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
             />
           </div>
         </div>
 
         {/* Filters + list */}
-        <div className="rounded-[28px] border border-black/10 bg-white/85 p-4 shadow-lg shadow-black/5 backdrop-blur md:p-5">
+        <div className="rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
           <div className="flex flex-wrap items-center gap-2">
             {(["all", ...projects] as string[]).map((f) => (
               <button
@@ -522,10 +522,10 @@ export default function TodoBoard({ onStartTimer }: Props) {
                 type="button"
                 onClick={() => setActiveFilter(f)}
                 className={clsx(
-                  "rounded-full border px-3 py-1.5 text-sm transition",
+                  "rounded-none border px-3 py-1.5 text-sm transition",
                   activeFilter === f
                     ? "border-fofo-blue bg-fofo-blue text-white"
-                    : "border-black/10 bg-white text-black/65 hover:border-black/20 hover:text-black",
+                    : "border-black bg-white text-black/65 hover:border-black hover:text-black",
                 )}
               >
                 {f === "all" ? "All projects" : f}
@@ -537,7 +537,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
                 <button
                   type="button"
                   onClick={clearCompleted}
-                  className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-sm text-red-700 transition hover:border-red-300"
+                  className="rounded-none border border-red-200 bg-red-50 px-3 py-1.5 text-sm text-red-700 transition hover:border-red-300"
                 >
                   Clear completed
                 </button>
@@ -547,12 +547,12 @@ export default function TodoBoard({ onStartTimer }: Props) {
 
           <div className="mt-4 space-y-2">
             {!hydrated ? (
-              <div className="rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-black/55">
+              <div className="rounded-none border-[2.5px] border-black bg-white px-4 py-4 text-sm text-black/55">
                 Loading…
               </div>
             ) : pending.length === 0 && done.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-black/15 bg-white/70 px-4 py-10 text-center text-sm text-black/55">
-                No tasks yet. Add one above or press <kbd className="rounded border border-black/15 bg-black/5 px-1.5 py-0.5 font-mono text-xs">T</kbd>
+              <div className="rounded-none border-[2px] border-dashed border-black bg-white px-4 py-10 text-center text-sm text-black/55">
+                No tasks yet. Add one above or press <kbd className="rounded border-[2.5px] border-black bg-black/5 px-1.5 py-0.5 font-mono text-xs">T</kbd>
               </div>
             ) : (
               <>
@@ -669,7 +669,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
 
       {/* Sidebar */}
       <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-        <div className="rounded-[28px] border border-black/10 bg-black px-5 py-5 text-white shadow-lg shadow-black/10">
+        <div className="rounded-none border-[2.5px] border-black bg-black px-5 py-5 text-white shadow-brutal">
           <p className="meta text-white/60">OVERVIEW</p>
           <div className="mt-2 font-display text-4xl tracking-tight">{pendingCount}</div>
           <p className="mt-2 text-sm text-white/65">
@@ -678,9 +678,9 @@ export default function TodoBoard({ onStartTimer }: Props) {
 
           {totalCount > 0 && (
             <div className="mt-4 space-y-1">
-              <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
+              <div className="h-1.5 overflow-hidden rounded-none bg-white/15">
                 <div
-                  className="h-full rounded-full bg-lime-300 transition-all duration-500"
+                  className="h-full rounded-none bg-fofo-yellow transition-all duration-500"
                   style={{ width: `${Math.round((doneCount / totalCount) * 100)}%` }}
                 />
               </div>
@@ -690,7 +690,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
         </div>
 
         {projects.length > 0 && (
-          <div className="rounded-[28px] border border-black/10 bg-white/90 p-5 shadow-lg shadow-black/5 backdrop-blur">
+          <div className="rounded-none border-[2.5px] border-black bg-white p-5 shadow-brutal">
             <p className="meta text-fofo-blue">BY PROJECT</p>
             <h3 className="mt-1 font-display text-2xl tracking-tight text-black">Breakdown</h3>
 
@@ -706,19 +706,19 @@ export default function TodoBoard({ onStartTimer }: Props) {
                     type="button"
                     onClick={() => setActiveFilter(activeFilter === project ? "all" : project)}
                     className={clsx(
-                      "w-full rounded-2xl border px-4 py-3 text-left transition",
+                      "w-full rounded-none border px-4 py-3 text-left transition",
                       activeFilter === project
                         ? "border-fofo-blue bg-fofo-blue/5"
-                        : "border-black/10 bg-white hover:border-black/20",
+                        : "border-black bg-white hover:border-black",
                     )}
                   >
                     <div className="flex items-center justify-between">
                       <p className="truncate text-sm font-medium text-black">{project}</p>
                       <span className="ml-3 shrink-0 text-sm text-black/45">{remaining}/{total}</span>
                     </div>
-                    <div className="mt-2 h-1 overflow-hidden rounded-full bg-black/8">
+                    <div className="mt-2 h-1 overflow-hidden rounded-none bg-black/8">
                       <div
-                        className="h-full rounded-full bg-fofo-blue transition-all duration-500"
+                        className="h-full rounded-none bg-fofo-blue transition-all duration-500"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -736,7 +736,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
           {pendingDeletes.map(({ todo }) => (
             <div
               key={todo.id}
-              className="flex items-center gap-3 rounded-full border border-black/10 bg-white px-4 py-2.5 shadow-lg shadow-black/10"
+              className="flex items-center gap-3 rounded-none border-[2.5px] border-black bg-white px-4 py-2.5 shadow-brutal"
             >
               <span className="text-sm text-black/70">
                 &ldquo;{todo.text.length > 40 ? todo.text.slice(0, 40) + "…" : todo.text}&rdquo; deleted
@@ -828,8 +828,8 @@ function TodoRow({
       onDragEnd={onDragEnd}
       style={getAgingStyle(todo.createdAt, todo.done)}
       className={clsx(
-        "rounded-2xl border transition",
-        todo.done ? "border-black/8 bg-black/[0.02]" : "border-black/10 bg-white",
+        "rounded-none border transition",
+        todo.done ? "border-black/8 bg-black/[0.02]" : "border-black bg-white",
         isDragging && "opacity-40",
         isDragOver && !todo.done && "border-fofo-blue ring-2 ring-fofo-blue/15",
       )}
@@ -848,10 +848,10 @@ function TodoRow({
           type="button"
           onClick={onToggleDone}
           className={clsx(
-            "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition",
+            "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-none border-2 transition",
             todo.done
               ? "border-fofo-blue bg-fofo-blue text-white"
-              : "border-black/20 hover:border-fofo-blue",
+              : "border-black hover:border-fofo-blue",
           )}
         >
           {todo.done && <Check className="h-3 w-3" />}
@@ -870,7 +870,7 @@ function TodoRow({
                 if (e.key === "Escape") { setEditingText(false); setEditText(todo.text); }
               }}
               onBlur={commitText}
-              className="w-full rounded-xl border border-fofo-blue bg-white px-3 py-1 text-sm outline-none ring-2 ring-fofo-blue/10"
+              className="w-full rounded-none border border-fofo-blue bg-white px-3 py-1 text-sm outline-none ring-2 ring-fofo-blue/10"
             />
           ) : (
             <button
@@ -889,7 +889,7 @@ function TodoRow({
           {/* Meta row */}
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
             {todo.project && (
-              <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs text-black/50">
+              <span className="rounded-none bg-black/5 px-2 py-0.5 text-xs text-black/50">
                 {todo.project}
               </span>
             )}
@@ -899,7 +899,7 @@ function TodoRow({
                 type="button"
                 onClick={() => setShowDateInput(true)}
                 className={clsx(
-                  "flex items-center gap-1 rounded-full px-2 py-0.5 text-xs transition",
+                  "flex items-center gap-1 rounded-none px-2 py-0.5 text-xs transition",
                   overdue
                     ? "bg-red-50 text-red-600 hover:bg-red-100"
                     : dueToday
@@ -936,7 +936,7 @@ function TodoRow({
                     }
                   }
                 }}
-                className="rounded-xl border border-fofo-blue px-2 py-0.5 text-xs outline-none ring-2 ring-fofo-blue/10"
+                className="rounded-none border border-fofo-blue px-2 py-0.5 text-xs outline-none ring-2 ring-fofo-blue/10"
               />
             )}
 
@@ -944,7 +944,7 @@ function TodoRow({
               <button
                 type="button"
                 onClick={() => setShowDateInput(true)}
-                className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs text-black/25 transition hover:text-black/50"
+                className="flex items-center gap-1 rounded-none px-2 py-0.5 text-xs text-black/25 transition hover:text-black/50"
               >
                 <CalendarDays className="h-3 w-3" />
                 Due date
@@ -971,7 +971,7 @@ function TodoRow({
             onClick={onTogglePinned}
             title={todo.pinned ? "Unpin" : "Pin to top"}
             className={clsx(
-              "rounded-full p-1.5 transition",
+              "rounded-none p-1.5 transition",
               todo.pinned
                 ? "text-amber-400 hover:text-amber-500"
                 : "text-black/20 hover:text-amber-400",
@@ -986,7 +986,7 @@ function TodoRow({
             onClick={onToggleNotes}
             title="Notes"
             className={clsx(
-              "rounded-full p-1.5 text-xs transition",
+              "rounded-none p-1.5 text-xs transition",
               notesOpen || todo.notes
                 ? "text-fofo-blue hover:text-fofo-blue/70"
                 : "text-black/20 hover:text-black/50",
@@ -1003,7 +1003,7 @@ function TodoRow({
             onClick={onToggleSubtasks}
             title="Subtasks"
             className={clsx(
-              "rounded-full p-1.5 transition",
+              "rounded-none p-1.5 transition",
               subtasksOpen || todo.subtasks.length > 0
                 ? "text-fofo-blue hover:text-fofo-blue/70"
                 : "text-black/20 hover:text-black/50",
@@ -1020,7 +1020,7 @@ function TodoRow({
               type="button"
               onClick={onStartTimer}
               title="Start timer in Hours"
-              className="rounded-full p-1.5 text-black/20 transition hover:text-lime-600"
+              className="rounded-none p-1.5 text-black/20 transition hover:text-fofo-blue"
             >
               <Play className="h-3.5 w-3.5" />
             </button>
@@ -1030,7 +1030,7 @@ function TodoRow({
           <button
             type="button"
             onClick={onDelete}
-            className="rounded-full border border-red-200 bg-red-50 p-1.5 text-red-600 transition hover:border-red-300"
+            className="rounded-none border border-red-200 bg-red-50 p-1.5 text-red-600 transition hover:border-red-300"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
@@ -1045,7 +1045,7 @@ function TodoRow({
             onChange={(e) => onUpdateNotes(e.target.value)}
             placeholder="Add notes…"
             rows={3}
-            className="w-full resize-none rounded-xl border border-black/10 bg-black/[0.02] px-3 py-2 text-sm text-black/70 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+            className="w-full resize-none rounded-none border-[2.5px] border-black bg-black/[0.02] px-3 py-2 text-sm text-black/70 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
           />
         </div>
       )}
@@ -1090,7 +1090,7 @@ function TodoRow({
               }
             }}
             placeholder="Add subtask and press Enter…"
-            className="w-full rounded-xl border border-black/10 bg-white px-3 py-1.5 text-sm outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+            className="w-full rounded-none border-[2.5px] border-black bg-white px-3 py-1.5 text-sm outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
           />
         </div>
       )}

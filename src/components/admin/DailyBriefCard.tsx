@@ -150,7 +150,7 @@ export default function DailyBriefCard({ todos }: Props) {
       : null;
 
   return (
-    <div className="mb-4 overflow-hidden rounded-[28px] border border-black/10 bg-black text-white shadow-lg shadow-black/15">
+    <div className="mb-4 overflow-hidden rounded-none border-[2.5px] border-black bg-black text-white shadow-brutal">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-white/10 px-6 py-5">
         <Sun className="h-5 w-5 shrink-0 text-amber-300" />
@@ -171,7 +171,7 @@ export default function DailyBriefCard({ todos }: Props) {
             <ul className="mt-3 space-y-2.5">
               {dueToday.map((t) => (
                 <li key={t.id} className="flex items-start gap-2">
-                  <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-lime-400" />
+                  <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-none bg-fofo-yellow" />
                   <span className="text-sm leading-snug text-white/85">{t.text}</span>
                 </li>
               ))}
@@ -256,7 +256,7 @@ export default function DailyBriefCard({ todos }: Props) {
         <button
           type="button"
           onClick={dismiss}
-          className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:-translate-y-0.5"
+          className="inline-flex items-center gap-2 rounded-none bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:-translate-y-0.5"
         >
           Got it, let&apos;s go
           <ArrowRight className="h-4 w-4" />

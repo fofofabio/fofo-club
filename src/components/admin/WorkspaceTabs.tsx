@@ -26,7 +26,7 @@ export default function WorkspaceTabs() {
 
   return (
     <div>
-      <div className="mb-6 flex w-fit items-center gap-2 rounded-2xl border border-black/10 bg-white/75 p-1.5 shadow-sm backdrop-blur">
+      <div className="mb-6 flex w-fit items-center gap-2 rounded-none border-[2.5px] border-black bg-white p-1.5 shadow-brutal-sm">
         <TabButton
           active={activeTab === "hours"}
           onClick={() => setActiveTab("hours")}
@@ -72,8 +72,10 @@ function TabButton({
       type="button"
       onClick={onClick}
       className={clsx(
-        "inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition",
-        active ? "bg-black text-white shadow-sm" : "text-black/55 hover:text-black",
+        "inline-flex items-center gap-2 rounded-none border-[2px] px-4 py-2.5 font-mono text-[12px] uppercase tracking-wide transition",
+        active
+          ? "border-black bg-fofo-blue text-white"
+          : "border-transparent text-black/55 hover:text-black",
       )}
     >
       {icon}

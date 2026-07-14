@@ -868,7 +868,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
   return (
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
       <div className="min-w-0 space-y-4">
-        <div className="rounded-[28px] border border-black/10 bg-white/85 p-4 shadow-lg shadow-black/5 backdrop-blur md:p-5">
+        <div className="rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div>
               <p className="meta text-fofo-blue">HOURS TRACKER</p>
@@ -885,7 +885,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               <button
                 type="button"
                 onClick={() => selectDate(addDays(selectedDate, -1))}
-                className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-black/70 transition hover:border-black/20 hover:text-black"
+                className="inline-flex items-center gap-2 rounded-none border-[2.5px] border-black bg-white px-4 py-2 text-sm text-black/70 transition hover:border-black hover:text-black"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Prev day
@@ -894,7 +894,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               <button
                 type="button"
                 onClick={() => selectDate(todayKey)}
-                className="rounded-full border border-black/10 bg-black px-4 py-2 text-sm text-white transition hover:bg-fofo-blue"
+                className="rounded-none border-[2.5px] border-black bg-black px-4 py-2 text-sm text-white transition hover:bg-fofo-blue"
               >
                 Today
               </button>
@@ -902,7 +902,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               <button
                 type="button"
                 onClick={() => selectDate(addDays(selectedDate, 1))}
-                className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-black/70 transition hover:border-black/20 hover:text-black"
+                className="inline-flex items-center gap-2 rounded-none border-[2.5px] border-black bg-white px-4 py-2 text-sm text-black/70 transition hover:border-black hover:text-black"
               >
                 Next day
                 <ChevronRight className="h-4 w-4" />
@@ -917,18 +917,18 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                 type="date"
                 value={selectedDate}
                 onChange={(event) => selectDate(event.target.value)}
-                className="mt-2 w-full rounded-2xl border border-black/12 bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+                className="mt-2 w-full rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
               />
             </label>
 
-            <div className="rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-4">
+            <div className="rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-4">
               <p className="meta text-fofo-blue">Day total</p>
               <div className="mt-2 font-display text-3xl tracking-tight text-black">
                 {formatDuration(selectedDayMinutes + (selectedDate === todayKey ? activeMinutes : 0))}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-4">
+            <div className="rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-4">
               <p className="meta text-fofo-blue">Week total</p>
               <div className="mt-2 font-display text-3xl tracking-tight text-black">
                 {formatDuration(selectedWeekMinutes)}
@@ -937,7 +937,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-black/10 bg-white/85 p-4 shadow-lg shadow-black/5 backdrop-blur md:p-5">
+        <div className="rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
           <div className="mb-4 flex flex-wrap items-center gap-3">
             {selectedWeekDays.map((day) => {
               const dateKey = toDateKey(day);
@@ -950,10 +950,10 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                   type="button"
                   onClick={() => selectDate(dateKey)}
                   className={clsx(
-                    "min-w-[118px] rounded-2xl border px-4 py-3 text-left transition",
+                    "min-w-[118px] rounded-none border px-4 py-3 text-left transition",
                     isActive
-                      ? "border-fofo-blue bg-fofo-blue text-white shadow-lg shadow-fofo-blue/20"
-                      : "border-black/10 bg-white text-black hover:border-black/20",
+                      ? "border-fofo-blue bg-fofo-blue text-white shadow-brutal"
+                      : "border-black bg-white text-black hover:border-black",
                   )}
                 >
                   <p className={clsx("meta", isActive ? "text-white/75" : "text-fofo-blue")}>
@@ -968,7 +968,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             })}
           </div>
 
-          <div className="overflow-hidden rounded-[28px] border border-black/10 bg-white">
+          <div className="overflow-hidden rounded-none border-[2.5px] border-black bg-white">
             <div className="border-b border-black/8 px-4 py-3">
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
@@ -1004,7 +1004,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                 </div>
 
                 <div
-                  className="relative rounded-[24px] border border-black/10 bg-black/[0.02]"
+                  className="relative rounded-none border-[2.5px] border-black bg-black/[0.02]"
                   style={{ width: `${TIMELINE_WIDTH}px`, height: `${trackHeight}px` }}
                 >
                   {Array.from(
@@ -1013,7 +1013,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                   ).map((hour) => (
                     <div
                       key={hour}
-                      className="pointer-events-none absolute inset-y-0 border-l border-black/10"
+                      className="pointer-events-none absolute inset-y-0 border-l border-black"
                       style={{ left: `${minuteToX(hour * 60)}px` }}
                     />
                   ))}
@@ -1028,7 +1028,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
 
                   {timelineRange ? (
                     <div
-                      className="pointer-events-none absolute top-0 bottom-0 rounded-[20px] border border-fofo-blue bg-fofo-blue/14"
+                      className="pointer-events-none absolute top-0 bottom-0 rounded-none border border-fofo-blue bg-fofo-blue/14"
                       style={{
                         left: `${minuteToX(timelineRange.start)}px`,
                         width: `${minutesToWidth(timelineRange.end - timelineRange.start)}px`,
@@ -1038,7 +1038,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
 
                   {liveRange ? (
                     <div
-                      className="pointer-events-none absolute top-0 bottom-0 rounded-[20px] border border-lime-300 bg-lime-200/55"
+                      className="pointer-events-none absolute top-0 bottom-0 rounded-none border border-black bg-fofo-yellow/60"
                       style={{
                         left: `${minuteToX(liveRange.start)}px`,
                         width: `${Math.max(minutesToWidth(liveRange.end - liveRange.start), 8)}px`,
@@ -1074,20 +1074,20 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                         type="button"
                         onClick={() => editEntry(entry)}
                         className={clsx(
-                          "absolute z-20 h-11 overflow-visible rounded-2xl border px-0 py-0 text-left shadow-sm transition hover:z-30 hover:shadow-md",
+                          "absolute z-20 h-11 overflow-visible rounded-none border px-0 py-0 text-left shadow-brutal-sm transition hover:z-30 hover:shadow-brutal",
                           editingId === entry.id
                             ? "border-black bg-black text-white"
-                            : "border-black/10 bg-white text-black",
+                            : "border-black bg-white text-black",
                         )}
                         style={{ left: `${left}px`, top: `${top}px`, width: `${width}px` }}
                       >
                         <div
                           className={clsx(
-                            "rounded-2xl border px-3 py-2 shadow-sm",
+                            "rounded-none border px-3 py-2 shadow-brutal-sm",
                             isCompact ? "min-w-[132px]" : "w-full",
                             editingId === entry.id
                               ? "border-black bg-black text-white"
-                              : "border-black/10 bg-white text-black",
+                              : "border-black bg-white text-black",
                           )}
                         >
                           <p className="truncate text-sm font-semibold">{entry.project}</p>
@@ -1121,7 +1121,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       </div>
 
       <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
-        <div className="rounded-[28px] border border-black/10 bg-black px-5 py-5 text-white shadow-lg shadow-black/10">
+        <div className="rounded-none border-[2.5px] border-black bg-black px-5 py-5 text-white shadow-brutal">
           <p className="meta text-white/60">LIVE TIMER</p>
           <div className="mt-2 font-display text-4xl tracking-tight">
             {activeSession ? formatDuration(activeMinutes) : "Ready"}
@@ -1136,9 +1136,9 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             type="button"
             onClick={activeSession ? stopTimer : startTimer}
             className={clsx(
-              "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-medium transition",
+              "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-none px-5 py-3 text-sm font-medium transition",
               activeSession
-                ? "bg-lime-300 text-black hover:-translate-y-0.5"
+                ? "bg-fofo-yellow text-black hover:-translate-y-0.5"
                 : "bg-white text-black hover:-translate-y-0.5",
             )}
           >
@@ -1147,7 +1147,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
           </button>
         </div>
 
-        <div className="rounded-[28px] border border-black/10 bg-white/90 p-5 shadow-lg shadow-black/5 backdrop-blur">
+        <div className="rounded-none border-[2.5px] border-black bg-white p-5 shadow-brutal">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="meta text-fofo-blue">BLOCK EDITOR</p>
@@ -1156,7 +1156,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               </h3>
             </div>
             {timelineRange ? (
-              <div className="rounded-full border border-fofo-blue/25 bg-fofo-blue/10 px-3 py-1 text-sm text-fofo-blue">
+              <div className="rounded-none border border-fofo-blue/25 bg-fofo-blue/10 px-3 py-1 text-sm text-fofo-blue">
                 {minutesToTime(timelineRange.start)} - {minutesToTime(timelineRange.end)}
               </div>
             ) : null}
@@ -1168,7 +1168,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               <input
                 value={draft.project}
                 onChange={(event) => updateDraft("project", event.target.value)}
-                className="mt-2 w-full rounded-2xl border border-black/12 bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+                className="mt-2 w-full rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
                 placeholder="Lutz"
               />
             </label>
@@ -1178,7 +1178,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               <input
                 value={draft.task}
                 onChange={(event) => updateDraft("task", event.target.value)}
-                className="mt-2 w-full rounded-2xl border border-black/12 bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+                className="mt-2 w-full rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
                 placeholder="Sync, coding, concept, support..."
               />
             </label>
@@ -1193,7 +1193,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                     updateDraft("date", event.target.value);
                     setSelectedDate(event.target.value);
                   }}
-                  className="mt-2 w-full rounded-2xl border border-black/12 bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+                  className="mt-2 w-full rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
                 />
               </label>
 
@@ -1203,7 +1203,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                   type="time"
                   value={draft.start}
                   onChange={(event) => updateDraft("start", event.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-black/12 bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+                  className="mt-2 w-full rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
                 />
               </label>
 
@@ -1213,7 +1213,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                   type="time"
                   value={draft.end}
                   onChange={(event) => updateDraft("end", event.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-black/12 bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+                  className="mt-2 w-full rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
                 />
               </label>
             </div>
@@ -1227,7 +1227,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                       key={project}
                       type="button"
                       onClick={() => updateDraft("project", project)}
-                      className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm text-black/65 transition hover:border-black/20 hover:text-black"
+                      className="rounded-none border-[2.5px] border-black bg-white px-3 py-1.5 text-sm text-black/65 transition hover:border-black hover:text-black"
                     >
                       {project}
                     </button>
@@ -1240,7 +1240,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               <button
                 type="button"
                 onClick={saveDraft}
-                className="inline-flex items-center gap-2 rounded-full bg-fofo-blue px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 rounded-none bg-fofo-blue px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5"
               >
                 <PencilLine className="h-4 w-4" />
                 {editingId ? "Update block" : "Save block"}
@@ -1249,27 +1249,27 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               <button
                 type="button"
                 onClick={() => resetDraft()}
-                className="rounded-full border border-black/10 bg-white px-5 py-3 text-sm text-black/70 transition hover:border-black/20 hover:text-black"
+                className="rounded-none border-[2.5px] border-black bg-white px-5 py-3 text-sm text-black/70 transition hover:border-black hover:text-black"
               >
                 Clear
               </button>
             </div>
 
-            <div className="rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3 text-sm text-black/60">
+            <div className="rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-3 text-sm text-black/60">
               {timelineRange
                 ? `Selection ready: ${minutesToTime(timelineRange.start)} - ${minutesToTime(timelineRange.end)}`
                 : "Tip: drag left-to-right on the timeline to fill the time range."}
             </div>
 
             {message ? (
-              <div className="rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3 text-sm text-black/65">
+              <div className="rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-3 text-sm text-black/65">
                 {message}
               </div>
             ) : null}
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-black/10 bg-white/90 p-5 shadow-lg shadow-black/5 backdrop-blur">
+        <div className="rounded-none border-[2.5px] border-black bg-white p-5 shadow-brutal">
           <div className="flex items-center gap-3">
             <TimerReset className="h-4 w-4 text-black/45" />
             <div>
@@ -1285,7 +1285,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               recentActivities.map((activity) => (
                 <div
                   key={`${activity.project}:${activity.task}`}
-                  className="rounded-2xl border border-black/10 bg-white px-4 py-4"
+                  className="rounded-none border-[2.5px] border-black bg-white px-4 py-4"
                 >
                   <p className="text-sm font-semibold text-black">{activity.project}</p>
                   <p className="mt-1 text-sm text-black/55">
@@ -1294,7 +1294,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                   <button
                     type="button"
                     onClick={() => resumeActivity(activity.project, activity.task)}
-                    className="mt-3 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-2 text-xs text-black/70 transition hover:border-black/20 hover:text-black"
+                    className="mt-3 inline-flex items-center gap-2 rounded-none border-[2.5px] border-black bg-white px-3 py-2 text-xs text-black/70 transition hover:border-black hover:text-black"
                   >
                     <Play className="h-3.5 w-3.5" />
                     Continue
@@ -1302,14 +1302,14 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                 </div>
               ))
             ) : (
-              <div className="rounded-2xl border border-dashed border-black/15 bg-white/70 px-4 py-8 text-center text-sm text-black/55">
+              <div className="rounded-none border-[2px] border-dashed border-black bg-white px-4 py-8 text-center text-sm text-black/55">
                 No previous activities to continue yet.
               </div>
             )}
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-black/10 bg-white/90 p-5 shadow-lg shadow-black/5 backdrop-blur">
+        <div className="rounded-none border-[2.5px] border-black bg-white p-5 shadow-brutal">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="meta text-fofo-blue">WEEK SUMMARY</p>
@@ -1320,7 +1320,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             <button
               type="button"
               onClick={copyWeekReport}
-              className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-2 text-sm text-black/70 transition hover:border-black/20 hover:text-black"
+              className="inline-flex items-center gap-2 rounded-none border-[2.5px] border-black bg-white px-3 py-2 text-sm text-black/70 transition hover:border-black hover:text-black"
             >
               <Clipboard className="h-4 w-4" />
               {copyState === "copied"
@@ -1336,7 +1336,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               weeklyProjectTotals.map((project) => (
                 <div
                   key={project.project}
-                  className="flex items-center justify-between rounded-2xl border border-black/10 bg-white px-4 py-3"
+                  className="flex items-center justify-between rounded-none border-[2.5px] border-black bg-white px-4 py-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-black">
@@ -1349,14 +1349,14 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                 </div>
               ))
             ) : (
-              <div className="rounded-2xl border border-dashed border-black/15 bg-white/70 px-4 py-8 text-center text-sm text-black/55">
+              <div className="rounded-none border-[2px] border-dashed border-black bg-white px-4 py-8 text-center text-sm text-black/55">
                 No hours in this week yet.
               </div>
             )}
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-black/10 bg-white/90 p-5 shadow-lg shadow-black/5 backdrop-blur">
+        <div className="rounded-none border-[2.5px] border-black bg-white p-5 shadow-brutal">
           <div className="flex items-center gap-3">
             <FolderKanban className="h-4 w-4 text-black/45" />
             <div>
@@ -1369,14 +1369,14 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
 
           <div className="mt-4 space-y-3">
             {!hydrated ? (
-              <div className="rounded-2xl border border-black/10 bg-white px-4 py-4 text-sm text-black/55">
+              <div className="rounded-none border-[2.5px] border-black bg-white px-4 py-4 text-sm text-black/55">
                 Loading local data...
               </div>
             ) : selectedDayEntries.length ? (
               selectedDayEntries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="rounded-2xl border border-black/10 bg-white px-4 py-4"
+                  className="rounded-none border-[2.5px] border-black bg-white px-4 py-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -1393,7 +1393,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                       <button
                         type="button"
                         onClick={() => resumeActivity(entry.project, entry.task)}
-                        className="inline-flex items-center gap-1 rounded-full border border-black/10 bg-white px-3 py-2 text-xs text-black/60 transition hover:border-black/20 hover:text-black"
+                        className="inline-flex items-center gap-1 rounded-none border-[2.5px] border-black bg-white px-3 py-2 text-xs text-black/60 transition hover:border-black hover:text-black"
                       >
                         <Play className="h-3.5 w-3.5" />
                         Continue
@@ -1401,14 +1401,14 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                       <button
                         type="button"
                         onClick={() => editEntry(entry)}
-                        className="rounded-full border border-black/10 bg-white px-3 py-2 text-xs text-black/60 transition hover:border-black/20 hover:text-black"
+                        className="rounded-none border-[2.5px] border-black bg-white px-3 py-2 text-xs text-black/60 transition hover:border-black hover:text-black"
                       >
                         Edit
                       </button>
                       <button
                         type="button"
                         onClick={() => deleteEntry(entry.id)}
-                        className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 transition hover:border-red-300"
+                        className="inline-flex items-center gap-1 rounded-none border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 transition hover:border-red-300"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         Delete
@@ -1418,7 +1418,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                 </div>
               ))
             ) : (
-              <div className="rounded-2xl border border-dashed border-black/15 bg-white/70 px-4 py-8 text-center text-sm text-black/55">
+              <div className="rounded-none border-[2px] border-dashed border-black bg-white px-4 py-8 text-center text-sm text-black/55">
                 No blocks on this day yet. Drag the timeline or add one manually.
               </div>
             )}
