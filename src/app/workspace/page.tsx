@@ -39,7 +39,7 @@ export default async function WorkspacePage() {
           {/* rotated sticker — the human hand on the machine room */}
           <div
             aria-hidden
-            className="nb-sticker absolute -top-4 -left-2 z-10 hidden -rotate-[4deg] bg-fofo-pink text-[13px] lg:block"
+            className="nb-sticker absolute -top-10 left-6 z-10 hidden -rotate-[4deg] bg-fofo-pink text-[13px] lg:block"
           >
             the messy bit
             <br />
@@ -47,31 +47,28 @@ export default async function WorkspacePage() {
           </div>
 
           <SectionFade once threshold={0.15} baseClass="fc-stamp" inClass="fc-stamp-in">
-          <header className="mb-6 flex flex-col gap-5 border-[2.5px] border-black bg-white px-5 py-5 shadow-brutal md:flex-row md:items-end md:justify-between md:px-6">
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center border-[2.5px] border-black bg-black text-white">
-                  <Shield className="h-5 w-5" />
-                </div>
-                <div>
-                  <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-fofo-blue">
-                    // private workspace
-                  </span>
-                  <h1 className="font-display text-4xl font-bold tracking-tight text-black md:text-5xl">
-                    workspace
-                  </h1>
-                </div>
+          <header className="mb-6 flex items-center justify-between gap-4 border-[2.5px] border-black bg-white px-4 py-3 shadow-brutal md:px-5">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center border-[2px] border-black bg-black text-white">
+                <Shield className="h-4 w-4" />
               </div>
-
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-black/65 md:text-base">
-                have a nice day, {displayName}.
-              </p>
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                <h1 className="font-display text-2xl font-bold lowercase tracking-tight text-black md:text-3xl">
+                  workspace
+                </h1>
+                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-fofo-blue">
+                  // private
+                </span>
+                <span className="hidden text-sm text-black/45 sm:inline">
+                  have a nice day, {displayName}.
+                </span>
+              </div>
             </div>
 
             <form action={logoutAdminAction}>
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 border-[2px] border-black bg-white px-4 py-2 font-mono text-[12px] uppercase tracking-wide text-black shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white"
+                className="inline-flex shrink-0 items-center gap-2 border-[2px] border-black bg-white px-3 py-1.5 font-mono text-[12px] uppercase tracking-wide text-black shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white"
               >
                 <ShieldOff className="h-4 w-4" />
                 lock
