@@ -522,13 +522,13 @@ export default function TodoBoard({ onStartTimer }: Props) {
                 type="button"
                 onClick={() => setActiveFilter(f)}
                 className={clsx(
-                  "rounded-none border px-3 py-1.5 text-sm transition",
+                  "rounded-none border-[2px] border-black px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide transition",
                   activeFilter === f
-                    ? "border-fofo-blue bg-fofo-blue text-white"
-                    : "border-black bg-white text-black/65 hover:border-black hover:text-black",
+                    ? "bg-fofo-blue text-white shadow-brutal-sm"
+                    : "bg-white text-black/60 hover:-translate-y-0.5 hover:bg-black hover:text-white",
                 )}
               >
-                {f === "all" ? "All projects" : f}
+                {f === "all" ? "all projects" : f}
               </button>
             ))}
 
@@ -537,9 +537,9 @@ export default function TodoBoard({ onStartTimer }: Props) {
                 <button
                   type="button"
                   onClick={clearCompleted}
-                  className="rounded-none border border-red-200 bg-red-50 px-3 py-1.5 text-sm text-red-700 transition hover:border-red-300"
+                  className="rounded-none border-[2px] border-black bg-fofo-pink px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-white shadow-brutal-sm transition hover:-translate-y-0.5"
                 >
-                  Clear completed
+                  clear completed
                 </button>
               </div>
             )}

@@ -876,8 +876,8 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                 Day timeline
               </h2>
               <p className="mt-2 text-sm leading-6 text-black/60">
-                Drag horizontally across the day to create a block. Manual inputs
-                still work for backfilling older days.
+                drag across the day to carve out a block. or punch one in by
+                hand for a day you forgot about.
               </p>
             </div>
 
@@ -885,26 +885,26 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               <button
                 type="button"
                 onClick={() => selectDate(addDays(selectedDate, -1))}
-                className="inline-flex items-center gap-2 rounded-none border-[2.5px] border-black bg-white px-4 py-2 text-sm text-black/70 transition hover:border-black hover:text-black"
+                className="inline-flex items-center gap-2 rounded-none border-[2px] border-black bg-white px-4 py-2 font-mono text-[12px] uppercase tracking-wide text-black shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white"
               >
                 <ChevronLeft className="h-4 w-4" />
-                Prev day
+                prev
               </button>
 
               <button
                 type="button"
                 onClick={() => selectDate(todayKey)}
-                className="rounded-none border-[2.5px] border-black bg-black px-4 py-2 text-sm text-white transition hover:bg-fofo-blue"
+                className="rounded-none border-[2px] border-black bg-black px-4 py-2 font-mono text-[12px] uppercase tracking-wide text-white shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-fofo-blue"
               >
-                Today
+                today
               </button>
 
               <button
                 type="button"
                 onClick={() => selectDate(addDays(selectedDate, 1))}
-                className="inline-flex items-center gap-2 rounded-none border-[2.5px] border-black bg-white px-4 py-2 text-sm text-black/70 transition hover:border-black hover:text-black"
+                className="inline-flex items-center gap-2 rounded-none border-[2px] border-black bg-white px-4 py-2 font-mono text-[12px] uppercase tracking-wide text-black shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white"
               >
-                Next day
+                next
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
@@ -950,10 +950,10 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                   type="button"
                   onClick={() => selectDate(dateKey)}
                   className={clsx(
-                    "min-w-[118px] rounded-none border px-4 py-3 text-left transition",
+                    "min-w-[118px] rounded-none border-[2px] px-4 py-3 text-left transition",
                     isActive
-                      ? "border-fofo-blue bg-fofo-blue text-white shadow-brutal"
-                      : "border-black bg-white text-black hover:border-black",
+                      ? "border-black bg-fofo-blue text-white shadow-brutal"
+                      : "border-black bg-white text-black shadow-brutal-sm hover:-translate-y-0.5 hover:shadow-brutal",
                   )}
                 >
                   <p className={clsx("meta", isActive ? "text-white/75" : "text-fofo-blue")}>
@@ -978,7 +978,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                   </h3>
                 </div>
                 <p className="text-sm text-black/55">
-                  One scroll plane, one timeline. Drag on the canvas to create time.
+                  one plane, one day. drag on the canvas to make time.
                 </p>
               </div>
             </div>
@@ -1122,28 +1122,36 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
 
       <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
         <div className="rounded-none border-[2.5px] border-black bg-black px-5 py-5 text-white shadow-brutal">
-          <p className="meta text-white/60">LIVE TIMER</p>
+          <p className="meta flex items-center gap-2 text-white/60">
+            {activeSession && (
+              <span
+                aria-hidden
+                className="inline-block h-2 w-2 animate-pulse bg-fofo-pink"
+              />
+            )}
+            live timer
+          </p>
           <div className="mt-2 font-display font-bold lowercase text-4xl tracking-tight">
-            {activeSession ? formatDuration(activeMinutes) : "Ready"}
+            {activeSession ? formatDuration(activeMinutes) : "ready when you are"}
           </div>
           <p className="mt-2 text-sm text-white/65">
             {activeSession
               ? `${activeSession.project}${activeSession.task ? ` · ${activeSession.task}` : ""}`
-              : "Resume an old activity or start a fresh timer from the editor."}
+              : "pick up where you left off, or spin up a fresh one below."}
           </p>
 
           <button
             type="button"
             onClick={activeSession ? stopTimer : startTimer}
             className={clsx(
-              "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-none px-5 py-3 text-sm font-medium transition",
+              "mt-5 inline-flex w-full items-center justify-center gap-2 rounded-none border-[2px] border-white px-5 py-3 font-mono text-[12px] uppercase tracking-wide transition hover:-translate-y-0.5",
               activeSession
-                ? "bg-fofo-yellow text-black hover:-translate-y-0.5"
-                : "bg-white text-black hover:-translate-y-0.5",
+                ? "bg-fofo-pink text-white"
+                : "bg-white text-black hover:bg-fofo-blue hover:text-white",
             )}
           >
             {activeSession ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            {activeSession ? "Stop and save" : "Start timer"}
+            {activeSession ? "stop & save" : "start timer"}
           </button>
         </div>
 

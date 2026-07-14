@@ -4,6 +4,7 @@ import { Shield, ShieldOff } from "lucide-react";
 
 import { auth } from "@/auth";
 import PageTransition from "@/components/PageTransition";
+import SectionFade from "@/components/Sectionfade";
 import WorkspaceTabs from "@/components/admin/WorkspaceTabs";
 
 import { logoutAdminAction } from "./actions";
@@ -35,6 +36,17 @@ export default async function WorkspacePage() {
         <div className="pointer-events-none absolute inset-0 nb-dots opacity-60" />
 
         <div className="page-shell-wide relative">
+          {/* rotated sticker — the human hand on the machine room */}
+          <div
+            aria-hidden
+            className="nb-sticker absolute -top-3 right-6 z-10 hidden rotate-[3deg] bg-fofo-pink text-[13px] md:block"
+          >
+            the messy bit
+            <br />
+            nobody else sees
+          </div>
+
+          <SectionFade once threshold={0.15} baseClass="fc-stamp" inClass="fc-stamp-in">
           <header className="mb-6 flex flex-col gap-5 border-[2.5px] border-black bg-white px-5 py-5 shadow-brutal md:flex-row md:items-end md:justify-between md:px-6">
             <div>
               <div className="flex items-center gap-3">
@@ -59,13 +71,14 @@ export default async function WorkspacePage() {
             <form action={logoutAdminAction}>
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 border-[2.5px] border-black bg-white px-4 py-2 text-sm font-bold uppercase tracking-wide text-black shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white"
+                className="inline-flex items-center gap-2 border-[2px] border-black bg-white px-4 py-2 font-mono text-[12px] uppercase tracking-wide text-black shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white"
               >
                 <ShieldOff className="h-4 w-4" />
                 lock
               </button>
             </form>
           </header>
+          </SectionFade>
 
           <WorkspaceTabs />
         </div>
