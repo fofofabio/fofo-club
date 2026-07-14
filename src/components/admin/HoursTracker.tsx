@@ -14,15 +14,17 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { projectColor } from "@/lib/projectColor";
+
 const SLOT_MINUTES = 15;
 const VISIBLE_START_MINUTE = 6 * 60;
 const VISIBLE_END_MINUTE = 19 * 60;
 const VISIBLE_MINUTES = VISIBLE_END_MINUTE - VISIBLE_START_MINUTE;
 const VISIBLE_SLOTS = VISIBLE_MINUTES / SLOT_MINUTES;
-const SLOT_WIDTH = 32;
+const SLOT_WIDTH = 36;
 const TIMELINE_WIDTH = VISIBLE_SLOTS * SLOT_WIDTH;
-const LANE_HEIGHT = 56;
-const TRACK_PADDING = 18;
+const LANE_HEIGHT = 76;
+const TRACK_PADDING = 20;
 
 type HourEntry = {
   id: string;
@@ -382,6 +384,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [timerTick, setTimerTick] = useState(Date.now());
   const [focusMinute, setFocusMinute] = useState<number | null>(null);
+  const [justSavedId, setJustSavedId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -442,6 +445,12 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
     const interval = window.setInterval(() => setTimerTick(Date.now()), 15000);
     return () => window.clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!justSavedId) return;
+    const timeout = window.setTimeout(() => setJustSavedId(null), 600);
+    return () => window.clearTimeout(timeout);
+  }, [justSavedId]);
 
   useEffect(() => {
     if (!pendingDraft) return;
@@ -620,8 +629,8 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
 
   const hasContent = timeline.items.length > 0 || Boolean(liveRange);
   const trackHeight = hasContent
-    ? Math.max(timeline.laneCount * LANE_HEIGHT + TRACK_PADDING * 2, 168)
-    : 104;
+    ? Math.max(timeline.laneCount * LANE_HEIGHT + TRACK_PADDING * 2, 200)
+    : 176;
 
   // Bring the populated part of the day into view instead of always starting at 06:00.
   useEffect(() => {
@@ -715,6 +724,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       setEntries(nextEntries);
       setSelectedDate(draft.date);
       setFocusMinute(timeToMinutes(payload.entry.start));
+      setJustSavedId(payload.entry.id);
       resetDraft(nextEntries, draft.date);
       setMessage(editingId ? "Entry updated." : "Block saved.");
     } catch (error) {
@@ -766,6 +776,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       setActiveSession(null);
       setSelectedDate(payload.entry.date);
       setFocusMinute(timeToMinutes(payload.entry.start));
+      setJustSavedId(payload.entry.id);
       resetDraft(nextEntries, payload.entry.date);
       setMessage("Timer saved.");
     } catch (error) {
@@ -974,11 +985,19 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               />
             </label>
 
-            <div className="rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-4">
+            <div className="relative rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-4">
               <p className="meta text-fofo-blue">Day total</p>
               <div className="mt-2 font-display font-bold lowercase text-3xl tracking-tight text-black">
                 {formatDuration(selectedDayMinutes + (selectedDate === todayKey ? activeMinutes : 0))}
               </div>
+              {selectedDayMinutes + (selectedDate === todayKey ? activeMinutes : 0) >= 360 ? (
+                <span
+                  aria-hidden
+                  className="ws-stamp pointer-events-none absolute -right-2 -top-3 select-none border-[2.5px] border-fofo-pink px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-tight text-fofo-pink"
+                >
+                  good day
+                </span>
+              ) : null}
             </div>
 
             <div className="rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-4">
@@ -1024,6 +1043,17 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                   >
                     {minutes ? formatDuration(minutes) : "—"}
                   </p>
+                  <div
+                    className={clsx(
+                      "mt-2 h-1.5 w-full overflow-hidden rounded-none",
+                      isActive ? "bg-white/25" : "bg-black/10",
+                    )}
+                  >
+                    <div
+                      className={clsx("h-full rounded-none transition-all duration-500", isActive ? "bg-fofo-yellow" : "bg-fofo-blue")}
+                      style={{ width: `${Math.min(100, Math.round((minutes / 480) * 100))}%` }}
+                    />
+                  </div>
                 </button>
               );
             })}
@@ -1111,11 +1141,15 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                   currentMinute >= VISIBLE_START_MINUTE &&
                   currentMinute <= VISIBLE_END_MINUTE ? (
                     <div
-                      className="pointer-events-none absolute inset-y-0 z-10 border-l-2 border-red-400/80"
-                      style={{
-                        left: `${minuteToX(currentMinute)}px`,
-                      }}
-                    />
+                      className="pointer-events-none absolute inset-y-0 z-10"
+                      style={{ left: `${minuteToX(currentMinute)}px` }}
+                    >
+                      <div className="absolute inset-y-0 -left-px w-[2px] bg-red-500/80" />
+                      <div className="ws-now-tick absolute -left-[5px] -top-[5px] h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" />
+                      <span className="absolute -top-[5px] left-2.5 font-mono text-[9px] font-bold uppercase tracking-tight text-red-500">
+                        now
+                      </span>
+                    </div>
                   ) : null}
 
                   <div
@@ -1124,18 +1158,26 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                   />
 
                   {hydrated && !hasContent && !timelineRange ? (
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                      <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-black/30">
-                        drag across to carve out a block
+                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1">
+                      <span className="font-hand text-2xl leading-none text-fofo-blue/70">
+                        {selectedDate === todayKey
+                          ? "blank page. carve your first block →"
+                          : "nothing here yet — drag to fill it in"}
+                      </span>
+                      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-black/30">
+                        drag left-to-right across the day
                       </span>
                     </div>
                   ) : null}
 
                   {timeline.items.map((entry) => {
                     const left = minuteToX(entry.startMinute);
-                    const width = Math.max(minutesToWidth(entry.endMinute - entry.startMinute), 48);
+                    const width = Math.max(minutesToWidth(entry.endMinute - entry.startMinute), 52);
                     const top = TRACK_PADDING + entry.lane * LANE_HEIGHT;
                     const isCompact = width < 132;
+                    const isEditing = editingId === entry.id;
+                    const ink = projectColor(entry.project);
+                    const durationMin = entry.endMinute - entry.startMinute;
 
                     return (
                       <button
@@ -1143,36 +1185,45 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                         type="button"
                         onClick={() => editEntry(entry)}
                         className={clsx(
-                          "absolute z-20 h-11 overflow-visible rounded-none border px-0 py-0 text-left shadow-brutal-sm transition hover:z-30 hover:shadow-brutal",
-                          editingId === entry.id
-                            ? "border-black bg-black text-white"
-                            : "border-black bg-white text-black",
+                          "group absolute z-20 overflow-hidden rounded-none border-[2.5px] text-left shadow-brutal-sm transition hover:z-30 hover:-translate-y-0.5 hover:shadow-brutal",
+                          justSavedId === entry.id && "ws-block-in",
+                          isEditing ? "border-black" : "border-black",
                         )}
-                        style={{ left: `${left}px`, top: `${top}px`, width: `${width}px` }}
+                        style={{
+                          left: `${left}px`,
+                          top: `${top}px`,
+                          width: `${width}px`,
+                          height: `${LANE_HEIGHT - 12}px`,
+                          background: isEditing ? "#000" : ink.wash,
+                          color: isEditing ? "#fff" : "#000",
+                        }}
                       >
-                        <div
-                          className={clsx(
-                            "rounded-none border px-3 py-2 shadow-brutal-sm",
-                            isCompact ? "min-w-[132px]" : "w-full",
-                            editingId === entry.id
-                              ? "border-black bg-black text-white"
-                              : "border-black bg-white text-black",
-                          )}
-                        >
-                          <p className="truncate text-sm font-semibold">{entry.project}</p>
+                        {/* Project ink spine */}
+                        <span
+                          aria-hidden
+                          className="absolute inset-y-0 left-0 w-[6px]"
+                          style={{ background: isEditing ? ink.ink : ink.ink }}
+                        />
+                        <div className={clsx("h-full px-3 py-2", isCompact ? "pl-3" : "pl-4")}>
+                          <p
+                            className="truncate text-sm font-bold leading-tight"
+                            style={{ color: isEditing ? "#fff" : ink.text }}
+                          >
+                            {entry.project}
+                          </p>
                           <p
                             className={clsx(
-                              "truncate text-xs",
-                              editingId === entry.id ? "text-white/75" : "text-black/70",
+                              "truncate font-mono text-[11px] leading-tight tracking-tight",
+                              isEditing ? "text-white/70" : "text-black/55",
                             )}
                           >
-                            {entry.start} - {entry.end}
+                            {entry.start}–{entry.end} · {formatDuration(durationMin)}
                           </p>
-                          {entry.task ? (
+                          {entry.task && !isCompact ? (
                             <p
                               className={clsx(
-                                "truncate text-[11px]",
-                                editingId === entry.id ? "text-white/60" : "text-black/45",
+                                "truncate text-[11px] leading-tight",
+                                isEditing ? "text-white/60" : "text-black/50",
                               )}
                             >
                               {entry.task}
@@ -1195,7 +1246,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             {activeSession && (
               <span
                 aria-hidden
-                className="inline-block h-2 w-2 animate-pulse bg-fofo-pink"
+                className="ws-live-pulse inline-block h-2 w-2 rounded-full bg-fofo-pink"
               />
             )}
             live timer
@@ -1310,16 +1361,24 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               <div>
                 <p className="meta text-fofo-blue">Recent projects</p>
                 <div className="mt-3 grid grid-cols-2 gap-2">
-                  {recentProjects.map((project) => (
-                    <button
-                      key={project}
-                      type="button"
-                      onClick={() => updateDraft("project", project)}
-                      className="truncate rounded-none border border-black/20 bg-white px-3 py-2 text-left text-sm text-black/70 transition hover:border-black hover:bg-black/[0.03] hover:text-black"
-                    >
-                      {project}
-                    </button>
-                  ))}
+                  {recentProjects.map((project) => {
+                    const ink = projectColor(project);
+                    return (
+                      <button
+                        key={project}
+                        type="button"
+                        onClick={() => updateDraft("project", project)}
+                        className="flex items-center gap-2 truncate rounded-none border border-black/20 bg-white px-3 py-2 text-left text-sm text-black/70 transition hover:border-black hover:bg-black/[0.03] hover:text-black"
+                      >
+                        <span
+                          aria-hidden
+                          className="h-2.5 w-2.5 shrink-0 rounded-full"
+                          style={{ background: ink.ink }}
+                        />
+                        <span className="truncate">{project}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ) : null}
@@ -1421,21 +1480,39 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
 
           <div className="mt-4 space-y-3">
             {weeklyProjectTotals.length ? (
-              weeklyProjectTotals.map((project) => (
-                <div
-                  key={project.project}
-                  className="flex items-center justify-between rounded-none border border-black/15 bg-white px-4 py-3"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-black">
-                      {project.project}
-                    </p>
+              weeklyProjectTotals.map((project) => {
+                const ink = projectColor(project.project);
+                const topMinutes = weeklyProjectTotals[0]?.minutes || 1;
+                const pct = Math.max(6, Math.round((project.minutes / topMinutes) * 100));
+                return (
+                  <div
+                    key={project.project}
+                    className="rounded-none border border-black/15 bg-white px-4 py-3"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span
+                          aria-hidden
+                          className="h-2.5 w-2.5 shrink-0 rounded-full"
+                          style={{ background: ink.ink }}
+                        />
+                        <p className="truncate text-sm font-medium text-black">
+                          {project.project || "No project"}
+                        </p>
+                      </div>
+                      <span className="shrink-0 font-mono text-sm text-black/70">
+                        {formatDuration(project.minutes)}
+                      </span>
+                    </div>
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-none bg-black/8">
+                      <div
+                        className="h-full rounded-none transition-all duration-500"
+                        style={{ width: `${pct}%`, background: ink.ink }}
+                      />
+                    </div>
                   </div>
-                  <span className="text-sm text-black/70">
-                    {formatDuration(project.minutes)}
-                  </span>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="rounded-none border-[2px] border-dashed border-black bg-white px-4 py-8 text-center text-sm text-black/70">
                 No hours in this week yet.
@@ -1465,6 +1542,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                 <div
                   key={entry.id}
                   className="rounded-none border border-black/15 bg-white px-4 py-4"
+                  style={{ borderLeft: `5px solid ${projectColor(entry.project).ink}` }}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">

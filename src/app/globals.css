@@ -386,3 +386,62 @@ body { scrollbar-gutter: stable; }
 
 .badge { @apply rounded-none border-[2px] border-black px-2 py-0.5 text-[10px] tracking-widest uppercase text-black; }
 .meta  { @apply font-mono uppercase tracking-[0.12em] text-[10px] text-fofo-blue; }
+
+/* ─── Workspace feedback layer ────────────────────────────────────────────────
+   The moments that matter (finishing a task, saving a block, crossing a target)
+   get a physical payoff on the shared fc-* easing, so the daily tool feels alive
+   instead of inert. All reduced-motion safe. */
+
+/* Task completion: the checkbox stamps in like an ink mark. */
+@keyframes ws-check-pop {
+    0%   { transform: scale(0.3); opacity: 0; }
+    55%  { transform: scale(1.18); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.ws-check-pop { animation: ws-check-pop var(--fc-dur-med) var(--fc-ease-yank); }
+
+/* A yellow marker swipe sweeping across a task the instant it's completed. */
+@keyframes ws-marker-swipe {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+}
+.ws-marker {
+    transform-origin: left center;
+    animation: ws-marker-swipe var(--fc-dur-med) var(--fc-ease-soft) forwards;
+}
+
+/* A freshly saved timeline block snaps into place with the LogoFly yank. */
+@keyframes ws-block-in {
+    0%   { transform: translateY(-6px) scale(0.96); opacity: 0; }
+    60%  { transform: translateY(0) scale(1.02); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.ws-block-in { animation: ws-block-in var(--fc-dur-med) var(--fc-ease-yank); }
+
+/* The running timer's pulse — steadier than a blink, reads as "live". */
+@keyframes ws-live-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.45; transform: scale(0.8); }
+}
+.ws-live-pulse { animation: ws-live-pulse 1.6s var(--fc-ease-soft) infinite; }
+
+/* "good day" stamp: slams down rotated when the daily target is crossed. */
+@keyframes ws-stamp-in {
+    0%   { transform: rotate(-8deg) scale(2.4); opacity: 0; }
+    70%  { transform: rotate(-8deg) scale(0.92); opacity: 1; }
+    100% { transform: rotate(-8deg) scale(1); opacity: 1; }
+}
+.ws-stamp { animation: ws-stamp-in var(--fc-dur-med) var(--fc-ease-yank) forwards; }
+
+/* Now-line tick: a small live dot riding the current-time wire. */
+@keyframes ws-now-tick {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.5); opacity: 0.6; }
+}
+.ws-now-tick { animation: ws-now-tick 2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+    .ws-check-pop, .ws-marker, .ws-block-in, .ws-live-pulse,
+    .ws-stamp, .ws-now-tick { animation: none; }
+    .ws-marker { transform: scaleX(1); }
+}

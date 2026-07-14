@@ -5,7 +5,7 @@ import { Shield, ShieldOff } from "lucide-react";
 import { auth } from "@/auth";
 import PageTransition from "@/components/PageTransition";
 import SectionFade from "@/components/Sectionfade";
-import WorkspaceTabs from "@/components/admin/WorkspaceTabs";
+import WorkspaceDesk from "@/components/admin/WorkspaceDesk";
 
 import { logoutAdminAction } from "./actions";
 
@@ -80,7 +80,7 @@ export default async function WorkspacePage() {
           </header>
           </SectionFade>
 
-          <WorkspaceTabs />
+          <WorkspaceDesk />
         </div>
       </main>
     </PageTransition>

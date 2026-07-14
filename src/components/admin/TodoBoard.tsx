@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import clsx from "clsx";
 import DailyBriefCard from "./DailyBriefCard";
+import { projectColor } from "@/lib/projectColor";
 import {
   CalendarDays,
   Check,
@@ -699,6 +700,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
                 const total = todos.filter((t) => t.project === project).length;
                 const remaining = todos.filter((t) => t.project === project && !t.done).length;
                 const pct = total > 0 ? Math.round(((total - remaining) / total) * 100) : 0;
+                const ink = projectColor(project);
 
                 return (
                   <button
@@ -713,13 +715,16 @@ export default function TodoBoard({ onStartTimer }: Props) {
                     )}
                   >
                     <div className="flex items-center justify-between">
-                      <p className="truncate text-sm font-medium text-black">{project}</p>
-                      <span className="ml-3 shrink-0 text-sm text-black/45">{remaining}/{total}</span>
+                      <p className="flex min-w-0 items-center gap-2 truncate text-sm font-medium text-black">
+                        <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: ink.ink }} />
+                        <span className="truncate">{project}</span>
+                      </p>
+                      <span className="ml-3 shrink-0 font-mono text-sm text-black/45">{remaining}/{total}</span>
                     </div>
-                    <div className="mt-2 h-1 overflow-hidden rounded-none bg-black/8">
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-none bg-black/8">
                       <div
-                        className="h-full rounded-none bg-fofo-blue transition-all duration-500"
-                        style={{ width: `${pct}%` }}
+                        className="h-full rounded-none transition-all duration-500"
+                        style={{ width: `${pct}%`, background: ink.ink }}
                       />
                     </div>
                   </button>
@@ -810,6 +815,8 @@ function TodoRow({
   const [showDateInput, setShowDateInput] = useState(false);
   const [dueDateDraft, setDueDateDraft] = useState(todo.dueDate ?? "");
   const [subtaskDraft, setSubtaskDraft] = useState("");
+  const [justChecked, setJustChecked] = useState(false);
+  const ink = projectColor(todo.project);
   const overdue = isOverdue(todo.dueDate, todo.done);
   const dueToday = isDueToday(todo.dueDate, todo.done);
   const doneCount = todo.subtasks.filter((s) => s.done).length;
@@ -826,7 +833,10 @@ function TodoRow({
       onDragOver={onDragOver}
       onDrop={onDrop}
       onDragEnd={onDragEnd}
-      style={getAgingStyle(todo.createdAt, todo.done)}
+      style={{
+        ...getAgingStyle(todo.createdAt, todo.done),
+        ...(todo.project && !todo.done ? { borderLeft: `5px solid ${ink.ink}` } : {}),
+      }}
       className={clsx(
         "rounded-none border transition",
         todo.done ? "border-black/8 bg-black/[0.02]" : "border-black bg-white",
@@ -846,7 +856,13 @@ function TodoRow({
         {/* Checkbox */}
         <button
           type="button"
-          onClick={onToggleDone}
+          onClick={() => {
+            if (!todo.done) {
+              setJustChecked(true);
+              window.setTimeout(() => setJustChecked(false), 600);
+            }
+            onToggleDone();
+          }}
           className={clsx(
             "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-none border-2 transition",
             todo.done
@@ -854,7 +870,7 @@ function TodoRow({
               : "border-black hover:border-fofo-blue",
           )}
         >
-          {todo.done && <Check className="h-3 w-3" />}
+          {todo.done && <Check className={clsx("h-3 w-3", justChecked && "ws-check-pop")} />}
         </button>
 
         {/* Content */}
@@ -877,19 +893,29 @@ function TodoRow({
               type="button"
               onClick={() => { setEditingText(true); setEditText(todo.text); }}
               className={clsx(
-                "block w-full truncate text-left text-sm transition",
+                "relative block w-full truncate text-left text-sm transition",
                 todo.done ? "text-black/40 line-through" : "text-black hover:text-fofo-blue",
               )}
             >
               {todo.pinned && <Star className="mb-0.5 mr-1 inline h-3 w-3 text-amber-400" />}
               {todo.text}
+              {justChecked && (
+                <span
+                  aria-hidden
+                  className="ws-marker pointer-events-none absolute inset-x-0 top-1/2 h-[9px] -translate-y-1/2 bg-fofo-yellow/70 mix-blend-multiply"
+                />
+              )}
             </button>
           )}
 
           {/* Meta row */}
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
             {todo.project && (
-              <span className="rounded-none bg-black/5 px-2 py-0.5 text-xs text-black/50">
+              <span
+                className="flex items-center gap-1.5 rounded-none px-2 py-0.5 text-xs font-medium"
+                style={{ background: ink.wash, color: ink.text }}
+              >
+                <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: ink.ink }} />
                 {todo.project}
               </span>
             )}
