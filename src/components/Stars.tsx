@@ -1,3 +1,5 @@
+import StarGlyph from "./StarGlyph";
+
 type Star = { left: string; top: string; size: number; delay: string; color?: string };
 
 const FIELD: Star[] = [
@@ -19,12 +21,11 @@ export default function Stars({ field = FIELD }: { field?: Star[] }) {
           style={{
             left: s.left,
             top: s.top,
-            fontSize: s.size,
             animationDelay: s.delay,
             color: s.color,
           }}
         >
-          ✳
+          <StarGlyph size={s.size} />
         </span>
       ))}
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Mail, Github, Linkedin, Instagram } from "lucide-react";
+import StarGlyph from "./StarGlyph";
 
 export default function FofoFooter() {
   const year = new Date().getFullYear();
@@ -28,7 +29,7 @@ export default function FofoFooter() {
           <span className="font-display text-[15vw] font-bold tracking-tighter md:text-[9rem]">
             fofo club
           </span>
-          <span className="nb-star text-white text-4xl md:text-6xl">✳</span>
+          <StarGlyph size={56} className="nb-star h-9 w-9 flex-shrink-0 text-white md:h-14 md:w-14" />
         </div>
 
         <p className="mt-4 max-w-md font-mono text-[11px] uppercase tracking-widest text-white/70">

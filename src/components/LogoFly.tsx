@@ -69,11 +69,15 @@ export default function LogoFly() {
 
         wrap.style.left = `${ax}px`;
         wrap.style.top = `${ay}px`;
-        img.style.width = `${r.width}px`;
-        img.style.height = `${r.height}px`;
 
+        // Render the img at its full EXPANDED size so the expanded state is 1:1
+        // (crisp — the source PNG is 2000px). Collapsed/animating states scale
+        // DOWN, which stays sharp, instead of upscaling a tiny navbar-sized box.
         const target = 0.8 * Math.min(window.innerWidth, window.innerHeight);
-        const scale = target / r.width;
+        img.style.width = `${target}px`;
+        img.style.height = `${target}px`;
+
+        const scale = r.width / target; // collapsed downscale factor (< 1)
         const dx = cx - ax;
         const dy = cy - ay;
 
@@ -138,8 +142,8 @@ export default function LogoFly() {
         if (!img || spinAnimRef.current) return;
         spinAnimRef.current = img.animate(
             [
-                { transform: `translate(${m.dx}px, ${m.dy}px) scale(${m.scale}) rotate(390deg)` },
-                { transform: `translate(${m.dx}px, ${m.dy}px) scale(${m.scale}) rotate(750deg)` },
+                { transform: `translate(${m.dx}px, ${m.dy}px) scale(1) rotate(390deg)` },
+                { transform: `translate(${m.dx}px, ${m.dy}px) scale(1) rotate(750deg)` },
             ],
             { duration: 10000, iterations: Infinity, easing: "linear" }
         );
@@ -166,7 +170,7 @@ export default function LogoFly() {
         // it visually while active, but the instant cancel() fires the inline value is
         // already at the correct angle — no snap-back flash to the old inline state.
         if (m) {
-            img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(${m.scale}) rotate(${angle}deg)`;
+            img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(1) rotate(${angle}deg)`;
         }
 
         anim.cancel();
@@ -192,7 +196,7 @@ export default function LogoFly() {
         const isHomepage = window.location.pathname === "/";
 
         if ((isDirectLoad && isHomepage) || !isDirectLoad || initializedRef.current) {
-            img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(${m.scale}) rotate(390deg)`;
+            img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(1) rotate(390deg)`;
             setVisibility("expanded");
             setAnimState("expanded");
             initializedRef.current = true;
@@ -200,7 +204,7 @@ export default function LogoFly() {
             img.style.transition = "";
             requestAnimationFrame(() => startContinuousSpin(m));
         } else {
-            img.style.transform = `translate(0px, 0px) scale(1) rotate(0deg)`;
+            img.style.transform = `translate(0px, 0px) scale(${m.scale}) rotate(0deg)`;
             setVisibility("collapsed");
             setAnimState("collapsed");
             void img.offsetWidth;
@@ -219,15 +223,15 @@ export default function LogoFly() {
             if (stateRef.current === "expanded") {
                 stopContinuousSpin();
                 img.style.transition = "none";
-                img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(${m.scale}) rotate(390deg)`;
+                img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(1) rotate(390deg)`;
                 void img.offsetWidth;
                 img.style.transition = "";
                 requestAnimationFrame(() => startContinuousSpin(m));
             } else if (stateRef.current === "expanding") {
-                img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(${m.scale}) rotate(390deg)`;
+                img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(1) rotate(390deg)`;
             } else {
                 img.style.transition = "none";
-                img.style.transform = `translate(0px, 0px) scale(1) rotate(0deg)`;
+                img.style.transform = `translate(0px, 0px) scale(${m.scale}) rotate(0deg)`;
                 void img.offsetWidth;
                 img.style.transition = "";
             }
@@ -247,7 +251,7 @@ export default function LogoFly() {
         img.style.transition = "none";
 
         if (stateRef.current === "expanded" || stateRef.current === "expanding") {
-            img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(${m.scale}) rotate(390deg)`;
+            img.style.transform = `translate(${m.dx}px, ${m.dy}px) scale(1) rotate(390deg)`;
             setAnimState("expanded");
             setVisibility("expanded");
             consumedFirstScroll.current = false;
@@ -255,7 +259,7 @@ export default function LogoFly() {
             img.style.transition = "";
             requestAnimationFrame(() => startContinuousSpin(m));
         } else {
-            img.style.transform = `translate(0px, 0px) scale(1) rotate(0deg)`;
+            img.style.transform = `translate(0px, 0px) scale(${m.scale}) rotate(0deg)`;
             setAnimState("collapsed");
             setVisibility("collapsed");
             void img.offsetWidth;
@@ -267,6 +271,10 @@ export default function LogoFly() {
     const retract = () => {
         const img = imgRef.current;
         if (!img || state === "retracting" || state === "collapsed") return;
+
+        // Refresh geometry so we scale down to the current navbar-anchor size.
+        const m = measure();
+        const collapsedScale = m ? m.scale : 0.15;
 
         setAnimState("retracting");
         setVisibility("retracting");
@@ -280,7 +288,7 @@ export default function LogoFly() {
         // Always land at rotate(-360deg) = visual 0° (upright).
         // Since currentAngle ∈ [0, 360), backward rotation is always [360, 720) — a full spin.
         img.style.transition = "transform 0.9s cubic-bezier(0.7, 0, 0.3, 1)";
-        img.style.transform = `translate(0px, 0px) scale(1) rotate(-360deg)`;
+        img.style.transform = `translate(0px, 0px) scale(${collapsedScale}) rotate(-360deg)`;
 
         // Safety net: if transitionend never fires (tab blur, interrupted
         // transition, missed event) the state would stay stuck on "retracting"
@@ -376,6 +384,7 @@ export default function LogoFly() {
                         ref={imgRef}
                         src="/fofo-logo.png"
                         alt="Fofo Club logo"
+                        className="object-contain"
                     />
                 </div>
             )}

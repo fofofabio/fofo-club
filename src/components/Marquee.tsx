@@ -1,3 +1,5 @@
+import StarGlyph from "./StarGlyph";
+
 const DEFAULT_ITEMS = [
   "finished & proud",
   "graz",
@@ -19,9 +21,7 @@ export default function Marquee({
         {seq.map((item, i) => (
           <span key={i} className="flex items-center">
             <span className="px-4">{item}</span>
-            <span aria-hidden className="text-white/70">
-              ✳
-            </span>
+            <StarGlyph size={12} className="text-white/70" />
           </span>
         ))}
       </div>
