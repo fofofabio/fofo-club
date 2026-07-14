@@ -10,7 +10,7 @@ export default function HeroUnit({
   logoSrc?: string;
 }) {
   return (
-    <section className="relative mx-auto w-full max-w-6xl px-6 min-h-[82vh] flex items-center pb-20">
+    <section className="relative mx-auto w-full max-w-6xl px-6 min-h-[82vh] flex items-start pt-12 pb-20 md:items-center md:pt-0">
       <Stars />
       {/* source label — the machine hand, faced against the sticker's human voice */}
       <span aria-hidden className="fc-src absolute left-6 top-20 hidden md:block">
