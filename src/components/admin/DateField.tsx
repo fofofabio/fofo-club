@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { CalendarDays, X } from "lucide-react";
 import clsx from "clsx";
 
@@ -31,12 +32,26 @@ export default function DateField({
   clearable = false,
   className,
 }: Props) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const hasValue = Boolean(value);
+
+  function openPicker() {
+    const el = inputRef.current;
+    if (!el) return;
+    // Chrome only opens the calendar via showPicker(); a plain click on a
+    // transparent date input just focuses it. Fall back to focus if unsupported.
+    try {
+      el.showPicker();
+    } catch {
+      el.focus();
+    }
+  }
 
   return (
     <div
+      onClick={openPicker}
       className={clsx(
-        "relative inline-flex items-center gap-1.5 border-[2.5px] px-3 py-2 font-mono text-[12px] uppercase tracking-wide transition",
+        "relative inline-flex cursor-pointer items-center gap-1.5 border-[2.5px] px-3 py-2 font-mono text-[12px] uppercase tracking-wide transition",
         hasValue
           ? "border-black bg-white text-black"
           : "border-black/20 bg-white text-black/50 hover:border-black/50",
@@ -49,7 +64,10 @@ export default function DateField({
       {clearable && hasValue ? (
         <button
           type="button"
-          onClick={() => onChange("")}
+          onClick={(event) => {
+            event.stopPropagation();
+            onChange("");
+          }}
           aria-label="Clear date"
           className="z-10 ml-0.5 text-black/40 transition hover:text-fofo-pink"
         >
@@ -58,6 +76,7 @@ export default function DateField({
       ) : null}
 
       <input
+        ref={inputRef}
         type="date"
         value={value}
         min="2000-01-01"
@@ -68,7 +87,7 @@ export default function DateField({
           const year = parseInt(next.split("-")[0] ?? "0", 10);
           if (!next || (year >= 2000 && year <= 2099)) onChange(next);
         }}
-        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
       />
     </div>
   );
