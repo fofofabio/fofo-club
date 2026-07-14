@@ -39,7 +39,7 @@ export default async function WorkspacePage() {
           {/* rotated sticker — the human hand on the machine room */}
           <div
             aria-hidden
-            className="nb-sticker absolute -top-3 right-6 z-10 hidden rotate-[3deg] bg-fofo-pink text-[13px] md:block"
+            className="nb-sticker absolute -top-4 -left-2 z-10 hidden -rotate-[4deg] bg-fofo-pink text-[13px] lg:block"
           >
             the messy bit
             <br />

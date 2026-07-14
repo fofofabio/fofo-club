@@ -27,7 +27,7 @@ export default async function WorkspaceLoginPage() {
       <main className="relative isolate min-h-[calc(100dvh-6rem)] overflow-hidden bg-fofo-paper px-6 py-12">
         <div className="pointer-events-none absolute inset-0 nb-dots opacity-70" />
 
-        <div className="relative mx-auto flex min-h-[70dvh] max-w-md items-center justify-center">
+        <div className="relative mx-auto flex min-h-[60dvh] max-w-md items-start justify-center pt-[12vh]">
           <AdminLoginForm />
         </div>
       </main>

@@ -79,19 +79,15 @@ export default function AdminLoginForm() {
           </p>
         ) : null}
 
-        <div className="flex items-center gap-3 pt-1">
+        <div className="pt-1">
           <button
             type="submit"
             disabled={pending}
-            className="inline-flex min-w-[160px] items-center justify-center gap-2 border-[2.5px] border-black bg-black px-5 py-3 text-sm font-bold uppercase tracking-wide text-white shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-fofo-blue disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+            className="inline-flex w-full items-center justify-center gap-2 border-[2.5px] border-black bg-fofo-blue px-5 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-black disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
           >
             <ShieldCheck className="h-4 w-4" />
             {pending ? "signing in…" : "sign in"}
           </button>
-
-          <span className="border-[2px] border-black bg-white px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-black/50">
-            private
-          </span>
         </div>
       </form>
     </div>

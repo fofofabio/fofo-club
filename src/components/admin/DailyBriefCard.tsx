@@ -251,15 +251,15 @@ export default function DailyBriefCard({ todos }: Props) {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="flex justify-end border-t border-white/10 px-6 py-4">
+      {/* Footer — quiet dismiss, not a gate. The tasks below are already reachable. */}
+      <div className="flex justify-end border-t border-white/10 px-6 py-3">
         <button
           type="button"
           onClick={dismiss}
-          className="inline-flex items-center gap-2 rounded-none border-[2px] border-white bg-white px-5 py-2.5 font-mono text-[12px] uppercase tracking-wide text-black transition hover:-translate-y-0.5 hover:bg-fofo-blue hover:text-white"
+          className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide text-white/45 transition hover:text-white"
         >
-          got it, let&apos;s go
-          <ArrowRight className="h-4 w-4" />
+          dismiss for today
+          <ArrowRight className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>

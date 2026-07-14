@@ -522,10 +522,10 @@ export default function TodoBoard({ onStartTimer }: Props) {
                 type="button"
                 onClick={() => setActiveFilter(f)}
                 className={clsx(
-                  "rounded-none border-[2px] border-black px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide transition",
+                  "rounded-none border px-3 py-1 font-mono text-[11px] uppercase tracking-wide transition",
                   activeFilter === f
-                    ? "bg-fofo-blue text-white shadow-brutal-sm"
-                    : "bg-white text-black/60 hover:-translate-y-0.5 hover:bg-black hover:text-white",
+                    ? "border-fofo-blue bg-fofo-blue/10 text-fofo-blue"
+                    : "border-black/15 bg-white text-black/55 hover:border-black/40 hover:text-black",
                 )}
               >
                 {f === "all" ? "all projects" : f}

@@ -72,9 +72,9 @@ function TabButton({
       type="button"
       onClick={onClick}
       className={clsx(
-        "inline-flex items-center gap-2 rounded-none border-[2px] px-4 py-2.5 font-mono text-[12px] uppercase tracking-wide transition",
+        "inline-flex items-center gap-2 rounded-none border-b-[3px] px-5 py-2.5 font-mono text-[12px] font-semibold uppercase tracking-wide transition",
         active
-          ? "border-black bg-fofo-blue text-white"
+          ? "border-fofo-blue bg-fofo-blue text-white"
           : "border-transparent text-black/55 hover:text-black",
       )}
     >
