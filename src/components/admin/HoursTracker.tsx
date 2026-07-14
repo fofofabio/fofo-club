@@ -15,6 +15,7 @@ import {
 
 import { projectColor } from "@/lib/projectColor";
 import DateField from "./DateField";
+import DayDial from "./DayDial";
 
 const SLOT_MINUTES = 15;
 const VISIBLE_START_MINUTE = 6 * 60;
@@ -1359,6 +1360,46 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             {activeSession ? "stop & save" : "start timer"}
           </button>
         </div>
+
+        {selectedDayEntries.length > 0 ? (
+          <div className="rounded-none border border-black/12 bg-white p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="meta text-fofo-blue">DAY DIAL</p>
+              <span className="font-mono text-[10px] uppercase tracking-wide text-black/35">
+                06—19h
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <DayDial
+                entries={selectedDayEntries.map((entry) => ({
+                  id: entry.id,
+                  project: entry.project,
+                  start: entry.start,
+                  end: entry.end,
+                }))}
+                centerLabel={formatDuration(selectedDayMinutes)}
+              />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                {Array.from(
+                  new Set(
+                    selectedDayEntries.map((entry) => entry.project.trim()).filter(Boolean),
+                  ),
+                )
+                  .slice(0, 6)
+                  .map((project) => (
+                    <div key={project} className="flex items-center gap-2">
+                      <span
+                        aria-hidden
+                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        style={{ background: projectColor(project).ink }}
+                      />
+                      <span className="truncate text-xs text-black/70">{project}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         <div className="rounded-none border border-black/12 bg-white p-4">
           <div className="flex items-center justify-between gap-3">

@@ -6,6 +6,7 @@ import SelectedWork from "@/components/SelectedWork";
 import StatsStrip from "@/components/StatsStrip";
 import ExploreIndex from "@/components/ExploreIndex";
 import Footer from "@/components/Footer";
+import DailyCow from "@/components/DailyCow";
 import PageTransition from "@/components/PageTransition"; // <-- add this
 
 export default function Home() {
@@ -23,6 +24,13 @@ export default function Home() {
 
         {/* scrolling ticker */}
         <Marquee />
+
+        {/* the thinking cow's daily wisdom */}
+        <SectionFade once threshold={0.2} baseClass="fc-stamp" inClass="fc-stamp-in">
+          <div className="mx-auto max-w-2xl px-6 py-14">
+            <DailyCow />
+          </div>
+        </SectionFade>
 
         {/* punchy numbers */}
         <SectionFade once threshold={0.2} baseClass="fc-stamp" inClass="fc-stamp-in">

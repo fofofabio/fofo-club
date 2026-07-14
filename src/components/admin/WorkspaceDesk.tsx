@@ -6,6 +6,7 @@ import { Clock, ListTodo } from "lucide-react";
 
 import HoursTracker from "./HoursTracker";
 import TodoBoard from "./TodoBoard";
+import DailyCow from "@/components/DailyCow";
 
 type PendingDraft = { project: string; task: string } | null;
 
@@ -98,6 +99,9 @@ export default function WorkspaceDesk() {
           </span>
         </div>
       </div>
+
+      {/* A daily dose of cow before the work begins. */}
+      <DailyCow className="mb-6 max-w-md" />
 
       {/* Zone 1 — the canvas: what am I doing right now. */}
       <section ref={hoursRef} className="scroll-mt-20">
