@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import clsx from "clsx";
 import DailyBriefCard from "./DailyBriefCard";
+import DateField from "./DateField";
 import { projectColor } from "@/lib/projectColor";
 import {
-  CalendarDays,
   Check,
   ChevronDown,
   ChevronRight,
@@ -75,25 +75,6 @@ function isOverdue(dueDate: string | null, done: boolean) {
 function isDueToday(dueDate: string | null, done: boolean) {
   if (!dueDate || done) return false;
   return dueDate === todayKey();
-}
-
-function formatDueDate(dueDate: string) {
-  const today = todayKey();
-
-  if (dueDate === today) return "Today";
-
-  const tomorrow = (() => {
-    const d = new Date(`${today}T12:00:00`);
-    d.setDate(d.getDate() + 1);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  })();
-
-  if (dueDate === tomorrow) return "Tomorrow";
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-  }).format(new Date(`${dueDate}T12:00:00`));
 }
 
 const ARCHIVE_DAYS = 7;
@@ -498,18 +479,12 @@ export default function TodoBoard({ onStartTimer }: Props) {
               className="w-36 shrink-0 rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
             />
 
-            <input
-              type="date"
+            <DateField
               value={draftDueDate}
-              min="2000-01-01"
-              max="2099-12-31"
-              onChange={(e) => {
-                const year = parseInt(e.target.value.split("-")[0] ?? "0", 10);
-                if (!e.target.value || (year >= 2000 && year <= 2099)) {
-                  setDraftDueDate(e.target.value);
-                }
-              }}
-              className="w-40 shrink-0 rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+              onChange={setDraftDueDate}
+              placeholder="due date"
+              clearable
+              className="shrink-0 !py-3"
             />
           </div>
         </div>
@@ -812,8 +787,6 @@ function TodoRow({
 }: TodoRowProps) {
   const [editingText, setEditingText] = useState(false);
   const [editText, setEditText] = useState(todo.text);
-  const [showDateInput, setShowDateInput] = useState(false);
-  const [dueDateDraft, setDueDateDraft] = useState(todo.dueDate ?? "");
   const [subtaskDraft, setSubtaskDraft] = useState("");
   const [justChecked, setJustChecked] = useState(false);
   const ink = projectColor(todo.project);
@@ -920,62 +893,22 @@ function TodoRow({
               </span>
             )}
 
-            {todo.dueDate && !showDateInput && (
-              <button
-                type="button"
-                onClick={() => setShowDateInput(true)}
+            {todo.dueDate || !todo.done ? (
+              <DateField
+                value={todo.dueDate ?? ""}
+                onChange={(v) => onUpdateDueDate(v || null)}
+                placeholder="due date"
+                clearable
                 className={clsx(
-                  "flex items-center gap-1 rounded-none px-2 py-0.5 text-xs transition",
+                  "!border !px-2 !py-0.5 !text-[11px]",
                   overdue
-                    ? "bg-red-50 text-red-600 hover:bg-red-100"
+                    ? "!border-red-400 !text-red-600"
                     : dueToday
-                      ? "bg-amber-50 text-amber-600 hover:bg-amber-100"
-                      : "bg-black/5 text-black/50 hover:bg-black/10",
+                      ? "!border-amber-400 !text-amber-600"
+                      : "",
                 )}
-              >
-                <CalendarDays className="h-3 w-3" />
-                {formatDueDate(todo.dueDate)}
-              </button>
-            )}
-
-            {showDateInput && (
-              <input
-                autoFocus
-                type="date"
-                value={dueDateDraft}
-                min="2000-01-01"
-                max="2099-12-31"
-                onChange={(e) => setDueDateDraft(e.target.value)}
-                onBlur={() => {
-                  setShowDateInput(false);
-                  const year = parseInt(dueDateDraft.split("-")[0] ?? "0", 10);
-                  if (!dueDateDraft) onUpdateDueDate(null);
-                  else if (year >= 2000 && year <= 2099) onUpdateDueDate(dueDateDraft);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") { setShowDateInput(false); }
-                  if (e.key === "Enter") {
-                    const year = parseInt(dueDateDraft.split("-")[0] ?? "0", 10);
-                    if (dueDateDraft && year >= 2000 && year <= 2099) {
-                      onUpdateDueDate(dueDateDraft);
-                      setShowDateInput(false);
-                    }
-                  }
-                }}
-                className="rounded-none border border-fofo-blue px-2 py-0.5 text-xs outline-none ring-2 ring-fofo-blue/10"
               />
-            )}
-
-            {!todo.dueDate && !showDateInput && !todo.done && (
-              <button
-                type="button"
-                onClick={() => setShowDateInput(true)}
-                className="flex items-center gap-1 rounded-none px-2 py-0.5 text-xs text-black/25 transition hover:text-black/50"
-              >
-                <CalendarDays className="h-3 w-3" />
-                Due date
-              </button>
-            )}
+            ) : null}
 
             {todo.subtasks.length > 0 && (
               <button

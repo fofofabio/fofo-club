@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clipboard,
-  FolderKanban,
   PencilLine,
   Play,
   Square,
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { projectColor } from "@/lib/projectColor";
+import DateField from "./DateField";
 
 const SLOT_MINUTES = 15;
 const VISIBLE_START_MINUTE = 6 * 60;
@@ -385,7 +385,6 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
   const [timerTick, setTimerTick] = useState(Date.now());
   const [focusMinute, setFocusMinute] = useState<number | null>(null);
   const [justSavedId, setJustSavedId] = useState<string | null>(null);
-  const [showAllPaused, setShowAllPaused] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -1224,72 +1223,57 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             </div>
           </div>
         </div>
-        {/* Memory panels — reference material lives under the canvas so the
-            action rail (timer + editor) stays short and the page doesn't leave a
-            tall empty gap beside a short timeline. */}
-        <div className="grid items-start gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        {/* Reference material under the canvas. Each block only renders when it
+            has content, so a blank day stays blank instead of showing empty
+            panels. Paused activities is a short horizontal strip so it fills the
+            width instead of forming a tall narrow column. */}
+        {recentActivities.length > 0 ? (
           <div className="rounded-none border border-black/12 bg-white p-4">
-            <div className="flex items-center gap-3">
+            <div className="mb-3 flex items-center gap-2">
               <TimerReset className="h-4 w-4 text-black/45" />
-              <div>
-                <p className="meta text-fofo-blue">CONTINUE</p>
-                <h3 className="mt-1 font-display font-bold lowercase text-2xl tracking-tight text-black">
-                  Paused activities
-                </h3>
-              </div>
+              <p className="meta text-fofo-blue">CONTINUE</p>
+              <h3 className="font-display font-bold lowercase text-lg tracking-tight text-black">
+                paused activities
+              </h3>
             </div>
-
-            <div className="mt-4 space-y-3">
-              {recentActivities.length ? (
-                (showAllPaused ? recentActivities : recentActivities.slice(0, 4)).map((activity) => (
-                  <div
-                    key={`${activity.project}:${activity.task}`}
-                    className="rounded-none border border-black/15 bg-white px-4 py-4"
-                    style={{ borderLeft: `5px solid ${projectColor(activity.project).ink}` }}
-                  >
-                    <p className="text-sm font-semibold text-black">{activity.project}</p>
-                    <p className="mt-1 text-sm text-black/60">
-                      {activity.task || "No task note"} · last on {formatMonthDay(activity.lastDate)}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => resumeActivity(activity.project, activity.task)}
-                      className="mt-3 inline-flex items-center gap-2 rounded-none border-[2.5px] border-black bg-white px-3 py-2 text-xs text-black/70 transition hover:border-black hover:text-black"
-                    >
-                      <Play className="h-3.5 w-3.5" />
-                      Continue
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-none border-[2px] border-dashed border-black bg-white px-4 py-8 text-center text-sm text-black/70">
-                  No previous activities to continue yet.
-                </div>
-              )}
-              {recentActivities.length > 4 ? (
-                <button
-                  type="button"
-                  onClick={() => setShowAllPaused((v) => !v)}
-                  className="w-full font-mono text-[11px] uppercase tracking-wide text-fofo-blue transition hover:text-black"
+            <div className="flex gap-3 overflow-x-auto pb-1">
+              {recentActivities.map((activity) => (
+                <div
+                  key={`${activity.project}:${activity.task}`}
+                  className="flex w-52 shrink-0 flex-col rounded-none border border-black/15 bg-white p-3"
+                  style={{ borderLeft: `5px solid ${projectColor(activity.project).ink}` }}
                 >
-                  {showAllPaused ? "show fewer" : `+ ${recentActivities.length - 4} more`}
-                </button>
-              ) : null}
+                  <p className="truncate text-sm font-semibold text-black">{activity.project}</p>
+                  <p className="mt-0.5 truncate text-xs text-black/55">
+                    {activity.task || "no task note"} · {formatMonthDay(activity.lastDate)}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => resumeActivity(activity.project, activity.task)}
+                    className="mt-2 inline-flex items-center gap-1.5 self-start rounded-none border-[2px] border-black bg-white px-2.5 py-1 text-xs text-black/70 transition hover:bg-fofo-blue hover:text-white"
+                  >
+                    <Play className="h-3 w-3" />
+                    continue
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
+        ) : null}
 
+        {weeklyProjectTotals.length > 0 ? (
           <div className="rounded-none border border-black/12 bg-white p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
                 <p className="meta text-fofo-blue">WEEK SUMMARY</p>
-                <h3 className="mt-1 font-display font-bold lowercase text-2xl tracking-tight text-black">
-                  Booking-ready
+                <h3 className="font-display font-bold lowercase text-lg tracking-tight text-black">
+                  booking-ready
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={copyWeekReport}
-                className="inline-flex items-center gap-2 rounded-none border-[2.5px] border-black bg-white px-3 py-2 text-sm text-black/70 transition hover:border-black hover:text-black"
+                className="inline-flex items-center gap-2 rounded-none border-[2px] border-black bg-white px-3 py-1.5 text-sm text-black/70 transition hover:bg-fofo-blue hover:text-white"
               >
                 <Clipboard className="h-4 w-4" />
                 {copyState === "copied"
@@ -1300,119 +1284,40 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               </button>
             </div>
 
-            <div className="mt-4 space-y-3">
-              {weeklyProjectTotals.length ? (
-                weeklyProjectTotals.map((project) => {
-                  const ink = projectColor(project.project);
-                  const topMinutes = weeklyProjectTotals[0]?.minutes || 1;
-                  const pct = Math.max(6, Math.round((project.minutes / topMinutes) * 100));
-                  return (
-                    <div
-                      key={project.project}
-                      className="rounded-none border border-black/15 bg-white px-4 py-3"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-2">
-                          <span
-                            aria-hidden
-                            className="h-2.5 w-2.5 shrink-0 rounded-full"
-                            style={{ background: ink.ink }}
-                          />
-                          <p className="truncate text-sm font-medium text-black">
-                            {project.project || "No project"}
-                          </p>
-                        </div>
-                        <span className="shrink-0 font-mono text-sm text-black/70">
-                          {formatDuration(project.minutes)}
-                        </span>
-                      </div>
-                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-none bg-black/8">
-                        <div
-                          className="h-full rounded-none transition-all duration-500"
-                          style={{ width: `${pct}%`, background: ink.ink }}
+            <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+              {weeklyProjectTotals.map((project) => {
+                const ink = projectColor(project.project);
+                const topMinutes = weeklyProjectTotals[0]?.minutes || 1;
+                const pct = Math.max(6, Math.round((project.minutes / topMinutes) * 100));
+                return (
+                  <div key={project.project}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span
+                          aria-hidden
+                          className="h-2.5 w-2.5 shrink-0 rounded-full"
+                          style={{ background: ink.ink }}
                         />
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="rounded-none border-[2px] border-dashed border-black bg-white px-4 py-8 text-center text-sm text-black/70">
-                  No hours in this week yet.
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-none border border-black/12 bg-white p-4">
-            <div className="flex items-center gap-3">
-              <FolderKanban className="h-4 w-4 text-black/45" />
-              <div>
-                <p className="meta text-fofo-blue">DAY BLOCKS</p>
-                <h3 className="mt-1 font-display font-bold lowercase text-2xl tracking-tight text-black">
-                  {formatDayLabel(selectedDate)}
-                </h3>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {!hydrated ? (
-                <div className="rounded-none border-[2.5px] border-black bg-white px-4 py-4 text-sm text-black/70">
-                  Loading local data...
-                </div>
-              ) : selectedDayEntries.length ? (
-                selectedDayEntries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="rounded-none border border-black/15 bg-white px-4 py-4"
-                    style={{ borderLeft: `5px solid ${projectColor(entry.project).ink}` }}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-black">{entry.project}</p>
-                        <p className="mt-1 text-sm text-black/70">
-                          {entry.start} - {entry.end} · {formatDuration(getDurationMinutes(entry))}
+                        <p className="truncate text-sm font-medium text-black">
+                          {project.project || "No project"}
                         </p>
-                        {entry.task ? (
-                          <p className="mt-1 text-sm text-black/70">{entry.task}</p>
-                        ) : null}
                       </div>
-
-                      <div className="flex flex-wrap justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => resumeActivity(entry.project, entry.task)}
-                          className="inline-flex items-center gap-1 rounded-none border-[2.5px] border-black bg-white px-3 py-2 text-xs text-black/60 transition hover:border-black hover:text-black"
-                        >
-                          <Play className="h-3.5 w-3.5" />
-                          Continue
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => editEntry(entry)}
-                          className="rounded-none border-[2.5px] border-black bg-white px-3 py-2 text-xs text-black/60 transition hover:border-black hover:text-black"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => deleteEntry(entry.id)}
-                          className="inline-flex items-center gap-1 rounded-none border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 transition hover:border-red-300"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                          Delete
-                        </button>
-                      </div>
+                      <span className="shrink-0 font-mono text-sm text-black/70">
+                        {formatDuration(project.minutes)}
+                      </span>
+                    </div>
+                    <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-none bg-black/8">
+                      <div
+                        className="h-full rounded-none transition-all duration-500"
+                        style={{ width: `${pct}%`, background: ink.ink }}
+                      />
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="rounded-none border-[2px] border-dashed border-black bg-white px-4 py-8 text-center text-sm text-black/70">
-                  No blocks on this day yet. Drag the timeline or add one manually.
-                </div>
-              )}
+                );
+              })}
             </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
@@ -1499,14 +1404,15 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               <div className="mt-3 grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
               <label className="block">
                 <span className="text-xs font-medium text-black/60">Date</span>
-                <input
-                  type="date"
+                <DateField
                   value={draft.date}
-                  onChange={(event) => {
-                    updateDraft("date", event.target.value);
-                    setSelectedDate(event.target.value);
+                  onChange={(value) => {
+                    if (!value) return;
+                    updateDraft("date", value);
+                    setSelectedDate(value);
                   }}
-                  className="mt-2 w-full rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
+                  placeholder="pick a date"
+                  className="mt-2 flex w-full !py-3"
                 />
               </label>
 
@@ -1575,6 +1481,17 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               >
                 Clear
               </button>
+
+              {editingId ? (
+                <button
+                  type="button"
+                  onClick={() => deleteEntry(editingId)}
+                  className="inline-flex items-center gap-1.5 rounded-none border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 transition hover:border-red-400"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </button>
+              ) : null}
             </div>
 
             <div className="rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-3 text-sm text-black/60">
