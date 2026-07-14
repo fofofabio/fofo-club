@@ -464,7 +464,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
             </div>
             <div>
               <p className="meta text-fofo-blue">TO-DO</p>
-              <h2 className="mt-0.5 font-display text-3xl tracking-tight text-black md:text-4xl">
+              <h2 className="mt-0.5 font-display font-bold lowercase text-3xl tracking-tight text-black md:text-4xl">
                 Tasks
               </h2>
             </div>
@@ -671,7 +671,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
       <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
         <div className="rounded-none border-[2.5px] border-black bg-black px-5 py-5 text-white shadow-brutal">
           <p className="meta text-white/60">OVERVIEW</p>
-          <div className="mt-2 font-display text-4xl tracking-tight">{pendingCount}</div>
+          <div className="mt-2 font-display font-bold lowercase text-4xl tracking-tight">{pendingCount}</div>
           <p className="mt-2 text-sm text-white/65">
             {pendingCount === 1 ? "task remaining" : "tasks remaining"}
           </p>
@@ -692,7 +692,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
         {projects.length > 0 && (
           <div className="rounded-none border-[2.5px] border-black bg-white p-5 shadow-brutal">
             <p className="meta text-fofo-blue">BY PROJECT</p>
-            <h3 className="mt-1 font-display text-2xl tracking-tight text-black">Breakdown</h3>
+            <h3 className="mt-1 font-display font-bold lowercase text-2xl tracking-tight text-black">Breakdown</h3>
 
             <div className="mt-4 space-y-2">
               {projects.map((project) => {

@@ -872,7 +872,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
           <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div>
               <p className="meta text-fofo-blue">HOURS TRACKER</p>
-              <h2 className="mt-1 font-display text-3xl tracking-tight text-black md:text-4xl">
+              <h2 className="mt-1 font-display font-bold lowercase text-3xl tracking-tight text-black md:text-4xl">
                 Day timeline
               </h2>
               <p className="mt-2 text-sm leading-6 text-black/60">
@@ -923,14 +923,14 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
 
             <div className="rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-4">
               <p className="meta text-fofo-blue">Day total</p>
-              <div className="mt-2 font-display text-3xl tracking-tight text-black">
+              <div className="mt-2 font-display font-bold lowercase text-3xl tracking-tight text-black">
                 {formatDuration(selectedDayMinutes + (selectedDate === todayKey ? activeMinutes : 0))}
               </div>
             </div>
 
             <div className="rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-4">
               <p className="meta text-fofo-blue">Week total</p>
-              <div className="mt-2 font-display text-3xl tracking-tight text-black">
+              <div className="mt-2 font-display font-bold lowercase text-3xl tracking-tight text-black">
                 {formatDuration(selectedWeekMinutes)}
               </div>
             </div>
@@ -973,7 +973,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="meta text-fofo-blue">{formatWeekRange(selectedDate)}</p>
-                  <h3 className="mt-1 font-display text-2xl tracking-tight text-black">
+                  <h3 className="mt-1 font-display font-bold lowercase text-2xl tracking-tight text-black">
                     {formatDayLabel(selectedDate)}
                   </h3>
                 </div>
@@ -1123,7 +1123,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
         <div className="rounded-none border-[2.5px] border-black bg-black px-5 py-5 text-white shadow-brutal">
           <p className="meta text-white/60">LIVE TIMER</p>
-          <div className="mt-2 font-display text-4xl tracking-tight">
+          <div className="mt-2 font-display font-bold lowercase text-4xl tracking-tight">
             {activeSession ? formatDuration(activeMinutes) : "Ready"}
           </div>
           <p className="mt-2 text-sm text-white/65">
@@ -1151,7 +1151,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="meta text-fofo-blue">BLOCK EDITOR</p>
-              <h3 className="mt-1 font-display text-2xl tracking-tight text-black">
+              <h3 className="mt-1 font-display font-bold lowercase text-2xl tracking-tight text-black">
                 {editingId ? "Edit block" : "Add block"}
               </h3>
             </div>
@@ -1274,7 +1274,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             <TimerReset className="h-4 w-4 text-black/45" />
             <div>
               <p className="meta text-fofo-blue">CONTINUE</p>
-              <h3 className="mt-1 font-display text-2xl tracking-tight text-black">
+              <h3 className="mt-1 font-display font-bold lowercase text-2xl tracking-tight text-black">
                 Paused activities
               </h3>
             </div>
@@ -1313,7 +1313,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="meta text-fofo-blue">WEEK SUMMARY</p>
-              <h3 className="mt-1 font-display text-2xl tracking-tight text-black">
+              <h3 className="mt-1 font-display font-bold lowercase text-2xl tracking-tight text-black">
                 Booking-ready
               </h3>
             </div>
@@ -1361,7 +1361,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             <FolderKanban className="h-4 w-4 text-black/45" />
             <div>
               <p className="meta text-fofo-blue">DAY BLOCKS</p>
-              <h3 className="mt-1 font-display text-2xl tracking-tight text-black">
+              <h3 className="mt-1 font-display font-bold lowercase text-2xl tracking-tight text-black">
                 {formatDayLabel(selectedDate)}
               </h3>
             </div>

@@ -156,7 +156,7 @@ export default function DailyBriefCard({ todos }: Props) {
         <Sun className="h-5 w-5 shrink-0 text-amber-300" />
         <div>
           <p className="meta text-white/45">DAILY BRIEF</p>
-          <p className="mt-0.5 font-display text-2xl tracking-tight">{formatTodayLabel()}</p>
+          <p className="mt-0.5 font-display font-bold lowercase text-2xl tracking-tight">{formatTodayLabel()}</p>
         </div>
       </div>
 
@@ -208,7 +208,7 @@ export default function DailyBriefCard({ todos }: Props) {
             <p className="mt-3 text-sm text-white/40">No hours logged yet this week.</p>
           ) : (
             <div className="mt-3">
-              <p className="font-display text-3xl tracking-tight">
+              <p className="font-display font-bold lowercase text-3xl tracking-tight">
                 {formatDuration(weeklyMinutes)}
               </p>
               <p className="mt-1 text-sm text-white/45">

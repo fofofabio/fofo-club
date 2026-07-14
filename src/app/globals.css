@@ -50,11 +50,11 @@ body { scrollbar-gutter: stable; }
     }
 
     .meta {
-        @apply font-pixel tracking-widest text-[11px] uppercase text-fofo-blue/70;
+        @apply font-mono tracking-[0.12em] text-[11px] uppercase text-fofo-blue/70;
     }
 
     .meta-section {
-        @apply font-pixel tracking-widest text-[11px] uppercase text-fofo-mist/70;
+        @apply font-mono tracking-[0.12em] text-[11px] uppercase text-fofo-mist/70;
     }
 
     .badge {
@@ -385,4 +385,4 @@ body { scrollbar-gutter: stable; }
 .card:hover { box-shadow: 9px 9px 0 0 #000; }
 
 .badge { @apply rounded-none border-[2px] border-black px-2 py-0.5 text-[10px] tracking-widest uppercase text-black; }
-.meta  { @apply uppercase tracking-widest text-[10px] text-fofo-blue; }
+.meta  { @apply font-mono uppercase tracking-[0.12em] text-[10px] text-fofo-blue; }
