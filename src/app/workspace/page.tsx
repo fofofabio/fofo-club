@@ -5,6 +5,7 @@ import { Shield, ShieldOff } from "lucide-react";
 import { auth } from "@/auth";
 import PageTransition from "@/components/PageTransition";
 import SectionFade from "@/components/Sectionfade";
+import StarGlyph from "@/components/StarGlyph";
 import WorkspaceDesk from "@/components/admin/WorkspaceDesk";
 
 import { logoutAdminAction } from "./actions";
@@ -36,10 +37,21 @@ export default async function WorkspacePage() {
         <div className="pointer-events-none absolute inset-0 nb-dots opacity-60" />
 
         <div className="page-shell-wide relative">
+          {/* Decorative fofo-sparkles drifting in the margins. */}
+          <StarGlyph
+            size={22}
+            className="ws-drift pointer-events-none absolute -top-2 right-4 hidden text-fofo-blue/25 lg:block"
+          />
+          <StarGlyph
+            size={14}
+            className="ws-drift pointer-events-none absolute right-24 top-16 hidden text-fofo-pink/30 lg:block"
+            style={{ animationDelay: "1.4s" }}
+          />
+
           {/* rotated sticker — the human hand on the machine room */}
           <div
             aria-hidden
-            className="nb-sticker absolute -top-10 left-6 z-10 hidden -rotate-[4deg] bg-fofo-pink text-[13px] lg:block"
+            className="nb-sticker ws-wobble absolute -top-10 left-6 z-10 hidden -rotate-[4deg] bg-fofo-pink text-[13px] lg:block"
           >
             the messy bit
             <br />
@@ -57,7 +69,7 @@ export default async function WorkspacePage() {
                   workspace
                 </h1>
                 <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-fofo-blue">
-                  // private
+                  {"// private"}
                 </span>
                 <span className="hidden text-sm text-black/45 sm:inline">
                   have a nice day, {displayName}.

@@ -952,7 +952,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               {selectedDayMinutes + (selectedDate === todayKey ? activeMinutes : 0) >= 360 ? (
                 <span
                   aria-hidden
-                  className="ws-stamp pointer-events-none absolute -right-8 -top-2 select-none border-[2.5px] border-fofo-pink px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-tight text-fofo-pink"
+                  className="ws-stamp pointer-events-none absolute -top-5 right-0 select-none border-[2.5px] border-fofo-pink px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-tight text-fofo-pink"
                 >
                   good day
                 </span>

@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import clsx from "clsx";
 import DailyBriefCard from "./DailyBriefCard";
 import DateField from "./DateField";
+import StarGlyph from "@/components/StarGlyph";
 import { projectColor } from "@/lib/projectColor";
 import {
   Check,
@@ -645,12 +646,46 @@ export default function TodoBoard({ onStartTimer }: Props) {
 
       {/* Sidebar */}
       <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-        <div className="rounded-none border-[2.5px] border-black bg-black px-5 py-5 text-white shadow-brutal">
+        <div className="relative overflow-hidden rounded-none border-[2.5px] border-black bg-black px-5 py-5 text-white shadow-brutal">
           <p className="meta text-white/60">OVERVIEW</p>
-          <div className="mt-2 font-display font-bold lowercase text-4xl tracking-tight">{pendingCount}</div>
-          <p className="mt-2 text-sm text-white/65">
-            {pendingCount === 1 ? "task remaining" : "tasks remaining"}
-          </p>
+
+          {pendingCount === 0 && totalCount > 0 ? (
+            <div className="relative mt-2">
+              <div className="flex items-center gap-3">
+                <StarGlyph size={34} className="ws-drift text-fofo-yellow" />
+                <span className="font-display text-3xl font-bold lowercase tracking-tight">all clear</span>
+              </div>
+              <p className="mt-1.5 font-hand text-xl leading-tight text-fofo-yellow/90">
+                nothing left — go outside.
+              </p>
+
+              {/* one-shot sparkle burst */}
+              <div aria-hidden className="pointer-events-none absolute left-4 top-3">
+                {[
+                  { bx: "-34px", by: "-20px", d: "0ms", s: 12 },
+                  { bx: "26px", by: "-26px", d: "60ms", s: 16 },
+                  { bx: "48px", by: "6px", d: "120ms", s: 11 },
+                  { bx: "-40px", by: "14px", d: "90ms", s: 13 },
+                  { bx: "8px", by: "-40px", d: "150ms", s: 10 },
+                  { bx: "38px", by: "28px", d: "40ms", s: 12 },
+                ].map((p, i) => (
+                  <StarGlyph
+                    key={i}
+                    size={p.s}
+                    className="ws-burst-star absolute text-fofo-yellow"
+                    style={{ ["--bx" as string]: p.bx, ["--by" as string]: p.by, animationDelay: p.d }}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="mt-2 font-display font-bold lowercase text-4xl tracking-tight">{pendingCount}</div>
+              <p className="mt-2 text-sm text-white/65">
+                {pendingCount === 1 ? "task remaining" : "tasks remaining"}
+              </p>
+            </>
+          )}
 
           {totalCount > 0 && (
             <div className="mt-4 space-y-1">
