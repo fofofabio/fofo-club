@@ -27,6 +27,10 @@ type Cow = {
   say?: string;
   /** extra px to raise (+) or lower (−) the speech bubble */
   sayLift?: number;
+  /** hide the bubble on phones, where two bubbles would collide */
+  sayHideMobile?: boolean;
+  /** shorter line to show on phones, where the full quote wraps too tall */
+  sayMobile?: string;
 };
 
 // cow1 + grazing appear more than once; laying + flying just the once.
@@ -36,7 +40,7 @@ type Cow = {
 const HERD: Cow[] = [
   { src: "/cow_grazing.png", alt: "a grazing cow", left: 4, bottom: 2, width: 14 },
   { src: "/cow1.png", alt: "a cow", left: 26, bottom: 22, width: 9, flip: true },
-  { src: "/cow_laying.png", alt: "a resting cow", left: 37, bottom: 6, width: 12, say: "Moo", sayLift: -10 },
+  { src: "/cow_laying.png", alt: "a resting cow", left: 37, bottom: 6, width: 12, say: "Moo", sayLift: -10, sayHideMobile: true },
   {
     src: "/cow_grazing.png",
     alt: "a grazing cow",
@@ -45,6 +49,7 @@ const HERD: Cow[] = [
     width: 13,
     flip: true,
     say: "Humanity has failed because we mastered the planet but lost ourselves.",
+    sayMobile: "We mastered the planet but lost ourselves.",
     sayLift: 14,
   },
   { src: "/cow1.png", alt: "a cow", left: 71, bottom: 14, width: 10 },
@@ -87,7 +92,14 @@ export default function CowPasture({ className }: Props) {
                 width: `${cow.width}%`,
               }}
             >
-              {cow.say ? <CloudBubble text={cow.say} lift={cow.sayLift} /> : null}
+              {cow.say ? (
+                <CloudBubble
+                  text={cow.say}
+                  textMobile={cow.sayMobile}
+                  lift={cow.sayLift}
+                  hideMobile={cow.sayHideMobile}
+                />
+              ) : null}
               {/* wiggle wrapper so the cow sways but the bubble stays put */}
               <span
                 className="cow-wiggle block"
@@ -117,13 +129,26 @@ export default function CowPasture({ className }: Props) {
  * stretches to the text box (non-scaling stroke keeps the outline even), with
  * two little trailing puffs pointing down toward the cow.
  */
-function CloudBubble({ text, lift = 0 }: { text: string; lift?: number }) {
+function CloudBubble({
+  text,
+  lift = 0,
+  hideMobile = false,
+  textMobile,
+}: {
+  text: string;
+  lift?: number;
+  hideMobile?: boolean;
+  textMobile?: string;
+}) {
   return (
     <div
-      className="absolute bottom-full left-1/2 z-20 w-max max-w-[110px] -translate-x-1/2 sm:max-w-[155px]"
+      className={clsx(
+        "absolute bottom-full left-1/2 z-20 w-max max-w-[96px] -translate-x-1/2 sm:max-w-[155px]",
+        hideMobile && "hidden sm:block",
+      )}
       style={{ marginBottom: `calc(0.75rem + ${lift}px)` }}
     >
-      <div className="relative px-4 pb-3 pt-5 sm:px-6 sm:pb-4 sm:pt-7">
+      <div className="relative px-4 pb-3 pt-7 sm:px-6 sm:pb-4">
         {/* A fat, full-bodied cloud that fills the padded box, so the text
             sits over solid white and stays centred (padding = the margin
             between the words and the cloud's edge). */}
@@ -142,8 +167,15 @@ function CloudBubble({ text, lift = 0 }: { text: string; lift?: number }) {
             vectorEffect="non-scaling-stroke"
           />
         </svg>
-        <span className="relative block text-center font-display text-[9px] font-bold leading-[1.35] text-black sm:text-[11px]">
-          {text}
+        <span className="relative block text-center font-display text-[9px] font-bold leading-[1.35] text-black [text-wrap:balance] sm:text-[11px]">
+          {textMobile ? (
+            <>
+              <span className="sm:hidden">{textMobile}</span>
+              <span className="hidden sm:inline">{text}</span>
+            </>
+          ) : (
+            text
+          )}
         </span>
       </div>
       {/* trailing thought puffs, drifting down toward the cow */}
