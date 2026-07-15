@@ -3,7 +3,7 @@ import FcLink from "@/components/FcLink";
 import { profile, experience, education, skills } from "@/data/cv";
 import PageTransition from "@/components/PageTransition";
 import Footer from "@/components/Footer";
-
+ 
 export default function AboutPage() {
   return (
     <PageTransition>
