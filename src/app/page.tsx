@@ -27,7 +27,7 @@ export default function Home() {
 
         {/* the thinking cow's daily wisdom */}
         <SectionFade once threshold={0.2} baseClass="fc-stamp" inClass="fc-stamp-in">
-          <div className="mx-auto max-w-2xl px-6 py-14">
+          <div className="mx-auto max-w-3xl px-6 py-16">
             <DailyCow />
           </div>
         </SectionFade>

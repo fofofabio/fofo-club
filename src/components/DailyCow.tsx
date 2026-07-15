@@ -35,31 +35,21 @@ export default function DailyCow({ className, src = "/cow-thinker.png" }: Props)
   return (
     <div
       className={clsx(
-        "overflow-hidden rounded-none border-[2.5px] border-black bg-white shadow-brutal",
+        "relative overflow-hidden rounded-[28px] border-[2.5px] border-black bg-fofo-blue shadow-brutal",
         className,
       )}
     >
-      {/* window title bar — shows the wiring */}
-      <div className="flex items-center gap-2 border-b-[2.5px] border-black bg-black px-3 py-1.5">
-        <span aria-hidden className="h-2 w-2 rounded-full bg-fofo-pink" />
-        <span aria-hidden className="h-2 w-2 rounded-full bg-fofo-yellow" />
-        <span aria-hidden className="h-2 w-2 rounded-full bg-fofo-blue" />
-        <span className="ml-1 font-mono text-[10px] uppercase tracking-[0.12em] text-white/70">
-          cow of wisdom
-        </span>
-        <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
-          daily
-        </span>
-      </div>
+      {/* quiet wiring label */}
+      <span className="pointer-events-none absolute left-6 top-4 z-10 font-mono text-[10px] uppercase tracking-[0.14em] text-white/55">
+        cow of wisdom · daily
+      </span>
 
-      {/* body */}
-      <div className="flex items-center gap-3 px-3 py-3">
-        <div className="relative flex h-20 w-16 shrink-0 items-end justify-center">
-          {/* Placeholder shows by default; the image reveals only once it loads
-              successfully, so a missing file never leaves a broken icon. */}
+      <div className="flex flex-col items-center gap-4 px-6 pb-6 pt-10 sm:flex-row sm:items-end sm:gap-6 sm:px-8 sm:pb-8 sm:pt-12">
+        {/* the cow, sitting big on the blue */}
+        <div className="relative flex h-44 w-40 shrink-0 items-end justify-center sm:h-60 sm:w-52">
           {!imgOk ? (
-            <div className="flex h-full w-full items-center justify-center border border-dashed border-black/30 bg-black/[0.03] p-1 text-center">
-              <span className="font-mono text-[8px] leading-tight text-black/40">
+            <div className="flex h-full w-full items-center justify-center rounded-2xl border-2 border-dashed border-white/40 bg-white/10 p-2 text-center">
+              <span className="font-mono text-[10px] leading-tight text-white/60">
                 cow-thinker.png
               </span>
             </div>
@@ -69,7 +59,10 @@ export default function DailyCow({ className, src = "/cow-thinker.png" }: Props)
             ref={imgRef}
             src={src}
             alt="the thinking cow"
-            className={clsx("h-full w-full object-contain", imgOk ? "block" : "hidden")}
+            className={clsx(
+              "h-full w-full select-none object-contain",
+              imgOk ? "block" : "hidden",
+            )}
             onLoad={(e) => {
               if (e.currentTarget.naturalWidth > 0) setImgOk(true);
             }}
@@ -77,14 +70,26 @@ export default function DailyCow({ className, src = "/cow-thinker.png" }: Props)
           />
         </div>
 
-        {/* speech bubble in the human hand */}
-        <div className="relative min-w-0 flex-1">
-          <p className="font-hand text-xl leading-tight text-black">
-            {quote ? `"${quote}"` : "…"}
-          </p>
-          <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.12em] text-black/35">
-            — the thinking cow
-          </p>
+        {/* the thought bubble */}
+        <div className="relative flex-1 self-center sm:pl-4">
+          {/* trail of little thought puffs leading from the cow up to the cloud */}
+          <span
+            aria-hidden
+            className="absolute -left-1 bottom-2 hidden h-4 w-4 rounded-full border-[2.5px] border-black bg-white sm:block"
+          />
+          <span
+            aria-hidden
+            className="absolute left-3 -bottom-2 hidden h-2.5 w-2.5 rounded-full border-[2.5px] border-black bg-white sm:block"
+          />
+
+          <div className="relative rounded-[36px] border-[2.5px] border-black bg-white px-7 py-7 shadow-brutal-sm sm:px-9 sm:py-9">
+            <p className="font-display text-2xl font-bold leading-[1.1] tracking-tight text-black sm:text-4xl">
+              {quote ? `${quote}` : "…"}
+            </p>
+            <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.14em] text-black/35">
+              — the thinking cow
+            </p>
+          </div>
         </div>
       </div>
     </div>

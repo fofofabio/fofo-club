@@ -101,7 +101,7 @@ export default function WorkspaceDesk() {
       </div>
 
       {/* A daily dose of cow before the work begins. */}
-      <DailyCow className="mb-6 max-w-md" />
+      <DailyCow className="mb-8 max-w-3xl" />
 
       {/* Zone 1 — the canvas: what am I doing right now. */}
       <section ref={hoursRef} className="scroll-mt-20">
