@@ -7,6 +7,7 @@ import StatsStrip from "@/components/StatsStrip";
 import ExploreIndex from "@/components/ExploreIndex";
 import Footer from "@/components/Footer";
 import DailyCow from "@/components/DailyCow";
+import CowPasture from "@/components/CowPasture";
 import PageTransition from "@/components/PageTransition"; // <-- add this
 
 export default function Home() {
@@ -27,8 +28,11 @@ export default function Home() {
 
         {/* the thinking cow's daily wisdom */}
         <SectionFade once threshold={0.2} baseClass="fc-stamp" inClass="fc-stamp-in">
-          <div className="mx-auto max-w-3xl px-6 py-16">
-            <DailyCow />
+          <div className="mx-auto max-w-[1600px] px-4 pt-16 sm:px-6">
+            <DailyCow className="ml-auto max-w-3xl" />
+          </div>
+          <div className="mx-auto max-w-[1600px] px-4 pb-16 pt-8 sm:px-6">
+            <CowPasture />
           </div>
         </SectionFade>
 

@@ -473,3 +473,22 @@ body { scrollbar-gutter: stable; }
     .ws-marker { transform: scaleX(1); }
     .ws-burst-star { opacity: 0; }
 }
+
+/* Pasture: cows do a cartoony springy wiggle so the herd feels alive. The
+   keyframes snap past the target and jiggle back like a wobbling jelly, then
+   rest. Per-cow delay stops them syncing. */
+@keyframes cow-wiggle {
+    0%        { transform: rotate(0deg); }
+    12%       { transform: rotate(-2.4deg); }
+    28%       { transform: rotate(1.7deg); }
+    42%       { transform: rotate(-1deg); }
+    54%       { transform: rotate(0.5deg); }
+    64%, 100% { transform: rotate(0deg); }
+}
+.cow-wiggle {
+    transform-origin: 50% 95%;
+    animation: cow-wiggle 2.6s cubic-bezier(0.36, 0, 0.2, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+    .cow-wiggle { animation: none; }
+}
