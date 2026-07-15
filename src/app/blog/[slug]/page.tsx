@@ -30,7 +30,7 @@ export async function generateMetadata({
     openGraph: {
       title: story.title,
       description: story.summary,
-      url: `https://fofo.club/blog/${story.slug}`,
+      url: `https://fofoclub.at/blog/${story.slug}`,
       type: "article",
       images: story.heroImage
         ? [{ url: story.heroImage, alt: story.heroImageAlt }]

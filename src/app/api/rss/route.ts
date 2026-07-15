@@ -10,7 +10,7 @@ function escapeXml(value: string): string {
 }
 
 export async function GET() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fofo.club";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fofoclub.at";
   const feedUrl = `${siteUrl}/api/rss`;
   const now = new Date().toUTCString();
 
