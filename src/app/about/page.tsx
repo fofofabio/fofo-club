@@ -141,9 +141,7 @@ export default function AboutPage() {
                     linkedin
                   </FcLink>
                   <span className="text-black/30">·</span>
-                  <FcLink href="/LebenslaufUnterholzer.pdf" download>
-                    download pdf
-                  </FcLink>
+                  <FcLink href="/cv">cv</FcLink>
                 </div>
               </div>
             </div>

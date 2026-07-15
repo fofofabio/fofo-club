@@ -7,6 +7,7 @@ export const profile = {
   email: "fabio.unterholzer@outlook.com",
   github: "https://github.com/fofofabio",
   linkedin: "https://www.linkedin.com/in/fabio-unterholzer",
+  languages: "German (native), English (Cambridge Certificate)",
 };
 
 export const experience = [
@@ -16,8 +17,8 @@ export const experience = [
     location: "Graz",
     period: "Apr 2025 — present",
     highlights: [
-      "ESL template systems, Template logic (JavaScript, Python, Node, XML), automation",
-      "Cross-team delivery & rollouts; performance + reliability focus",
+      "Lead developer of EREX, the company's distributed ESL rendering engine (see projects)",
+      "ESL template systems & template logic (JavaScript, Python, Node, XML); cross-team delivery and rollouts",
     ],
   },
   {
@@ -55,8 +56,41 @@ export const education = [
   },
 ];
 
+export const projects = [
+  {
+    name: "EREX — distributed ESL rendering engine",
+    period: "2025 — present",
+    highlights: [
+      "Designed and built a distributed ESL rendering engine (TypeScript, Fastify, Redis/BullMQ, Playwright, MinIO/S3, Docker) rendering label PNGs in ~200ms end-to-end, with priority queueing, multi-layer caching, and Prometheus observability",
+      "Architected a content-plugin system decoupling customer templates, business logic, and data sources from the engine core — zero-code onboarding of new customers",
+      "Hardened the pipeline for production: browser page pooling, root-caused rendering stalls and queue deadlocks, validated stability under bursts of 500 concurrent jobs",
+      "Built a WYSIWYG template editor with a JSON document model and compiler, plus e-ink color post-processing (chroma-weighted palette quantization with pixel-parity comparison)",
+    ],
+  },
+  {
+    name: "fofo.club",
+    period: "2024 — present",
+    highlights: [
+      "Personal full-stack site: Next.js 15, React 19, TypeScript, Tailwind, PostgreSQL, Auth.js",
+      "Built a custom design system (“Paper & Wire”), an hours-tracking workspace, and interactive tools/games",
+    ],
+  },
+  {
+    name: "fofobot (lm-studio-chat)",
+    period: "2026",
+    printHidden: true,
+    highlights: [
+      "Fully local AI chat app — no cloud, no API keys: Next.js 16, React 19, Vercel AI SDK, LM Studio, SQLite",
+      "Streaming with live tool-call status, thinking mode, conversation branching, and a “code mode” giving the model filesystem + git tools",
+    ],
+  },
+];
+
 export const skills = [
   "JavaScript/TypeScript, Python, C#, Kotlin, Go",
-  "React, Next.js, Tailwind",
-  "SQL, Cloud (Azure, AWS)",
+  "React, Next.js, Node.js, Tailwind",
+  "SQL (PostgreSQL), Redis, Cloud (Azure, AWS)",
+  "Docker, Fastify, BullMQ, Playwright, Prometheus observability",
+  "AI tooling: chatbots/voicebots, embeddings, AI-assisted development",
+  "Also worked with: Unity, Spring, Django, Angular, Vue.js",
 ];
