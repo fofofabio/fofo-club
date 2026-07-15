@@ -64,7 +64,7 @@ export default function CowPasture({ className }: Props) {
       {/* blue band */}
       <div className="rounded-[20px] bg-fofo-blue p-2.5">
         {/* the scene: windows xp hill + the herd */}
-        <div className="relative aspect-[16/7] w-full overflow-hidden rounded-[12px] border-[2.5px] border-black">
+        <div className="relative aspect-[16/11] w-full overflow-hidden rounded-[12px] border-[2.5px] border-black sm:aspect-[16/7]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/windows-xp.png"
@@ -120,10 +120,10 @@ export default function CowPasture({ className }: Props) {
 function CloudBubble({ text, lift = 0 }: { text: string; lift?: number }) {
   return (
     <div
-      className="absolute bottom-full left-1/2 z-20 w-max max-w-[155px] -translate-x-1/2"
+      className="absolute bottom-full left-1/2 z-20 w-max max-w-[110px] -translate-x-1/2 sm:max-w-[155px]"
       style={{ marginBottom: `calc(0.75rem + ${lift}px)` }}
     >
-      <div className="relative px-6 pb-4 pt-7">
+      <div className="relative px-4 pb-3 pt-5 sm:px-6 sm:pb-4 sm:pt-7">
         {/* A fat, full-bodied cloud that fills the padded box, so the text
             sits over solid white and stays centred (padding = the margin
             between the words and the cloud's edge). */}
@@ -142,7 +142,7 @@ function CloudBubble({ text, lift = 0 }: { text: string; lift?: number }) {
             vectorEffect="non-scaling-stroke"
           />
         </svg>
-        <span className="relative block text-center font-display text-[11px] font-bold leading-[1.35] text-black">
+        <span className="relative block text-center font-display text-[9px] font-bold leading-[1.35] text-black sm:text-[11px]">
           {text}
         </span>
       </div>
