@@ -68,7 +68,7 @@ export const projects = [
     ],
   },
   {
-    name: "fofo.club",
+    name: "fofoclub.at",
     period: "2024 — present",
     highlights: [
       "Personal full-stack site: Next.js 15, React 19, TypeScript, Tailwind, PostgreSQL, Auth.js",

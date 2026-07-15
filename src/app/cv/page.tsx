@@ -63,7 +63,7 @@ export default function CvPage() {
               <a className="text-fofo-blue" href={profile.linkedin}>linkedin/fabio-unterholzer</a>
             </div>
             <div>
-              <a className="text-fofo-blue" href="https://fofo.club">fofo.club</a>
+              <a className="text-fofo-blue" href="https://fofoclub.at">fofoclub.at</a>
             </div>
           </div>
         </div>
