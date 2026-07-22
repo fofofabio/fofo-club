@@ -33,13 +33,26 @@ type Cow = {
   sayMobile?: string;
 };
 
-// cow1 + grazing appear more than once; laying + flying just the once.
-// Scattered across the hill at different depths — cows further up sit higher
-// and are drawn smaller, so the herd reads with a bit of perspective instead
-// of a straight line along the bottom edge.
+// Eleven distinct cows — no image repeats. The Windows XP hill crests
+// left-of-centre and slopes down to the right, so the grass line sits around
+// ~40% up on the left and drops to ~25% on the far right. The cutout PNGs are
+// cropped flush to the hooves, so each cow's `bottom` is its actual feet; we
+// keep that just under the grass line for its column. Cows are drawn in three
+// depth bands (small far-back facers → medium mid → big foreground) so nearer
+// cows overlap the ones behind. Ordered back-to-front.
 const HERD: Cow[] = [
-  { src: "/cow_grazing.png", alt: "a grazing cow", left: 4, bottom: 2, width: 14 },
-  { src: "/cow1.png", alt: "a cow", left: 26, bottom: 22, width: 9, flip: true },
+  // Back of the hill — small, facing the camera, feet tucked just under the crest.
+  { src: "/cow_cream_front.png", alt: "a cream cow facing the camera", left: 46, bottom: 31, width: 6 },
+  { src: "/cow_holstein_front.png", alt: "a cow facing the camera", left: 9, bottom: 33, width: 7 },
+  { src: "/cow_black_front.png", alt: "a black cow facing the camera", left: 82, bottom: 22, width: 8 },
+  { src: "/cow_brown_front.png", alt: "a brown cow facing the camera", left: 93, bottom: 18, width: 6 },
+
+  // Midground.
+  { src: "/cow_jersey.png", alt: "a red jersey cow", left: 24, bottom: 16, width: 10, flip: true },
+  { src: "/cow1.png", alt: "a black and white cow", left: 76, bottom: 15, width: 10, flip: true },
+
+  // Foreground — the big cows along the bottom, evenly spaced across the width.
+  { src: "/cow_spotted.png", alt: "a white cow with brown patches", left: 8, bottom: 3, width: 12 },
   { src: "/cow_laying.png", alt: "a resting cow", left: 37, bottom: 6, width: 12, say: "Moo", sayLift: -10, sayHideMobile: true },
   {
     src: "/cow_grazing.png",
@@ -52,8 +65,9 @@ const HERD: Cow[] = [
     sayMobile: "We mastered the planet but lost ourselves.",
     sayLift: 14,
   },
-  { src: "/cow1.png", alt: "a cow", left: 71, bottom: 14, width: 10 },
-  { src: "/cow1.png", alt: "a cow", left: 84, bottom: 11, width: 11, flip: true },
+  { src: "/cow_redwhite.png", alt: "a red and white cow", left: 72, bottom: 2, width: 12, flip: true },
+
+  // Over the top of it all.
   { src: "/cow_flying.png", alt: "a flying cow", left: 40, bottom: 66, width: 11 },
 ];
 
