@@ -743,7 +743,10 @@ function CategoryBars({
     }
 
     for (const group of grouped.values()) {
-      group.sort((left, right) => right.bookedOn.localeCompare(left.bookedOn));
+      group.sort((left, right) => {
+        const amountDifference = Math.abs(right.amountCents) - Math.abs(left.amountCents);
+        return amountDifference || right.bookedOn.localeCompare(left.bookedOn);
+      });
     }
 
     return grouped;
