@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "culturekit-assets.imgix.net" },
       { protocol: "https", hostname: "nonstopkino.at" },
+      { protocol: "https", hostname: "www.uncut.at" },
     ],
   },
   async headers() {
