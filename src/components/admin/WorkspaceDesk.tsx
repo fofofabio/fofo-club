@@ -2,14 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
-import { Clock, ListTodo, WalletCards } from "lucide-react";
+import { Bike, Clapperboard, Clock, ListTodo, WalletCards } from "lucide-react";
 
 import FinanceDashboard from "./FinanceDashboard";
 import HoursTracker from "./HoursTracker";
 import TodoBoard from "./TodoBoard";
+import CyclingRoutes from "./CyclingRoutes";
+import MoviesUpcoming from "./MoviesUpcoming";
 import DailyCow from "@/components/DailyCow";
 
 type PendingDraft = { project: string; task: string } | null;
+type WorkspaceView = "hours" | "tasks" | "finances" | "cycling" | "movies";
 
 function formatClock(date: Date) {
   return new Intl.DateTimeFormat("en-US", {
@@ -23,19 +26,30 @@ export default function WorkspaceDesk() {
   const [pendingDraft, setPendingDraft] = useState<PendingDraft>(null);
   const [now, setNow] = useState<Date | null>(null);
   const [active, setActive] = useState<"hours" | "tasks">("hours");
-  const [view, setView] = useState<"work" | "finances">("work");
+  const [view, setView] = useState<WorkspaceView>("hours");
 
   const hoursRef = useRef<HTMLDivElement>(null);
   const tasksRef = useRef<HTMLDivElement>(null);
 
   // Live clock in the desk rail — a small "now" presence shared across the page.
   useEffect(() => {
-    if (view !== "work") return;
-
     setNow(new Date());
     const id = window.setInterval(() => setNow(new Date()), 30_000);
     return () => window.clearInterval(id);
-  }, [view]);
+  }, []);
+
+  useEffect(() => {
+    const readView = () => {
+      const candidate = new URL(window.location.href).searchParams.get("view");
+      if (["hours", "tasks", "finances", "cycling", "movies"].includes(candidate ?? "")) {
+        setView(candidate as WorkspaceView);
+        if (candidate === "hours" || candidate === "tasks") setActive(candidate);
+      }
+    };
+    readView();
+    window.addEventListener("popstate", readView);
+    return () => window.removeEventListener("popstate", readView);
+  }, []);
 
   // Track which zone is in view so the jump-bar highlights the current one.
   useEffect(() => {
@@ -65,11 +79,18 @@ export default function WorkspaceDesk() {
   }
 
   function openWorkZone(zone: "hours" | "tasks") {
-    setView("work");
+    navigate(zone);
     setActive(zone);
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => jumpTo(zone === "hours" ? hoursRef : tasksRef));
     });
+  }
+
+  function navigate(next: WorkspaceView) {
+    setView(next);
+    const url = new URL(window.location.href);
+    url.searchParams.set("view", next);
+    window.history.pushState({}, "", url);
   }
 
   // Task → timer handoff. Both zones are always mounted now, so instead of
@@ -89,23 +110,25 @@ export default function WorkspaceDesk() {
           opens a focused private ledger without leaving the workspace. */}
       <div className="sticky top-3 z-30 mb-6 flex flex-wrap items-center gap-2 border-[2.5px] border-black bg-white/95 p-1.5 shadow-brutal-sm backdrop-blur">
         <JumpButton
-          active={view === "work" && active === "hours"}
+          active={(view === "hours" || view === "tasks") && active === "hours"}
           onClick={() => openWorkZone("hours")}
           icon={<Clock className="h-4 w-4" />}
           label="Hours"
         />
         <JumpButton
-          active={view === "work" && active === "tasks"}
+          active={(view === "hours" || view === "tasks") && active === "tasks"}
           onClick={() => openWorkZone("tasks")}
           icon={<ListTodo className="h-4 w-4" />}
           label="Tasks"
         />
         <JumpButton
           active={view === "finances"}
-          onClick={() => setView("finances")}
+          onClick={() => navigate("finances")}
           icon={<WalletCards className="h-4 w-4" />}
           label="Finances"
         />
+        <JumpButton active={view === "cycling"} onClick={() => navigate("cycling")} icon={<Bike className="h-4 w-4" />} label="Cycling" />
+        <JumpButton active={view === "movies"} onClick={() => navigate("movies")} icon={<Clapperboard className="h-4 w-4" />} label="Cinema" />
 
         <div className="ml-auto flex items-center gap-2 pr-2">
           <span
@@ -118,7 +141,7 @@ export default function WorkspaceDesk() {
         </div>
       </div>
 
-      {view === "work" ? (
+      <div hidden={view !== "hours" && view !== "tasks"}>
         <>
           {/* A daily dose of cow before the work begins. */}
           <DailyCow className="mb-8 max-w-3xl" />
@@ -144,7 +167,8 @@ export default function WorkspaceDesk() {
             <TodoBoard onStartTimer={handleStartTimer} />
           </section>
         </>
-      ) : (
+      </div>
+      <div hidden={view !== "finances"}>
         <section className="scroll-mt-20">
           <div className="mb-3 flex items-center gap-2">
             <span className="meta text-fofo-blue">{"// zone: finances"}</span>
@@ -152,7 +176,9 @@ export default function WorkspaceDesk() {
           </div>
           <FinanceDashboard />
         </section>
-      )}
+      </div>
+      <div hidden={view !== "cycling"}><CyclingRoutes /></div>
+      <div hidden={view !== "movies"}><MoviesUpcoming /></div>
     </div>
   );
 }

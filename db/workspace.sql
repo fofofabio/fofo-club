@@ -7,6 +7,7 @@ create table if not exists workspace_users (
   password_hash text not null,
   created_at timestamptz not null default now()
 );
+alter table workspace_users add column if not exists session_version integer not null default 1;
 
 create table if not exists workspace_time_entries (
   id uuid primary key default gen_random_uuid(),
@@ -129,3 +130,44 @@ create table if not exists workspace_finance_monthly_expenses (
 create unique index if not exists workspace_finance_monthly_expenses_import_idx
   on workspace_finance_monthly_expenses (user_id, import_key)
   where import_key is not null;
+
+create table if not exists workspace_movie_states (
+  user_id uuid not null references workspace_users(id) on delete cascade,
+  movie_key text not null,
+  state text not null,
+  note text not null default '',
+  updated_at timestamptz not null default now(),
+  primary key (user_id, movie_key),
+  check (state in ('watchlist', 'seen', 'dismissed'))
+);
+
+create index if not exists workspace_movie_states_user_state_idx
+  on workspace_movie_states (user_id, state, updated_at desc);
+
+create table if not exists workspace_route_states (
+  user_id uuid not null references workspace_users(id) on delete cascade,
+  route_id text not null,
+  saved boolean not null default false,
+  ridden boolean not null default false,
+  rating smallint,
+  traffic text,
+  note text not null default '',
+  updated_at timestamptz not null default now(),
+  primary key (user_id, route_id),
+  check (rating is null or rating between 1 and 5),
+  check (traffic is null or traffic in ('peaceful', 'mixed', 'busy'))
+);
+
+create index if not exists workspace_route_states_user_idx
+  on workspace_route_states (user_id, saved desc, ridden desc, updated_at desc);
+
+create table if not exists workspace_login_attempts (
+  bucket_key text primary key,
+  attempts integer not null default 0,
+  window_started_at timestamptz not null default now(),
+  blocked_until timestamptz,
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists workspace_login_attempts_cleanup_idx
+  on workspace_login_attempts (updated_at);

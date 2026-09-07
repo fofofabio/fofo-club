@@ -4,18 +4,20 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--max-old-space-size=1500 next dev",
+    "prebuild": "node scripts/workspace-refresh-routes.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "workspace:migrate": "node scripts/workspace-migrate.mjs",
-    "workspace:seed-users": "node scripts/workspace-seed-users.mjs"
+    "workspace:seed-users": "node scripts/workspace-seed-users.mjs",
+    "workspace:refresh-routes": "node scripts/workspace-refresh-routes.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.546.0",
-    "next": "^15.5.9",
-    "next-auth": "^5.0.0-beta.31",
+    "next": "15.5.25",
+    "next-auth": "5.0.0-beta.32",
     "pg": "^8.20.0",
     "react": "19.2.0",
     "react-dom": "19.2.0"
@@ -30,8 +32,8 @@
     "baseline-browser-mapping": "^2.9.17",
     "cross-env": "^10.1.0",
     "eslint": "^9",
-    "eslint-config-next": "^15.5.9",
-    "postcss": "^8.5.6",
+    "eslint-config-next": "15.5.25",
+    "postcss": "^8.5.28",
     "tailwindcss": "^3.4.18",
     "typescript": "^5"
   }
