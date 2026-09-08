@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { loadEnvLocal } from "./load-env-local.mjs";
+import { pathDistanceMeters, removeRetracedBranches, retainedCoordinateKeys, scaledElevationGain } from "./route-geometry.mjs";
 
 await loadEnvLocal();
 
@@ -14,12 +15,18 @@ const climbingPenaltyMinutesPer1000M = 45 * (260 / ftpWatts);
 const source = JSON.parse(await readFile(new URL("../src/data/cycling-route-seeds.json", import.meta.url), "utf8"));
 const output = [];
 
-function surfaceSummary(messages = []) {
+function surfaceSummary(messages = [], retainedKeys = null) {
   const header = messages[0] ?? [];
+  const longitudeIndex = header.indexOf("Longitude");
+  const latitudeIndex = header.indexOf("Latitude");
   const distanceIndex = header.indexOf("Distance");
   const tagsIndex = header.indexOf("WayTags");
   let paved = 0, unpaved = 0, unknown = 0, stressful = 0, quiet = 0;
   for (const row of messages.slice(1)) {
+    if (retainedKeys && longitudeIndex >= 0 && latitudeIndex >= 0) {
+      const key = `${(Number(row[longitudeIndex]) / 1_000_000).toFixed(6)},${(Number(row[latitudeIndex]) / 1_000_000).toFixed(6)}`;
+      if (!retainedKeys.has(key)) continue;
+    }
     const distance = Number(row[distanceIndex] ?? 0);
     const tags = String(row[tagsIndex] ?? "");
     if (/surface=(asphalt|concrete|paved|concrete:plates|paving_stones)/.test(tags)) paved += distance;
@@ -57,8 +64,10 @@ for (const route of source) {
   const feature = body.features?.[0];
   if (!feature?.geometry?.coordinates?.length) throw new Error(`${route.id}: no route geometry`);
   const properties = feature.properties ?? {};
-  const distanceKm = Number((Number(properties["track-length"]) / 1000).toFixed(1));
-  const elevationGainM = Math.round(Number(properties["filtered ascend"]));
+  const originalCoordinates = feature.geometry.coordinates;
+  const cleaned = removeRetracedBranches(originalCoordinates);
+  const distanceKm = Number((pathDistanceMeters(cleaned.coordinates) / 1000).toFixed(1));
+  const elevationGainM = scaledElevationGain(originalCoordinates, cleaned.coordinates, Number(properties["filtered ascend"]));
   const rideMinutes = Math.round((distanceKm / enduranceSpeedKmh) * 60 + (elevationGainM / 1000) * climbingPenaltyMinutesPer1000M);
   output.push({
     ...route,
@@ -67,12 +76,16 @@ for (const route of source) {
     elevationGainM,
     rideMinutes,
     ftpWatts,
-    surface: surfaceSummary(properties.messages),
-    coordinates: feature.geometry.coordinates.map(([lon, lat, elevation]) => [Number(lon.toFixed(6)), Number(lat.toFixed(6)), Math.round(elevation ?? 0)]),
+    surface: surfaceSummary(properties.messages, retainedCoordinateKeys(cleaned.coordinates)),
+    routeQuality: {
+      removedBranchCount: cleaned.removedBranchCount,
+      removedBacktrackKm: Number((cleaned.removedDistanceMeters / 1000).toFixed(1)),
+    },
+    coordinates: cleaned.coordinates.map(([lon, lat, elevation]) => [Number(lon.toFixed(6)), Number(lat.toFixed(6)), Math.round(elevation ?? 0)]),
     generatedAt: new Date().toISOString(),
     router: properties.creator ?? "BRouter",
   });
-  console.log(`${route.id}: ${distanceKm} km / ${elevationGainM} m / ${rideMinutes} min`);
+  console.log(`${route.id}: ${distanceKm} km / ${elevationGainM} m / ${rideMinutes} min${cleaned.removedBranchCount ? ` / removed ${cleaned.removedBranchCount} retraced ${cleaned.removedBranchCount === 1 ? "branch" : "branches"} (${(cleaned.removedDistanceMeters / 1000).toFixed(1)} km)` : ""}`);
 }
 
 await writeFile(new URL("../src/data/cycling-routes.generated.json", import.meta.url), `${JSON.stringify(output)}\n`, "utf8");
