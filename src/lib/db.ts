@@ -5,10 +5,10 @@ declare global {
 }
 
 function createPool() {
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = process.env.WORKSPACE_DATABASE_URL ?? process.env.DATABASE_URL;
 
   if (!connectionString) {
-    throw new Error("DATABASE_URL is not configured.");
+    throw new Error("WORKSPACE_DATABASE_URL or DATABASE_URL is not configured.");
   }
 
   return new Pool({
