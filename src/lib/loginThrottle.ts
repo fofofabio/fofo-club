@@ -7,8 +7,8 @@ import { query } from "@/lib/db";
 const WINDOW_MINUTES = 15;
 
 function key(kind: "account" | "client", value: string) {
-  const secret = process.env.NEXTAUTH_SECRET;
-  if (!secret) throw new Error("NEXTAUTH_SECRET is required for login throttling.");
+  const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+  if (!secret) throw new Error("AUTH_SECRET or NEXTAUTH_SECRET is required for login throttling.");
   return `${kind}:${createHmac("sha256", secret).update(value).digest("hex")}`;
 }
 
