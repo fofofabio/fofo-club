@@ -2,6 +2,10 @@ import "server-only";
 
 const PROGRAMME_URL = "https://nonstopkino.at/programm/?location=steiermark";
 const MOVIE_ORIGIN = "https://nonstopkino.at";
+// The programme HTML includes listings nationwide; the location selector is
+// applied in the browser. Keep room for that page to grow while bounding reads.
+const MAX_PROGRAMME_BYTES = 12_000_000;
+const MAX_MOVIE_BYTES = 2_000_000;
 const GRAZ_VENUES = new Map([
   ["filmzentrum-im-rechbauerkino", "Rechbauerkino"],
   ["geidorf-kunstkino", "Geidorf Kunstkino"],
@@ -104,6 +108,30 @@ function safeHttpsUrl(value: string | null, origin?: string) {
   }
 }
 
+async function readBoundedHtml(response: Response, maxBytes: number, label: string) {
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error(`${label} response had no body.`);
+
+  const decoder = new TextDecoder();
+  let html = "";
+  let bytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      bytes += value.byteLength;
+      if (bytes > maxBytes) throw new Error(`${label} response exceeded the safe size limit.`);
+      html += decoder.decode(value, { stream: true });
+    }
+    return html + decoder.decode();
+  } catch (error) {
+    await reader.cancel().catch(() => {});
+    throw error;
+  } finally {
+    reader.releaseLock();
+  }
+}
+
 export async function fetchGrazProgramme(): Promise<{ movies: Movie[]; refreshedAt: string }> {
   if (programmeCache && programmeCache.expiresAt > Date.now()) return programmeCache.value;
   const response = await fetch(PROGRAMME_URL, {
@@ -113,8 +141,7 @@ export async function fetchGrazProgramme(): Promise<{ movies: Movie[]; refreshed
   });
   if (!response.ok) throw new Error(`Programme source returned ${response.status}.`);
 
-  const html = await response.text();
-  if (html.length > 3_000_000) throw new Error("Programme response exceeded the safe size limit.");
+  const html = await readBoundedHtml(response, MAX_PROGRAMME_BYTES, "Programme");
 
   const movieMap = new Map<string, Movie>();
   const articles = html.match(/<article\b[\s\S]*?<\/article>/g) ?? [];
@@ -172,8 +199,7 @@ export async function fetchMovieDetail(movieKey: string): Promise<MovieDetail & 
     signal: AbortSignal.timeout(15_000),
   });
   if (!response.ok) throw new Error(`Movie source returned ${response.status}.`);
-  const html = await response.text();
-  if (html.length > 2_000_000) throw new Error("Movie response exceeded the safe size limit.");
+  const html = await readBoundedHtml(response, MAX_MOVIE_BYTES, "Movie");
 
   const director = classValue(html, "director");
   const castValue = classValue(html, "cast") ?? "";
