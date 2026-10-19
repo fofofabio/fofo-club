@@ -1,7 +1,10 @@
 "use client";
 
+import { workspaceRequest as requestJson } from "./workspaceRequest";
+
 import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
+import { Disclosure, WorkspaceTable } from "./WorkspaceUI";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -131,15 +134,6 @@ function monthLabel(month: string, long = false) {
   }).format(new Date(`${month}-15T12:00:00`));
 }
 
-async function requestJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...init?.headers },
-  });
-  const payload = (await response.json()) as T & { error?: string };
-  if (!response.ok) throw new Error(payload.error || "The finance request failed.");
-  return payload;
-}
 
 function buildMonthlySummaries(transactions: FinanceTransaction[]): MonthlySummary[] {
   const months = new Map<string, { income: number; outflow: number; refunds: number }>();
@@ -170,6 +164,7 @@ export default function FinanceDashboard() {
   const [range, setRange] = useState<(typeof RANGE_OPTIONS)[number]>(6);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+  const [selectedMonth, setSelectedMonth] = useState("");
   const [showAllSubscriptions, setShowAllSubscriptions] = useState(false);
   const [subscriptionBusy, setSubscriptionBusy] = useState<string | null>(null);
   const [expenseBusy, setExpenseBusy] = useState(false);
@@ -207,8 +202,8 @@ export default function FinanceDashboard() {
     const visibleMonths = new Set(visibleMonthly.map((item) => item.month));
     return (payload?.transactions ?? []).filter((item) => visibleMonths.has(monthKey(item.bookedOn)));
   }, [payload?.transactions, visibleMonthly]);
-  const current = allMonthly.at(-1) ?? { month: "", income: 0, spend: 0, net: 0 };
-  const previous = allMonthly.at(-2) ?? null;
+  const current = allMonthly.find((item) => item.month === selectedMonth) ?? allMonthly.at(-1) ?? { month: "", income: 0, spend: 0, net: 0 };
+  const previous = allMonthly[allMonthly.findIndex((item) => item.month === current.month) - 1] ?? null;
   const incomeProjection = useMemo(
     () => inferCurrentMonthIncome(payload?.transactions ?? [], current.month),
     [current.month, payload?.transactions],
@@ -237,18 +232,19 @@ export default function FinanceDashboard() {
   );
   const filteredTransactions = useMemo(() => {
     const term = search.trim().toLocaleLowerCase("de-AT");
-    return rangeTransactions.filter((item) => {
+    return (selectedMonth === "all" ? rangeTransactions : payload?.transactions ?? []).filter((item) => {
+      if (selectedMonth !== "all" && monthKey(item.bookedOn) !== current.month) return false;
       const matchesCategory = category === "All" || item.category === category;
       const matchesSearch = !term || `${item.merchant} ${item.description}`.toLocaleLowerCase("de-AT").includes(term);
       return matchesCategory && matchesSearch;
     });
-  }, [category, rangeTransactions, search]);
+  }, [category, payload?.transactions, current.month, selectedMonth, rangeTransactions, search]);
   const shownSubscriptions = (payload?.subscriptions ?? []).filter(
     (item) => showAllSubscriptions || item.status === "active",
   );
 
   async function setSubscriptionStatus(item: FinanceSubscription, status: SubscriptionStatus) {
-    if (!payload || item.status === status) return;
+    if (!payload || subscriptionBusy || item.status === status) return;
     setSubscriptionBusy(item.id);
     setNotice(null);
     try {
@@ -292,7 +288,7 @@ export default function FinanceDashboard() {
   }
 
   async function saveExpense() {
-    if (!payload || !expenseDraft.name.trim()) return;
+    if (!payload || expenseBusy || !expenseDraft.name.trim()) return;
     const amount = Number(expenseDraft.amount.replace(",", "."));
     if (!Number.isFinite(amount) || amount < 0) {
       setNotice("Enter a valid monthly amount.");
@@ -393,30 +389,16 @@ export default function FinanceDashboard() {
 
   return (
     <div className="space-y-8">
-      <section className="relative overflow-hidden border-[2.5px] border-black bg-black px-5 py-6 text-white shadow-brutal md:px-7">
-        <div className="pointer-events-none absolute -right-12 -top-14 h-48 w-48 rounded-full border-[28px] border-fofo-blue/70" />
-        <div className="relative flex flex-wrap items-end justify-between gap-5">
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/50">{"// private ledger"}</p>
-            <h2 className="mt-2 font-display text-4xl font-bold lowercase tracking-tight md:text-5xl">money, without the fog.</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/65">
-              Bank cash flow is the source of truth. PayPal only helps name merchants, so funded purchases are never counted twice.
-            </p>
-          </div>
-          <div className="border border-white/25 bg-white/10 px-4 py-3 font-mono text-[11px] uppercase tracking-wide text-white/65">
-            <span className="block text-white">{payload.meta.transactionCount.toLocaleString("de-AT")} movements</span>
-            through {dateLabel(payload.meta.dataEnd)}
-          </div>
-        </div>
-      </section>
+      <header className="ws-finance-head"><div><h2>Finances</h2><p>Cash flow and recurring commitments.</p></div><label className="ws-field">Month<select value={selectedMonth === "all" ? "all" : current.month} onChange={(event) => setSelectedMonth(event.target.value)}><option value="all">All months · latest summary</option>{allMonthly.map((item) => <option key={item.month} value={item.month}>{monthLabel(item.month, true)}</option>)}</select></label><p>{payload.meta.transactionCount.toLocaleString("de-AT")} transactions · through {dateLabel(payload.meta.dataEnd)}</p></header>
+      <nav className="ws-finance-nav" aria-label="Finance sections"><a href="#finance-transactions">Transactions</a><a href="#finance-recurring">Subscriptions & expenses</a><a href="#finance-analysis">Analysis & categories</a></nav>
 
-      <section aria-label="Current month overview">
+      <section className="ws-finance-overview" aria-label="Current month overview">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="meta text-fofo-blue">NOW / {current.month ? monthLabel(current.month, true) : "CURRENT MONTH"}</p>
-            <h3 className="font-display text-3xl font-bold lowercase tracking-tight">the short version</h3>
+            <h3 className="font-display text-3xl font-bold lowercase tracking-tight">Month summary</h3>
           </div>
-          <p className="font-hand text-xl text-fofo-blue rotate-[-2deg]">partial month, honest numbers ↘</p>
+          <p className="text-sm">Month to date</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
@@ -452,6 +434,7 @@ export default function FinanceDashboard() {
         </div>
       </section>
 
+      <div id="finance-analysis"><Disclosure title="Cash flow, categories and daily spending">
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,.75fr)]">
         <div className="min-w-0 border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-6">
           <PanelHeading eyebrow="FLOW / MONTH" title="income against spending" icon={<ArrowUpRight className="h-5 w-5" />}>
@@ -485,7 +468,9 @@ export default function FinanceDashboard() {
         <DailySpend transactions={payload.transactions} month={current.month} />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-2">
+      </Disclosure></div>
+
+      <section id="finance-recurring" className="grid gap-6 xl:grid-cols-2">
         <div className="min-w-0 border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-6">
           <PanelHeading eyebrow="RECURRING / DETECTED" title="subscriptions" icon={<CreditCard className="h-5 w-5" />}>
             <button
@@ -585,7 +570,7 @@ export default function FinanceDashboard() {
         </div>
       ) : null}
 
-      <section className="border-[2.5px] border-black bg-white shadow-brutal">
+      <section id="finance-transactions" className="ws-finance-ledger border-[2.5px] border-black bg-white shadow-brutal">
         <div className="border-b-[2.5px] border-black p-4 md:p-6">
           <PanelHeading eyebrow="LEDGER / SEARCH" title="transactions" icon={<ReceiptText className="h-5 w-5" />} />
           <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_220px_auto]">
@@ -660,7 +645,7 @@ function MetricCard({
     white: "bg-white text-black",
   }[tone];
   return (
-    <div className={clsx("min-h-40 border-[2.5px] border-black p-4 shadow-brutal", toneClass)}>
+    <div className={clsx("ws-finance-metric min-h-40 border-[2.5px] border-black p-4 shadow-brutal", toneClass)}>
       <div className="flex items-center justify-between gap-3 font-mono text-[10px] font-bold uppercase tracking-wide opacity-70">
         {label}{icon}
       </div>
@@ -915,7 +900,7 @@ function ExpenseForm({
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="text-xs text-black/60">Name<input value={draft.name} onChange={(event) => onChange({ ...draft, name: event.target.value })} className="mt-1 w-full border-[2px] border-black bg-white px-3 py-2.5 text-sm text-black outline-none focus:border-fofo-blue" placeholder="Rent, insurance…" /></label>
-        <label className="text-xs text-black/60">Monthly amount (€)<input inputMode="decimal" value={draft.amount} onChange={(event) => onChange({ ...draft, amount: event.target.value })} className="mt-1 w-full border-[2px] border-black bg-white px-3 py-2.5 text-sm text-black outline-none focus:border-fofo-blue" placeholder="0.00" /></label>
+        <label className="text-xs text-black/60">Monthly amount (€)<input inputMode="decimal" value={draft.amount} onChange={(event) => onChange({ ...draft, amount: event.target.value })} className="mt-1 w-full border-[2px] border-black bg-white px-3 py-2.5 text-sm text-black outline-none focus:border-fofo-blue" placeholder="0.00" aria-invalid={draft.amount !== "" && (!Number.isFinite(Number(draft.amount.replace(",", "."))) || Number(draft.amount.replace(",", ".")) < 0)} />{draft.amount !== "" && (!Number.isFinite(Number(draft.amount.replace(",", "."))) || Number(draft.amount.replace(",", ".")) < 0) ? <span className="block mt-2" role="alert">Enter a valid amount of zero or more.</span> : null}</label>
         <label className="text-xs text-black/60">Category<select value={draft.category} onChange={(event) => onChange({ ...draft, category: event.target.value as FinanceCategory })} className="mt-1 w-full border-[2px] border-black bg-white px-3 py-2.5 text-sm text-black outline-none focus:border-fofo-blue">{EXPENSE_CATEGORIES.map((item) => <option key={item}>{item}</option>)}</select></label>
         <label className="text-xs text-black/60">Due day<input type="number" min="1" max="31" value={draft.dueDay} onChange={(event) => onChange({ ...draft, dueDay: event.target.value })} className="mt-1 w-full border-[2px] border-black bg-white px-3 py-2.5 text-sm text-black outline-none focus:border-fofo-blue" placeholder="optional" /></label>
         <label className="text-xs text-black/60 sm:col-span-2">Note<input value={draft.note} onChange={(event) => onChange({ ...draft, note: event.target.value })} className="mt-1 w-full border-[2px] border-black bg-white px-3 py-2.5 text-sm text-black outline-none focus:border-fofo-blue" placeholder="optional context" /></label>
@@ -931,24 +916,13 @@ function ExpenseForm({
 }
 
 function TransactionTable({ transactions, total }: { transactions: FinanceTransaction[]; total: number }) {
-  return (
-    <div>
-      <div className="hidden grid-cols-[110px_minmax(220px,1fr)_150px_120px_130px] gap-3 border-b border-black/15 bg-black px-4 py-2 font-mono text-[9px] uppercase tracking-wide text-white md:grid md:px-6">
-        <span>Date</span><span>Merchant</span><span>Category</span><span>Source</span><span className="text-right">Amount</span>
-      </div>
-      <div className="divide-y divide-black/10">
-        {transactions.map((item) => (
-          <div key={item.id} className="grid gap-1 px-4 py-3 hover:bg-fofo-yellow/15 md:grid-cols-[110px_minmax(220px,1fr)_150px_120px_130px] md:items-center md:gap-3 md:px-6">
-            <span className="font-mono text-[10px] text-black/45">{dateLabel(item.bookedOn)}</span>
-            <div className="min-w-0"><p className="truncate text-sm font-semibold">{item.merchant}</p><p className="truncate text-[11px] text-black/40">{item.description}</p></div>
-            <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-wide text-black/55"><i className="h-2.5 w-2.5 shrink-0 border border-black" style={{ background: CATEGORY_COLORS[item.category] }} />{item.category}</span>
-            <span className="font-mono text-[9px] uppercase tracking-wide text-black/45">{item.provider === "paypal" ? "PayPal → bank" : "bank"}</span>
-            <strong className={clsx("font-mono text-sm md:text-right", item.amountCents >= 0 ? "text-emerald-700" : "text-black")}>{money(item.amountCents, true)}</strong>
-          </div>
-        ))}
-        {!transactions.length ? <p className="p-8 text-center text-sm text-black/45">No transactions match this view.</p> : null}
-      </div>
-      {total > transactions.length ? <p className="border-t border-black/15 p-3 text-center font-mono text-[9px] uppercase tracking-wide text-black/40">showing first {transactions.length} of {total} matches — refine the filters to narrow it down</p> : null}
-    </div>
-  );
+  return <>
+    <WorkspaceTable label="Transactions">
+      <thead><tr><th scope="col">Date</th><th scope="col">Merchant</th><th scope="col">Category</th><th scope="col">Source</th><th scope="col" className="ws-number">Amount</th></tr></thead>
+      <tbody>{transactions.map((item) => <tr key={item.id}>
+        <td>{dateLabel(item.bookedOn)}</td><td><strong>{item.merchant}</strong><p>{item.description}</p></td><td><span className="ws-category-marker" style={{ background: CATEGORY_COLORS[item.category] }} aria-hidden="true" />{item.category}</td><td>{item.provider === "paypal" ? "PayPal → bank" : "bank"}</td><td className="ws-number"><strong>{money(item.amountCents, true)}</strong></td>
+      </tr>)}{!transactions.length ? <tr><td colSpan={5}>No transactions match this view.</td></tr> : null}</tbody>
+    </WorkspaceTable>
+    {total > transactions.length ? <p className="p-3 text-sm">Showing first {transactions.length} of {total} matches. Refine the filters to narrow it down.</p> : null}
+  </>;
 }

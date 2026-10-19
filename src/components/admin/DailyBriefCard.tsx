@@ -79,18 +79,12 @@ type Props = {
 };
 
 export default function DailyBriefCard({ todos }: Props) {
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(true);
   const [weeklyMinutes, setWeeklyMinutes] = useState<number | null>(null);
   const [weeklyDays, setWeeklyDays] = useState(0);
 
   const today = currentDateKey();
   const storageKey = `workspace_brief_seen_${today}`;
-
-  useEffect(() => {
-    if (!localStorage.getItem(storageKey)) {
-      setVisible(true);
-    }
-  }, [storageKey]);
 
   useEffect(() => {
     if (!visible) return;
@@ -118,7 +112,7 @@ export default function DailyBriefCard({ todos }: Props) {
     setVisible(false);
   }
 
-  if (!visible) return null;
+  if (!visible) return <button type="button" onClick={() => setVisible(true)} className="ws-button">Open daily brief</button>;
 
   const dueToday = todos.filter((t) => !t.done && t.dueDate === today);
 

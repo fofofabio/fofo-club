@@ -1,5 +1,7 @@
 "use client";
 
+import { workspaceRequest as requestJson } from "./workspaceRequest";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import {
@@ -16,6 +18,7 @@ import {
 import { projectColor } from "@/lib/projectColor";
 import DateField from "./DateField";
 import DayDial from "./DayDial";
+import { Disclosure, Feedback, WorkspaceButton, WorkspaceTable } from "./WorkspaceUI";
 
 const SLOT_MINUTES = 15;
 const VISIBLE_START_MINUTE = 6 * 60;
@@ -156,6 +159,11 @@ function formatDuration(totalMinutes: number) {
   }
 
   return `${hours}h ${minutes}m`;
+}
+
+function formatElapsed(milliseconds: number) {
+  const seconds = Math.max(0, Math.floor(milliseconds / 1000));
+  return [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60].map(pad).join(":");
 }
 
 function formatDayLabel(dateKey: string) {
@@ -346,32 +354,16 @@ function getBrowserTimeZone() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Berlin";
 }
 
-async function requestJson<T>(input: RequestInfo, init?: RequestInit) {
-  const response = await fetch(input, {
-    ...init,
-    headers: {
-      ...(init?.body ? { "Content-Type": "application/json" } : {}),
-      ...init?.headers,
-    },
-  });
-
-  const payload = (await response
-    .json()
-    .catch(() => ({ error: "Unexpected response." }))) as Record<string, unknown>;
-
-  if (!response.ok) {
-    throw new Error(typeof payload.error === "string" ? payload.error : "Request failed.");
-  }
-
-  return payload as T;
-}
 
 type HoursTrackerProps = {
   pendingDraft?: { project: string; task: string } | null;
   onPendingDraftApplied?: () => void;
+  onTimerState?: (state: TimerStripState) => void;
 };
 
-export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: HoursTrackerProps) {
+export type TimerStripState = { running: boolean; project: string; task: string; elapsed: string; busy: boolean; error: boolean; stop: () => void };
+
+export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTimerState }: HoursTrackerProps) {
   const timelineViewportRef = useRef<HTMLDivElement | null>(null);
   const [entries, setEntries] = useState<HourEntry[]>([]);
   const [activeSession, setActiveSession] = useState<ActiveSession | null>(null);
@@ -386,6 +378,11 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
   const [timerTick, setTimerTick] = useState(Date.now());
   const [focusMinute, setFocusMinute] = useState<number | null>(null);
   const [justSavedId, setJustSavedId] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const mutationLock = useRef(false);
+  const draftTouched = useRef(false);
+  const dateTouched = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -404,10 +401,11 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
         const sorted = sortEntries(payload.entries);
         setEntries(sorted);
         setActiveSession(payload.activeSession);
-        setDraft(buildDefaultDraft(sorted, todayKey));
-        setSelectedDate(todayKey);
+        if (!draftTouched.current) setDraft(buildDefaultDraft(sorted, todayKey));
+        if (!dateTouched.current) setSelectedDate(todayKey);
       } catch (error) {
         if (!cancelled) {
+          setLoadFailed(true);
           setMessage(error instanceof Error ? error.message : "Failed to load workspace data.");
         }
       } finally {
@@ -429,7 +427,8 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       return;
     }
 
-    const timeout = window.setTimeout(() => setMessage(null), 2800);
+    if (!/^(Entry updated|Block saved|Timer started|Timer saved|Continuing|Pre-filled|Editing block)/.test(message)) return;
+    const timeout = window.setTimeout(() => setMessage(null), 4000);
     return () => window.clearTimeout(timeout);
   }, [message]);
 
@@ -443,9 +442,9 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
   }, [copyState]);
 
   useEffect(() => {
-    const interval = window.setInterval(() => setTimerTick(Date.now()), 15000);
+    const interval = window.setInterval(() => setTimerTick(Date.now()), activeSession ? 1000 : 15000);
     return () => window.clearInterval(interval);
-  }, []);
+  }, [activeSession]);
 
   useEffect(() => {
     if (!justSavedId) return;
@@ -455,6 +454,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
 
   useEffect(() => {
     if (!pendingDraft) return;
+    draftTouched.current = true;
     setDraft((prev) => ({ ...prev, project: pendingDraft.project, task: pendingDraft.task }));
     setMessage(`Pre-filled from To-Do: ${pendingDraft.project}`);
     onPendingDraftApplied?.();
@@ -681,6 +681,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
   }, [focusMinute]);
 
   function updateDraft<K extends keyof DraftEntry>(key: K, value: DraftEntry[K]) {
+    draftTouched.current = true;
     setDraft((current) => ({
       ...current,
       [key]: value,
@@ -699,6 +700,9 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       return;
     }
 
+    if (mutationLock.current) return;
+    mutationLock.current = true;
+    setBusy(true);
     try {
       const payload = await requestJson<{ entry: HourEntry }>(
         editingId
@@ -730,6 +734,9 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       setMessage(editingId ? "Entry updated." : "Block saved.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Failed to save block.");
+    } finally {
+      mutationLock.current = false;
+      setBusy(false);
     }
   }
 
@@ -739,6 +746,9 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       return;
     }
 
+    if (mutationLock.current) return;
+    mutationLock.current = true;
+    setBusy(true);
     try {
       const payload = await requestJson<{ activeSession: ActiveSession }>(
         "/api/workspace/active-session",
@@ -756,6 +766,9 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       setMessage("Timer started.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Failed to start timer.");
+    } finally {
+      mutationLock.current = false;
+      setBusy(false);
     }
   }
 
@@ -764,6 +777,9 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       return;
     }
 
+    if (mutationLock.current) return;
+    mutationLock.current = true;
+    setBusy(true);
     try {
       const payload = await requestJson<{ entry: HourEntry; activeSessionId: string }>(
         "/api/workspace/active-session",
@@ -782,6 +798,9 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       setMessage("Timer saved.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Failed to stop timer.");
+    } finally {
+      mutationLock.current = false;
+      setBusy(false);
     }
   }
 
@@ -791,6 +810,9 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       return;
     }
 
+    if (mutationLock.current) return;
+    mutationLock.current = true;
+    setBusy(true);
     try {
       const payload = await requestJson<{ activeSession: ActiveSession }>(
         "/api/workspace/active-session",
@@ -815,8 +837,18 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       setMessage(`Continuing ${project}.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Failed to continue activity.");
+    } finally {
+      mutationLock.current = false;
+      setBusy(false);
     }
   }
+
+  useEffect(() => {
+    if (!hydrated) return;
+    onTimerState?.({ running: Boolean(activeSession), project: activeSession?.project ?? "", task: activeSession?.task ?? "", error: loadFailed, elapsed: activeSession ? formatElapsed(timerTick - new Date(activeSession.startedAt).getTime()) : "00:00:00", busy, stop: () => { void stopTimer(); } });
+    // stopTimer uses the owner state; republish when entries/session change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSession, activeMinutes, timerTick, busy, hydrated, onTimerState, entries, loadFailed]);
 
   function editEntry(entry: HourEntry) {
     setEditingId(entry.id);
@@ -833,6 +865,9 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
   }
 
   async function deleteEntry(entryId: string) {
+    if (mutationLock.current) return;
+    mutationLock.current = true;
+    setBusy(true);
     try {
       await requestJson<{ ok: true }>(`/api/workspace/time-entries/${entryId}`, {
         method: "DELETE",
@@ -848,10 +883,15 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       setMessage("Block deleted.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Failed to delete block.");
+    } finally {
+      mutationLock.current = false;
+      setBusy(false);
     }
   }
 
   function selectDate(dateKey: string) {
+    dateTouched.current = true;
+    draftTouched.current = true;
     setSelectedDate(dateKey);
     setSelectedRange(null);
 
@@ -932,15 +972,14 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
 
   return (
     <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-      <div className="min-w-0 space-y-4">
-        <div className="flex flex-col gap-4 px-1 md:flex-row md:items-end md:justify-between">
+        <div className="ws-hours-head flex flex-col gap-4 px-1 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="meta text-fofo-blue">HOURS TRACKER</p>
             <h2 className="mt-1 font-display font-bold lowercase text-3xl tracking-tight text-black md:text-4xl">
-              Day timeline
+              Hours
             </h2>
             <p className="mt-1.5 max-w-md text-sm leading-6 text-black/55">
-              drag across the day to carve out a block — or punch one in by hand.
+              Track time or add an entry for the selected day.
             </p>
           </div>
 
@@ -968,6 +1007,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             </div>
 
             <div className="flex items-center gap-1.5">
+              <DateField value={selectedDate} onChange={selectDate} placeholder="Selected day" />
               <button
                 type="button"
                 onClick={() => selectDate(addDays(selectedDate, -1))}
@@ -995,6 +1035,17 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
           </div>
         </div>
 
+      <div className="min-w-0 space-y-4">
+        <div className="ws-ledger">
+          <div className="ws-ledger-head"><h3>{formatDayLabel(selectedDate)}</h3><span>{formatDuration(selectedDayMinutes)} saved</span></div>
+          <WorkspaceTable label="Daily time entries"><thead><tr><th>Project / task</th><th>Time</th><th>Duration</th><th>Actions</th></tr></thead><tbody>
+            {!hydrated ? <tr><td colSpan={4}>Loading entries…</td></tr> : selectedDayEntries.length ? selectedDayEntries.map((entry) => <tr key={entry.id}>
+              <td><strong>{entry.project}</strong>{entry.task ? <p>{entry.task}</p> : null}</td><td>{entry.start}–{entry.end}</td><td>{formatDuration(getDurationMinutes(entry))}</td>
+              <td><div className="ws-entry-actions"><WorkspaceButton disabled={busy} onClick={() => editEntry(entry)} aria-label={`Edit ${entry.project} entry`}>Edit</WorkspaceButton><WorkspaceButton disabled={busy} onClick={() => { if (window.confirm(`Delete this ${formatDuration(getDurationMinutes(entry))} entry for ${entry.project}? This cannot be undone.`)) void deleteEntry(entry.id); }} aria-label={`Delete ${entry.project} entry`}>Delete</WorkspaceButton></div></td>
+            </tr>) : <tr><td colSpan={4}>{loadFailed ? "Entries could not be loaded. Reload to retry." : "No entries for this day. Start a timer or add an entry above."}</td></tr>}
+          </tbody></WorkspaceTable>
+        </div>
+        <Disclosure title="Timeline and week navigation">
         <div className="rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
           <div className="mb-4 flex flex-wrap items-center gap-3">
             {selectedWeekDays.map((day) => {
@@ -1062,7 +1113,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
 
             <div
               ref={timelineViewportRef}
-              className="overflow-x-auto overflow-y-hidden pb-4"
+              className="ws-data-surface overflow-x-auto overflow-y-hidden pb-4"
             >
               <div className="min-w-max px-4 py-4" style={{ width: `${TIMELINE_WIDTH + 32}px` }}>
                 <div className="relative mb-3 h-10" style={{ width: `${TIMELINE_WIDTH}px` }}>
@@ -1224,6 +1275,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             </div>
           </div>
         </div>
+        </Disclosure>
         {/* Reference material under the canvas. Each block only renders when it
             has content, so a blank day stays blank instead of showing empty
             panels. Paused activities is a short horizontal strip so it fills the
@@ -1322,7 +1374,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
       </div>
 
       <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
-        <div className="rounded-none border-[2.5px] border-black bg-black px-5 py-5 text-white shadow-brutal">
+        <div className="ws-live-timer rounded-none border-[2.5px] border-black bg-black px-5 py-5 text-white shadow-brutal">
           <p className="meta flex items-center gap-2 text-white/60">
             {activeSession && (
               <span
@@ -1348,6 +1400,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
 
           <button
             type="button"
+            disabled={busy || !hydrated || loadFailed}
             onClick={activeSession ? stopTimer : startTimer}
             className={clsx(
               "mt-4 inline-flex w-full items-center justify-center gap-2 rounded-none border-[2.5px] border-white px-5 py-4 text-sm font-bold uppercase tracking-wide shadow-brutal-sm transition hover:-translate-y-0.5",
@@ -1357,12 +1410,13 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             )}
           >
             {activeSession ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            {activeSession ? "stop & save" : "start timer"}
+            {busy ? "Saving…" : activeSession ? "Stop & save" : "Start timer"}
           </button>
         </div>
 
         {selectedDayEntries.length > 0 ? (
-          <div className="rounded-none border border-black/12 bg-white p-4">
+          <Disclosure title="Day dial" className="ws-day-dial">
+          <div className="ws-data-surface rounded-none border border-black/12 bg-white p-4">
             <div className="mb-2 flex items-center justify-between">
               <p className="meta text-fofo-blue">DAY DIAL</p>
               <span className="font-mono text-[10px] uppercase tracking-wide text-black/35">
@@ -1399,6 +1453,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               </div>
             </div>
           </div>
+          </Disclosure>
         ) : null}
 
         <div className="rounded-none border border-black/12 bg-white p-4">
@@ -1480,8 +1535,8 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             </details>
 
             {recentProjects.length ? (
-              <div>
-                <p className="meta text-fofo-blue">Recent projects</p>
+              <details className="ws-disclosure">
+                <summary>Recent projects</summary>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   {recentProjects.map((project) => {
                     const ink = projectColor(project);
@@ -1502,12 +1557,13 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
                     );
                   })}
                 </div>
-              </div>
+              </details>
             ) : null}
 
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
+                disabled={busy || !hydrated || loadFailed}
                 onClick={saveDraft}
                 className="inline-flex items-center gap-2 rounded-none border-[2.5px] border-black bg-fofo-blue px-5 py-3 text-sm font-bold text-white shadow-brutal-sm transition hover:-translate-y-0.5 hover:bg-black"
               >
@@ -1526,7 +1582,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
               {editingId ? (
                 <button
                   type="button"
-                  onClick={() => deleteEntry(editingId)}
+                  onClick={() => { if (window.confirm("Delete this entry? This cannot be undone.")) void deleteEntry(editingId); }}
                   className="inline-flex items-center gap-1.5 rounded-none border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 transition hover:border-red-400"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -1542,9 +1598,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied }: Ho
             </div>
 
             {message ? (
-              <div className="rounded-none border-[2.5px] border-black bg-black/[0.03] px-4 py-3 text-sm text-black/65">
-                {message}
-              </div>
+              <Feedback error={!/^(Entry updated|Block saved|Timer started|Timer saved|Continuing|Pre-filled|Editing block)/.test(message)}>{message}{loadFailed ? <WorkspaceButton onClick={() => window.location.reload()}>Reload workspace</WorkspaceButton> : null}</Feedback>
             ) : null}
           </div>
         </div>

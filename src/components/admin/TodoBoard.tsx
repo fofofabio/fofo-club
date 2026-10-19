@@ -1,18 +1,18 @@
 "use client";
 
+import { workspaceRequest as requestJson } from "./workspaceRequest";
+
 import { useEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
 import clsx from "clsx";
 import DailyBriefCard from "./DailyBriefCard";
+import { Disclosure, Feedback } from "./WorkspaceUI";
 import DateField from "./DateField";
-import StarGlyph from "@/components/StarGlyph";
 import { projectColor } from "@/lib/projectColor";
 import {
   Check,
   ChevronDown,
   ChevronRight,
   GripVertical,
-  ListTodo,
   Play,
   Plus,
   Star,
@@ -49,19 +49,6 @@ type PendingDelete = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, {
-    headers: { "Content-Type": "application/json" },
-    ...init,
-  });
-
-  if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(body.error ?? "Request failed.");
-  }
-
-  return res.json() as Promise<T>;
-}
 
 function todayKey() {
   const d = new Date();
@@ -80,15 +67,6 @@ function isDueToday(dueDate: string | null, done: boolean) {
 
 const ARCHIVE_DAYS = 7;
 
-function getAgingStyle(createdAt: string, done: boolean): CSSProperties {
-  if (done) return {};
-  const days = Math.floor((Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24));
-  if (days < 7) return {};
-  if (days < 14) return { filter: "saturate(0.75) brightness(0.97)" };
-  if (days < 21) return { filter: "saturate(0.55) brightness(0.94) sepia(0.08)" };
-  return { filter: "saturate(0.35) brightness(0.90) sepia(0.14)", opacity: 0.82 };
-}
-
 function isArchived(todo: Todo) {
   if (!todo.done || !todo.doneAt) return false;
   const doneMs = new Date(todo.doneAt).getTime();
@@ -104,12 +82,15 @@ type Props = {
 export default function TodoBoard({ onStartTimer }: Props) {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Quick-add
   const [draftText, setDraftText] = useState("");
   const [draftProject, setDraftProject] = useState("");
   const [draftDueDate, setDraftDueDate] = useState("");
   const addInputRef = useRef<HTMLInputElement>(null);
+  const captureLock = useRef(false);
+  const [capturing, setCapturing] = useState(false);
 
   // Filters
   const [activeFilter, setActiveFilter] = useState("all");
@@ -130,21 +111,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
   useEffect(() => {
     requestJson<{ todos: Todo[] }>("/api/workspace/todos")
       .then((p) => { setTodos(p.todos); setHydrated(true); })
-      .catch(() => setHydrated(true));
-  }, []);
-
-  // Keyboard shortcut: T focuses the add input
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key !== "t" && e.key !== "T") return;
-      const tag = (e.target as HTMLElement).tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA") return;
-      e.preventDefault();
-      addInputRef.current?.focus();
-    }
-
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
+      .catch((error) => { setLoadError(error instanceof Error ? error.message : "Could not load tasks."); setHydrated(true); });
   }, []);
 
   // ─── Derived ───────────────────────────────────────────────────────────────
@@ -165,14 +132,14 @@ export default function TodoBoard({ onStartTimer }: Props) {
 
   const pendingCount = activeTodos.filter((t) => !t.done).length;
   const doneCount = activeTodos.filter((t) => t.done).length;
-  const totalCount = pendingCount + doneCount;
 
   // ─── Quick-add ─────────────────────────────────────────────────────────────
 
   async function addTodo() {
     const text = draftText.trim();
-    if (!text) return;
-
+    if (!text || captureLock.current) return;
+    captureLock.current = true;
+    setCapturing(true);
     try {
       const payload = await requestJson<{ todo: Todo }>("/api/workspace/todos", {
         method: "POST",
@@ -183,8 +150,8 @@ export default function TodoBoard({ onStartTimer }: Props) {
       setDraftText("");
       setDraftDueDate("");
     } catch {
-      // ignore
-    }
+      // The shared request reports an actionable error; keep the draft.
+    } finally { captureLock.current = false; setCapturing(false); }
   }
 
   // ─── Toggle done ───────────────────────────────────────────────────────────
@@ -306,6 +273,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
 
   async function clearCompleted() {
     const completed = todos.filter((t) => t.done);
+    if (!completed.length || !window.confirm(`Permanently delete ${completed.length} completed tasks? This cannot be undone.`)) return;
     setTodos((prev) => prev.filter((t) => !t.done));
 
     try {
@@ -319,7 +287,8 @@ export default function TodoBoard({ onStartTimer }: Props) {
 
   async function addSubtask(todoId: string, text: string) {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || captureLock.current) return;
+    captureLock.current = true;
 
     try {
       const payload = await requestJson<{ subtask: Subtask }>(
@@ -334,7 +303,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
       );
     } catch {
       // ignore
-    }
+    } finally { captureLock.current = false; }
   }
 
   async function toggleSubtask(todoId: string, subtask: Subtask) {
@@ -419,6 +388,20 @@ export default function TodoBoard({ onStartTimer }: Props) {
     }).catch(() => setTodos(todos));
   }
 
+  function moveTodo(todo: Todo, direction: -1 | 1) {
+    const candidates = pending.filter((item) => item.pinned === todo.pinned);
+    const target = candidates[candidates.findIndex((item) => item.id === todo.id) + direction];
+    if (!target) return;
+    const reordered = [...todos];
+    const from = reordered.findIndex((item) => item.id === todo.id);
+    const to = reordered.findIndex((item) => item.id === target.id);
+    const [moved] = reordered.splice(from, 1);
+    reordered.splice(to, 0, moved);
+    const withOrder = reordered.map((item, index) => ({ ...item, sortOrder: index }));
+    setTodos(withOrder);
+    requestJson("/api/workspace/todos", { method: "PUT", body: JSON.stringify({ order: withOrder.map((item) => item.id) }) }).catch(() => setTodos(todos));
+  }
+
   function handleDragEnd() {
     setDraggedId(null);
     setDragOverId(null);
@@ -435,48 +418,33 @@ export default function TodoBoard({ onStartTimer }: Props) {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <section className="ws-task-workbench grid gap-6">
       {/* Main column */}
       <div className="min-w-0 space-y-4">
-        {hydrated && <DailyBriefCard todos={todos} />}
+        {loadError ? <Feedback error>{loadError}</Feedback> : null}
+        {hydrated && <Disclosure title="Daily brief"><DailyBriefCard todos={todos} /></Disclosure>}
         {/* Quick-add */}
-        <div className="rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-none border-[2.5px] border-black bg-black/[0.03]">
-              <ListTodo className="h-4 w-4 text-black/50" />
-            </div>
-            <div>
-              <p className="meta text-fofo-blue">TO-DO</p>
-              <h2 className="mt-0.5 font-display font-bold lowercase text-3xl tracking-tight text-black md:text-4xl">
-                Tasks
-              </h2>
-            </div>
-          </div>
+        <div className="ws-task-compose rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
+          <header className="ws-task-heading">
+            <div><h2>Tasks</h2><p>{pendingCount} open · {doneCount} completed</p></div>
+          </header>
 
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="ws-task-capture mt-5 flex flex-wrap gap-3">
             <div className="relative min-w-0 flex-1">
               <input
                 ref={addInputRef}
                 value={draftText}
                 onChange={(e) => setDraftText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") addTodo(); }}
-                placeholder="Add a task and press Enter… (press T to focus)"
+                aria-label="New task" placeholder="Add a task and press Enter…"
                 className="w-full rounded-none border-[2.5px] border-black bg-white px-4 py-3 pr-12 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
               />
-              <button
-                type="button"
-                onClick={addTodo}
-                disabled={!draftText.trim()}
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-none bg-fofo-blue text-white transition hover:scale-105 disabled:opacity-30"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
             </div>
 
             <input
               value={draftProject}
               onChange={(e) => setDraftProject(e.target.value)}
-              placeholder="Project"
+              aria-label="Task project" placeholder="Project"
               className="w-36 shrink-0 rounded-none border-[2.5px] border-black bg-white px-4 py-3 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
             />
 
@@ -487,27 +455,19 @@ export default function TodoBoard({ onStartTimer }: Props) {
               clearable
               className="shrink-0 !py-3"
             />
+            <button type="button" onClick={addTodo} disabled={capturing || !draftText.trim()} className="ws-button ws-primary ws-task-add"><Plus className="h-4 w-4" />{capturing ? "Adding…" : "Add task"}</button>
           </div>
         </div>
 
         {/* Filters + list */}
-        <div className="rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
+        <div className="ws-task-list rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
           <div className="flex flex-wrap items-center gap-2">
-            {(["all", ...projects] as string[]).map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setActiveFilter(f)}
-                className={clsx(
-                  "rounded-none border px-3 py-1 font-mono text-[11px] uppercase tracking-wide transition",
-                  activeFilter === f
-                    ? "border-fofo-blue bg-fofo-blue/10 text-fofo-blue"
-                    : "border-black/15 bg-white text-black/55 hover:border-black/40 hover:text-black",
-                )}
-              >
-                {f === "all" ? "all projects" : f}
-              </button>
-            ))}
+            <label className="ws-task-project-filter">Project
+              <select value={activeFilter} onChange={(event) => setActiveFilter(event.target.value)}>
+                <option value="all">All projects</option>
+                {projects.map((project) => <option key={project} value={project}>{project}</option>)}
+              </select>
+            </label>
 
             {doneCount > 0 && (
               <div className="ml-auto flex items-center gap-2">
@@ -529,7 +489,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
               </div>
             ) : pending.length === 0 && done.length === 0 ? (
               <div className="rounded-none border-[2px] border-dashed border-black bg-white px-4 py-10 text-center text-sm text-black/55">
-                No tasks yet. Add one above or press <kbd className="rounded border-[2.5px] border-black bg-black/5 px-1.5 py-0.5 font-mono text-xs">T</kbd>
+                No tasks yet. Add one above.
               </div>
             ) : (
               <>
@@ -556,6 +516,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
                     onDragStart={(e) => handleDragStart(e, todo.id)}
                     onDragOver={(e) => handleDragOver(e, todo.id)}
                     onDrop={(e) => handleDrop(e, todo.id)}
+                    onMove={(direction) => moveTodo(todo, direction)}
                     onDragEnd={handleDragEnd}
                   />
                 ))}
@@ -591,6 +552,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
                     onDragStart={(e) => handleDragStart(e, todo.id)}
                     onDragOver={(e) => handleDragOver(e, todo.id)}
                     onDrop={(e) => handleDrop(e, todo.id)}
+                    onMove={(direction) => moveTodo(todo, direction)}
                     onDragEnd={handleDragEnd}
                   />
                 ))}
@@ -644,62 +606,8 @@ export default function TodoBoard({ onStartTimer }: Props) {
         </div>
       </div>
 
-      {/* Sidebar */}
-      <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-        <div className="relative overflow-hidden rounded-none border-[2.5px] border-black bg-black px-5 py-5 text-white shadow-brutal">
-          <p className="meta text-white/60">OVERVIEW</p>
-
-          {pendingCount === 0 && totalCount > 0 ? (
-            <div className="relative mt-2">
-              <div className="flex items-center gap-3">
-                <StarGlyph size={34} className="ws-drift text-fofo-yellow" />
-                <span className="font-display text-3xl font-bold lowercase tracking-tight">all clear</span>
-              </div>
-              <p className="mt-1.5 font-hand text-xl leading-tight text-fofo-yellow/90">
-                nothing left — go outside.
-              </p>
-
-              {/* one-shot sparkle burst */}
-              <div aria-hidden className="pointer-events-none absolute left-4 top-3">
-                {[
-                  { bx: "-34px", by: "-20px", d: "0ms", s: 12 },
-                  { bx: "26px", by: "-26px", d: "60ms", s: 16 },
-                  { bx: "48px", by: "6px", d: "120ms", s: 11 },
-                  { bx: "-40px", by: "14px", d: "90ms", s: 13 },
-                  { bx: "8px", by: "-40px", d: "150ms", s: 10 },
-                  { bx: "38px", by: "28px", d: "40ms", s: 12 },
-                ].map((p, i) => (
-                  <StarGlyph
-                    key={i}
-                    size={p.s}
-                    className="ws-burst-star absolute text-fofo-yellow"
-                    style={{ ["--bx" as string]: p.bx, ["--by" as string]: p.by, animationDelay: p.d }}
-                  />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="mt-2 font-display font-bold lowercase text-4xl tracking-tight">{pendingCount}</div>
-              <p className="mt-2 text-sm text-white/65">
-                {pendingCount === 1 ? "task remaining" : "tasks remaining"}
-              </p>
-            </>
-          )}
-
-          {totalCount > 0 && (
-            <div className="mt-4 space-y-1">
-              <div className="h-1.5 overflow-hidden rounded-none bg-white/15">
-                <div
-                  className="h-full rounded-none bg-fofo-yellow transition-all duration-500"
-                  style={{ width: `${Math.round((doneCount / totalCount) * 100)}%` }}
-                />
-              </div>
-              <p className="text-xs text-white/40">{doneCount}/{totalCount} done</p>
-            </div>
-          )}
-        </div>
-
+      <aside className="ws-task-reference">
+        <Disclosure title="Project overview">
         {projects.length > 0 && (
           <div className="rounded-none border-[2.5px] border-black bg-white p-5 shadow-brutal">
             <p className="meta text-fofo-blue">BY PROJECT</p>
@@ -710,7 +618,6 @@ export default function TodoBoard({ onStartTimer }: Props) {
                 const total = todos.filter((t) => t.project === project).length;
                 const remaining = todos.filter((t) => t.project === project && !t.done).length;
                 const pct = total > 0 ? Math.round(((total - remaining) / total) * 100) : 0;
-                const ink = projectColor(project);
 
                 return (
                   <button
@@ -726,7 +633,6 @@ export default function TodoBoard({ onStartTimer }: Props) {
                   >
                     <div className="flex items-center justify-between">
                       <p className="flex min-w-0 items-center gap-2 truncate text-sm font-medium text-black">
-                        <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: ink.ink }} />
                         <span className="truncate">{project}</span>
                       </p>
                       <span className="ml-3 shrink-0 font-mono text-sm text-black/45">{remaining}/{total}</span>
@@ -734,7 +640,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
                     <div className="mt-2 h-1.5 overflow-hidden rounded-none bg-black/8">
                       <div
                         className="h-full rounded-none transition-all duration-500"
-                        style={{ width: `${pct}%`, background: ink.ink }}
+                        style={{ width: `${pct}%`, background: "var(--ink)" }}
                       />
                     </div>
                   </button>
@@ -743,6 +649,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
             </div>
           </div>
         )}
+        </Disclosure>
       </aside>
 
       {/* Undo delete toasts */}
@@ -794,6 +701,7 @@ type TodoRowProps = {
   onDragStart: (e: React.DragEvent) => void;
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
+  onMove?: (direction: -1 | 1) => void;
   onDragEnd: () => void;
 };
 
@@ -819,6 +727,7 @@ function TodoRow({
   onDragOver,
   onDrop,
   onDragEnd,
+  onMove,
 }: TodoRowProps) {
   const [editingText, setEditingText] = useState(false);
   const [editText, setEditText] = useState(todo.text);
@@ -842,11 +751,10 @@ function TodoRow({
       onDrop={onDrop}
       onDragEnd={onDragEnd}
       style={{
-        ...getAgingStyle(todo.createdAt, todo.done),
         ...(todo.project && !todo.done ? { borderLeft: `5px solid ${ink.ink}` } : {}),
       }}
       className={clsx(
-        "rounded-none border transition",
+        "ws-task-row rounded-none border transition",
         todo.done ? "border-black/8 bg-black/[0.02]" : "border-black bg-white",
         isDragging && "opacity-40",
         isDragOver && !todo.done && "border-fofo-blue ring-2 ring-fofo-blue/15",
@@ -864,6 +772,7 @@ function TodoRow({
         {/* Checkbox */}
         <button
           type="button"
+          aria-label={todo.done ? `Mark ${todo.text} incomplete` : `Complete ${todo.text}`}
           onClick={() => {
             if (!todo.done) {
               setJustChecked(true);
@@ -887,6 +796,7 @@ function TodoRow({
           {editingText ? (
             <input
               autoFocus
+              aria-label={`Edit task ${todo.text}`}
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
               onKeyDown={(e) => {
@@ -901,7 +811,7 @@ function TodoRow({
               type="button"
               onClick={() => { setEditingText(true); setEditText(todo.text); }}
               className={clsx(
-                "relative block w-full truncate text-left text-sm transition",
+                "ws-task-title relative block w-full text-left transition",
                 todo.done ? "text-black/40 line-through" : "text-black hover:text-fofo-blue",
               )}
             >
@@ -917,7 +827,7 @@ function TodoRow({
           )}
 
           {/* Meta row */}
-          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+          <div className="ws-task-meta mt-1.5 flex flex-wrap items-center gap-2">
             {todo.project && (
               <span
                 className="flex items-center gap-1.5 rounded-none px-2 py-0.5 text-xs font-medium"
@@ -945,6 +855,7 @@ function TodoRow({
               />
             ) : null}
 
+          <p className="ws-task-age">{overdue ? "Overdue · " : dueToday ? "Due today · " : ""}{todo.done ? "Completed" : `${Math.max(0, Math.floor((Date.now() - new Date(todo.createdAt).getTime()) / 86400000))} days old`}</p>
             {todo.subtasks.length > 0 && (
               <button
                 type="button"
@@ -957,77 +868,19 @@ function TodoRow({
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex shrink-0 items-center gap-1">
-          {/* Pin */}
-          <button
-            type="button"
-            onClick={onTogglePinned}
-            title={todo.pinned ? "Unpin" : "Pin to top"}
-            className={clsx(
-              "rounded-none p-1.5 transition",
-              todo.pinned
-                ? "text-amber-400 hover:text-amber-500"
-                : "text-black/20 hover:text-amber-400",
-            )}
-          >
-            <Star className="h-3.5 w-3.5" />
-          </button>
-
-          {/* Notes toggle */}
-          <button
-            type="button"
-            onClick={onToggleNotes}
-            title="Notes"
-            className={clsx(
-              "rounded-none p-1.5 text-xs transition",
-              notesOpen || todo.notes
-                ? "text-fofo-blue hover:text-fofo-blue/70"
-                : "text-black/20 hover:text-black/50",
-            )}
-          >
-            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h10" />
-            </svg>
-          </button>
-
-          {/* Subtasks toggle */}
-          <button
-            type="button"
-            onClick={onToggleSubtasks}
-            title="Subtasks"
-            className={clsx(
-              "rounded-none p-1.5 transition",
-              subtasksOpen || todo.subtasks.length > 0
-                ? "text-fofo-blue hover:text-fofo-blue/70"
-                : "text-black/20 hover:text-black/50",
-            )}
-          >
-            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-          </button>
-
-          {/* Start timer */}
-          {todo.project && !todo.done && (
-            <button
-              type="button"
-              onClick={onStartTimer}
-              title="Start timer in Hours"
-              className="rounded-none p-1.5 text-black/20 transition hover:text-fofo-blue"
-            >
-              <Play className="h-3.5 w-3.5" />
-            </button>
-          )}
-
-          {/* Delete */}
-          <button
-            type="button"
-            onClick={onDelete}
-            className="rounded-none border border-red-200 bg-red-50 p-1.5 text-red-600 transition hover:border-red-300"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+        {/* Everyday actions stay visible; occasional commands have a labelled disclosure. */}
+        <div className="ws-task-actions flex shrink-0 items-center gap-1">
+          {todo.project && !todo.done ? <button type="button" onClick={onStartTimer} aria-label={`Start timer for ${todo.text}`} className="ws-task-track"><Play className="h-4 w-4" />Start timer</button> : null}
+          <button type="button" onClick={onToggleNotes} aria-expanded={notesOpen}>Notes{todo.notes ? " ·" : ""}</button>
+          <button type="button" onClick={onToggleSubtasks} aria-expanded={subtasksOpen}>Subtasks{todo.subtasks.length ? ` ${doneCount}/${todo.subtasks.length}` : ""}</button>
+          <details className="ws-task-more" onKeyDown={(event) => { if (event.key === "Escape") { event.currentTarget.open = false; event.currentTarget.querySelector("summary")?.focus(); } }} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) event.currentTarget.open = false; }}>
+            <summary aria-label={`More actions for ${todo.text}`}>More <ChevronDown className="h-3 w-3" /></summary>
+            <div>
+              <button type="button" onClick={onTogglePinned}><Star className="h-4 w-4" />{todo.pinned ? "Unpin" : "Pin to top"}</button>
+              {!todo.done && onMove ? <><button type="button" onClick={() => onMove(-1)}>↑ Move up</button><button type="button" onClick={() => onMove(1)}>↓ Move down</button></> : null}
+              <button type="button" onClick={onDelete}><Trash2 className="h-4 w-4" />Delete task</button>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -1037,7 +890,7 @@ function TodoRow({
           <textarea
             value={todo.notes}
             onChange={(e) => onUpdateNotes(e.target.value)}
-            placeholder="Add notes…"
+            aria-label={`Notes for ${todo.text}`} placeholder="Add notes…"
             rows={3}
             className="w-full resize-none rounded-none border-[2.5px] border-black bg-black/[0.02] px-3 py-2 text-sm text-black/70 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
           />
@@ -1051,6 +904,7 @@ function TodoRow({
             <div key={sub.id} className="flex items-center gap-2">
               <button
                 type="button"
+                aria-label={sub.done ? `Mark ${sub.text} incomplete` : `Complete subtask ${sub.text}`}
                 onClick={() => onToggleSubtask(sub)}
                 className={clsx(
                   "flex h-4 w-4 shrink-0 items-center justify-center rounded border-2 transition",
@@ -1066,6 +920,7 @@ function TodoRow({
               </span>
               <button
                 type="button"
+                aria-label={`Delete subtask ${sub.text}`}
                 onClick={() => onDeleteSubtask(sub.id)}
                 className="text-black/20 transition hover:text-red-500"
               >
@@ -1083,7 +938,7 @@ function TodoRow({
                 setSubtaskDraft("");
               }
             }}
-            placeholder="Add subtask and press Enter…"
+            aria-label={`New subtask for ${todo.text}`} placeholder="Add subtask and press Enter…"
             className="w-full rounded-none border-[2.5px] border-black bg-white px-3 py-1.5 text-sm outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
           />
         </div>

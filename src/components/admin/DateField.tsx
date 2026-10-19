@@ -51,7 +51,7 @@ export default function DateField({
     <div
       onClick={openPicker}
       className={clsx(
-        "relative inline-flex cursor-pointer items-center gap-1.5 border-[2.5px] px-3 py-2 font-mono text-[12px] uppercase tracking-wide transition",
+        "ws-date-field relative inline-flex cursor-pointer items-center gap-1.5 border-[2.5px] px-3 py-2 font-mono text-[12px] uppercase tracking-wide transition",
         hasValue
           ? "border-black bg-white text-black"
           : "border-black/20 bg-white text-black/50 hover:border-black/50",
