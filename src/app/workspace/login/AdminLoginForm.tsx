@@ -10,12 +10,13 @@ const initialState: AdminAuthState = {
   error: null,
 };
 
-export default function AdminLoginForm() {
+export default function AdminLoginForm({ returnPath = "/workspace" }: { returnPath?: string }) {
   const [state, formAction, pending] = useActionState(loginAdminAction, initialState);
 
   return <div className="ws-login-card">
     <div><h1>Workspace</h1><p>Your personal workbench. Sign in to continue.</p></div>
     <form action={formAction}>
+      <input type="hidden" name="returnPath" value={returnPath} />
       <label className="ws-field" htmlFor="workspace-email">Email
         <input id="workspace-email" type="email" name="email" autoComplete="username" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="name@example.com" required />
       </label>

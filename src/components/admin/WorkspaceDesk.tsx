@@ -17,7 +17,7 @@ const destinations: { id: WorkspaceView; label: string }[] = [
   { id: "finances", label: "Finances" }, { id: "cycling", label: "Cycling" }, { id: "movies", label: "Cinema" },
 ];
 
-export default function WorkspaceDesk({ displayName }: { displayName: string }) {
+export default function WorkspaceDesk({ displayName, userId }: { displayName: string; userId: string }) {
   const [pendingDraft, setPendingDraft] = useState<{ project: string; task: string } | null>(null);
   const [view, setView] = useState<WorkspaceView>("hours");
   const [visited, setVisited] = useState<Set<WorkspaceView>>(() => new Set(["hours"]));
@@ -65,7 +65,7 @@ export default function WorkspaceDesk({ displayName }: { displayName: string }) 
         <div className="ws-cow-original"><DailyCow className="mb-8 max-w-3xl" /></div>
         <div className="ws-tool ws-hours"><HoursTracker pendingDraft={pendingDraft} onPendingDraftApplied={draftApplied} onTimerState={setTimer} /></div>
       </div>
-      <div hidden={view !== "tasks"} className="ws-tool ws-tasks">{visited.has("tasks") ? <TodoBoard onStartTimer={(project, task) => { setPendingDraft({ project, task }); navigate("hours"); }} /> : null}</div>
+      <div hidden={view !== "tasks"} className="ws-tool ws-tasks">{visited.has("tasks") ? <TodoBoard key={userId} userId={userId} onStartTimer={(project, task) => { setPendingDraft({ project, task }); navigate("hours"); }} /> : null}</div>
       <div hidden={view !== "finances"} className="ws-tool ws-finances">{visited.has("finances") ? <FinanceDashboard /> : null}</div>
       <div hidden={view !== "cycling"} className="ws-tool ws-cycling">{visited.has("cycling") ? <CyclingRoutes /> : null}</div>
       <div hidden={view !== "movies"} className="ws-tool ws-cinema">{visited.has("movies") ? <MoviesUpcoming /> : null}</div>

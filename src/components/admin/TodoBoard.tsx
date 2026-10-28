@@ -6,10 +6,13 @@ import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import DailyBriefCard from "./DailyBriefCard";
 import { Disclosure, Feedback } from "./WorkspaceUI";
+import ProjectNotes, { useProjectNotes } from "./ProjectNotes";
+import { requestedTaskProject } from "@/lib/workspaceLinks";
 import DateField from "./DateField";
 import { projectColor } from "@/lib/projectColor";
 import {
   Check,
+  BookOpen,
   ChevronDown,
   ChevronRight,
   GripVertical,
@@ -76,10 +79,11 @@ function isArchived(todo: Todo) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 type Props = {
+  userId: string;
   onStartTimer: (project: string, task: string) => void;
 };
 
-export default function TodoBoard({ onStartTimer }: Props) {
+export default function TodoBoard({ onStartTimer, userId }: Props) {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -93,8 +97,29 @@ export default function TodoBoard({ onStartTimer }: Props) {
   const [capturing, setCapturing] = useState(false);
 
   // Filters
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [showArchive, setShowArchive] = useState(false);
+  const projectNotes = useProjectNotes(userId);
+  const [notesProject, setNotesProject] = useState<string | null>(null);
+
+  useEffect(() => {
+    const readFilter = () => {
+      const project = requestedTaskProject(window.location.search);
+      setActiveFilter(project);
+      if (project) setDraftProject((current) => current || project);
+    };
+    readFilter();
+    window.addEventListener("popstate", readFilter);
+    return () => window.removeEventListener("popstate", readFilter);
+  }, []);
+
+  function chooseProject(project: string | null) {
+    setActiveFilter(project);
+    const url = new URL(window.location.href);
+    url.searchParams.set("view", "tasks");
+    if (project) url.searchParams.set("project", project); else url.searchParams.delete("project");
+    window.history.pushState({}, "", url);
+  }
 
   // Row expand state
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
@@ -119,11 +144,10 @@ export default function TodoBoard({ onStartTimer }: Props) {
   const projects = Array.from(new Set(todos.map((t) => t.project).filter(Boolean))).sort();
 
   const activeTodos = todos.filter((t) => !isArchived(t));
-  const archivedTodos = todos.filter(isArchived);
+  const archivedTodos = todos.filter((todo) => isArchived(todo) && (activeFilter === null || todo.project === activeFilter));
 
   const filtered = activeTodos.filter((t) => {
-    if (activeFilter === "all") return true;
-    if (activeFilter === "done") return t.done;
+    if (activeFilter === null) return true;
     return t.project === activeFilter;
   });
 
@@ -427,6 +451,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
         <div className="ws-task-compose rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
           <header className="ws-task-heading">
             <div><h2>Tasks</h2><p>{pendingCount} open · {doneCount} completed</p></div>
+            <button type="button" className="ws-button" onClick={() => setNotesProject(activeFilter ?? draftProject)}><BookOpen size={16} />Project notes</button>
           </header>
 
           <div className="ws-task-capture mt-5 flex flex-wrap gap-3">
@@ -463,9 +488,10 @@ export default function TodoBoard({ onStartTimer }: Props) {
         <div className="ws-task-list rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
           <div className="flex flex-wrap items-center gap-2">
             <label className="ws-task-project-filter">Project
-              <select value={activeFilter} onChange={(event) => setActiveFilter(event.target.value)}>
+              <select value={activeFilter === null ? "all" : `project:${activeFilter}`} onChange={(event) => chooseProject(event.target.value === "all" ? null : event.target.value.slice(8))}>
                 <option value="all">All projects</option>
-                {projects.map((project) => <option key={project} value={project}>{project}</option>)}
+                {activeFilter !== null && !projects.includes(activeFilter) ? <option value={`project:${activeFilter}`}>{activeFilter}</option> : null}
+                {projects.map((project) => <option key={project} value={`project:${project}`}>{project}</option>)}
               </select>
             </label>
 
@@ -489,7 +515,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
               </div>
             ) : pending.length === 0 && done.length === 0 ? (
               <div className="rounded-none border-[2px] border-dashed border-black bg-white px-4 py-10 text-center text-sm text-black/55">
-                No tasks yet. Add one above.
+                {activeFilter ? `No tasks for ${activeFilter}. Add one above or choose another project.` : "No tasks yet. Add one above."}
               </div>
             ) : (
               <>
@@ -508,6 +534,8 @@ export default function TodoBoard({ onStartTimer }: Props) {
                     onUpdateDueDate={(d) => updateDueDate(todo, d)}
                     onDelete={() => deleteTodo(todo.id)}
                     onStartTimer={() => onStartTimer(todo.project, todo.text)}
+                    projectNotesHref={projectNotes.links.get(todo.project)}
+                    onConnectNotes={() => setNotesProject(todo.project)}
                     onToggleNotes={() => toggleExpand(expandedNotes, todo.id, setExpandedNotes)}
                     onToggleSubtasks={() => toggleExpand(expandedSubtasks, todo.id, setExpandedSubtasks)}
                     onAddSubtask={(text) => addSubtask(todo.id, text)}
@@ -544,6 +572,8 @@ export default function TodoBoard({ onStartTimer }: Props) {
                     onUpdateDueDate={(d) => updateDueDate(todo, d)}
                     onDelete={() => deleteTodo(todo.id)}
                     onStartTimer={() => onStartTimer(todo.project, todo.text)}
+                    projectNotesHref={projectNotes.links.get(todo.project)}
+                    onConnectNotes={() => setNotesProject(todo.project)}
                     onToggleNotes={() => toggleExpand(expandedNotes, todo.id, setExpandedNotes)}
                     onToggleSubtasks={() => toggleExpand(expandedSubtasks, todo.id, setExpandedSubtasks)}
                     onAddSubtask={(text) => addSubtask(todo.id, text)}
@@ -585,6 +615,8 @@ export default function TodoBoard({ onStartTimer }: Props) {
                             onUpdateDueDate={(d) => updateDueDate(todo, d)}
                             onDelete={() => deleteTodo(todo.id)}
                             onStartTimer={() => onStartTimer(todo.project, todo.text)}
+                            projectNotesHref={projectNotes.links.get(todo.project)}
+                            onConnectNotes={() => setNotesProject(todo.project)}
                             onToggleNotes={() => {}}
                             onToggleSubtasks={() => {}}
                             onAddSubtask={() => {}}
@@ -623,7 +655,7 @@ export default function TodoBoard({ onStartTimer }: Props) {
                   <button
                     key={project}
                     type="button"
-                    onClick={() => setActiveFilter(activeFilter === project ? "all" : project)}
+                    onClick={() => chooseProject(activeFilter === project ? null : project)}
                     className={clsx(
                       "w-full rounded-none border px-4 py-3 text-left transition",
                       activeFilter === project
@@ -651,6 +683,8 @@ export default function TodoBoard({ onStartTimer }: Props) {
         )}
         </Disclosure>
       </aside>
+
+      {notesProject !== null ? <ProjectNotes projects={projects} initialProject={notesProject} links={projectNotes.links} onSave={projectNotes.persist} storageError={projectNotes.storageError} onClose={() => setNotesProject(null)} /> : null}
 
       {/* Undo delete toasts */}
       {pendingDeletes.length > 0 && (
@@ -682,6 +716,8 @@ export default function TodoBoard({ onStartTimer }: Props) {
 
 type TodoRowProps = {
   todo: Todo;
+  projectNotesHref?: string;
+  onConnectNotes: () => void;
   isDragging: boolean;
   isDragOver: boolean;
   notesOpen: boolean;
@@ -707,6 +743,8 @@ type TodoRowProps = {
 
 function TodoRow({
   todo,
+  projectNotesHref,
+  onConnectNotes,
   isDragging,
   isDragOver,
   notesOpen,
@@ -872,11 +910,13 @@ function TodoRow({
         <div className="ws-task-actions flex shrink-0 items-center gap-1">
           {todo.project && !todo.done ? <button type="button" onClick={onStartTimer} aria-label={`Start timer for ${todo.text}`} className="ws-task-track"><Play className="h-4 w-4" />Start timer</button> : null}
           <button type="button" onClick={onToggleNotes} aria-expanded={notesOpen}>Notes{todo.notes ? " ·" : ""}</button>
+          {projectNotesHref ? <a className="ws-task-notes-link" href={projectNotesHref} aria-label={`Open project notes for ${todo.project}`}><BookOpen size={15} />Open notes</a> : null}
           <button type="button" onClick={onToggleSubtasks} aria-expanded={subtasksOpen}>Subtasks{todo.subtasks.length ? ` ${doneCount}/${todo.subtasks.length}` : ""}</button>
           <details className="ws-task-more" onKeyDown={(event) => { if (event.key === "Escape") { event.currentTarget.open = false; event.currentTarget.querySelector("summary")?.focus(); } }} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) event.currentTarget.open = false; }}>
             <summary aria-label={`More actions for ${todo.text}`}>More <ChevronDown className="h-3 w-3" /></summary>
             <div>
               <button type="button" onClick={onTogglePinned}><Star className="h-4 w-4" />{todo.pinned ? "Unpin" : "Pin to top"}</button>
+              {todo.project ? <button type="button" onClick={onConnectNotes}><BookOpen size={16} />{projectNotesHref ? "Change project notes" : "Link project notes"}</button> : null}
               {!todo.done && onMove ? <><button type="button" onClick={() => onMove(-1)}>↑ Move up</button><button type="button" onClick={() => onMove(1)}>↓ Move down</button></> : null}
               <button type="button" onClick={onDelete}><Trash2 className="h-4 w-4" />Delete task</button>
             </div>

@@ -3,6 +3,7 @@
 import { AuthError } from "next-auth";
 
 import { signIn, signOut } from "@/auth";
+import { safeWorkspaceReturnPath } from "@/lib/workspaceLinks";
 
 export type AdminAuthState = {
   error: string | null;
@@ -23,7 +24,7 @@ export async function loginAdminAction(
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/workspace",
+      redirectTo: safeWorkspaceReturnPath(formData.get("returnPath")),
     });
   } catch (error) {
     if (error instanceof AuthError) {
