@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
 import AdminLoginForm from "./AdminLoginForm";
+import { safeWorkspaceReturnPath } from "@/lib/workspaceLinks";
 
 export const metadata: Metadata = {
   title: "Workspace Login | Fofo Club",
@@ -14,12 +15,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function WorkspaceLoginPage() {
-  const session = await auth();
+export default async function WorkspaceLoginPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string }> }) {
+  const [session, params] = await Promise.all([auth(), searchParams]);
+  const returnPath = safeWorkspaceReturnPath(params.callbackUrl);
 
   if (session?.user?.id) {
-    redirect("/workspace");
+    redirect(returnPath);
   }
 
-  return <main id="workspace-content" className="ws-login"><AdminLoginForm /></main>;
+  return <main id="workspace-content" className="ws-login"><AdminLoginForm returnPath={returnPath} /></main>;
 }

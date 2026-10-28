@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import WorkspaceDesk from "@/components/admin/WorkspaceDesk";
+import { workspaceTasksPath } from "@/lib/workspaceLinks";
 
 
 export const metadata: Metadata = {
@@ -14,11 +15,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function WorkspacePage() {
-  const session = await auth();
+export default async function WorkspacePage({ searchParams }: { searchParams: Promise<{ view?: string; project?: string }> }) {
+  const [session, params] = await Promise.all([auth(), searchParams]);
 
   if (!session?.user?.id) {
-    redirect("/workspace/login");
+    const returnPath = params.view === "tasks" ? workspaceTasksPath(typeof params.project === "string" ? params.project : null) : "/workspace";
+    redirect(returnPath === "/workspace" ? "/workspace/login" : `/workspace/login?callbackUrl=${encodeURIComponent(returnPath)}`);
   }
 
   const displayName =
@@ -26,5 +28,5 @@ export default async function WorkspacePage() {
     session.user.email?.split("@")[0] ||
     "there";
 
-  return <WorkspaceDesk displayName={displayName} />;
+  return <WorkspaceDesk key={session.user.id} displayName={displayName} userId={session.user.id} />;
 }
