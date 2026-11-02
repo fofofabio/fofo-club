@@ -640,6 +640,19 @@
 
 /* Where the track map sits in the game. Here it holds the leader's own
    screenshot, which is the only thing on the page with real light in it. */
+/* Holds the screenshot, or the space where one would have been, with the name
+   plate sitting over whichever it is. The plate used to live inside the
+   screenshot itself, which meant a leader who posted no proof lost their name
+   and crown along with it. */
+.previewWrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 260px;
+  min-width: 0;
+}
+
 .preview {
   position: relative;
   display: block;
@@ -686,9 +699,13 @@
 
 .previewEmpty {
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
   min-height: 260px;
+  /* Clear of the name plate that now sits over this. */
+  padding-bottom: 92px;
+  background: var(--inset);
   color: var(--ink-3);
   font-style: italic;
 }

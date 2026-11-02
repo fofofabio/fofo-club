@@ -57,8 +57,8 @@ const HOUSE_RULES = [
     bodykit
   </>,
   <>
-    <b>Screenshot or it did not happen.</b> The results screen, total readable, one run per
-    post
+    <b>Post the results screen.</b> Total readable, one run per post. Not enforced, but a
+    number with nothing behind it is only worth what people decide it is
   </>,
   <>
     <b>Your best day stands.</b> A better run replaces a worse one. That is the only thing
@@ -540,12 +540,7 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
     const form = event.currentTarget;
     const data = new FormData(form);
 
-    if (!shot) {
-      setError("Add the screenshot of your results screen");
-      return;
-    }
-
-    data.set("shot", shot.file);
+    if (shot) data.set("shot", shot.file);
     setBusy(true);
     setError(null);
     setPosted(null);
@@ -745,37 +740,42 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
               <>
                 <div className={styles.split}>
                   <Panel name={`${leader.driver.toLowerCase()}_run.jpg`} flush>
-                    {leader.hasShot ? (
-                      <button
-                        type="button"
-                        className={styles.preview}
-                        onClick={() => setLightbox(leader)}
-                        aria-label={`Open the results screen posted by ${leader.driver}`}
-                      >
-                        {/* Same file, blurred out behind itself, so an oddly
-                            shaped capture does not leave the panel half empty.
-                            Decorative: the real one below carries the alt. */}
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img className={styles.previewHaze} src={`/api/drift/shot/${leader.id}`} alt="" />
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          className={styles.previewImg}
-                          src={`/api/drift/shot/${leader.id}`}
-                          alt={`Results screen, ${formatValue(leader.mode, leader.score, leader.timeMs)}`}
-                        />
-                        <span className={styles.plate}>
-                          <Crown className={styles.plateCrown} />
-                          <span>
-                            <span className={styles.plateName}>{leader.driver}</span>
-                            <span className={styles.plateUnder}>
-                              Holds the board since {formatDate(leader.createdAt)}
-                            </span>
+                    <div className={styles.previewWrap}>
+                      {leader.hasShot ? (
+                        <button
+                          type="button"
+                          className={styles.preview}
+                          onClick={() => setLightbox(leader)}
+                          aria-label={`Open the results screen posted by ${leader.driver}`}
+                        >
+                          {/* Same file, blurred out behind itself, so an oddly
+                              shaped capture does not leave the panel half empty.
+                              Decorative: the real one below carries the alt. */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img className={styles.previewHaze} src={`/api/drift/shot/${leader.id}`} alt="" />
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            className={styles.previewImg}
+                            src={`/api/drift/shot/${leader.id}`}
+                            alt={`Results screen, ${formatValue(leader.mode, leader.score, leader.timeMs)}`}
+                          />
+                        </button>
+                      ) : (
+                        <div className={styles.previewEmpty}>Posted without proof</div>
+                      )}
+
+                      {/* Outside the branch above: the crown belongs to whoever
+                          leads, screenshot or not. */}
+                      <span className={styles.plate}>
+                        <Crown className={styles.plateCrown} />
+                        <span>
+                          <span className={styles.plateName}>{leader.driver}</span>
+                          <span className={styles.plateUnder}>
+                            Holds the board since {formatDate(leader.createdAt)}
                           </span>
                         </span>
-                      </button>
-                    ) : (
-                      <div className={styles.previewEmpty}>No screenshot</div>
-                    )}
+                      </span>
+                    </div>
                   </Panel>
 
                   <Panel name="run_details">
@@ -976,7 +976,9 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
                   ) : (
                     <>
                       <span>Drop your screenshot here</span>
-                      <span className={styles.dropSub}>or click to choose a file</span>
+                      <span className={styles.dropSub}>
+                        or click to choose · optional, but everyone can see who skipped it
+                      </span>
                     </>
                   )}
                 </button>

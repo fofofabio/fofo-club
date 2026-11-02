@@ -124,7 +124,9 @@ export async function POST(request: Request) {
     shot = { data: Buffer.from(await file.arrayBuffer()), mime: file.type };
   }
 
-  if (!shot) return bad("A screenshot of the results screen is required.");
+  // Deliberately not required. Proof is wanted and the rules ask for it, but
+  // a hard block just means a real run never gets posted at all, and a run
+  // with no screenshot is still better than an empty board.
 
   const run = await createDriftRun({
     driver,
