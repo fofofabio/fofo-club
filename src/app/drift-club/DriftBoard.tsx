@@ -6,6 +6,8 @@ import { CARS_BY_ID, DRIFT_CARS, type DriftCar } from "@/lib/driftCars";
 import {
   beats,
   compareRuns,
+  coursesByDistrict,
+  coursesFor,
   DEFAULT_MODE,
   DEFAULT_TRACK,
   DEFAULT_TRACK_KEY,
@@ -25,6 +27,8 @@ const MAX_EDGE = 1600;
 const TARGET_TYPE = "image/jpeg";
 const TARGET_QUALITY = 0.82;
 const NAME_KEY = "drift-club:driver";
+/** Sentinel for the track select: anything the course list does not name. */
+const OTHER_TRACK = "__other__";
 
 type Tab = "board" | "rules" | "cars" | "post";
 
@@ -315,6 +319,7 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
   // The post form picks its own mode, so you can log a sprint while reading
   // the drift board.
   const [formMode, setFormMode] = useState<string>(DEFAULT_MODE);
+  const [formTrack, setFormTrack] = useState<string>(DEFAULT_TRACK);
 
   const fileRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -1021,7 +1026,13 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
                     name="mode"
                     className={styles.select}
                     value={formMode}
-                    onChange={(event) => setFormMode(event.target.value)}
+                    onChange={(event) => {
+                      const next = event.target.value;
+                      setFormMode(next);
+                      // A drift course is not a circuit course, so the track
+                      // cannot carry over to the new mode.
+                      setFormTrack(coursesFor(next)[0]?.name ?? OTHER_TRACK);
+                    }}
                   >
                     {MODES.map((entry) => (
                       <option key={entry.id} value={entry.id}>
@@ -1035,25 +1046,42 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
                   <label className={styles.fieldLabel} htmlFor="track">
                     Track
                   </label>
-                  {/* Free text with the known names offered, so the list grows
-                      from what people actually race without anyone inventing a
-                      course list up front. Names are folded to a key server
-                      side, so casing and stray spaces still group together. */}
-                  <input
+                  {/* The game's own course list for this mode, grouped by
+                      district. A menu rather than a text box, so nobody has to
+                      spell "Hollyburn Ridge" correctly at midnight. */}
+                  <select
                     id="track"
-                    name="track"
-                    className={styles.input}
-                    list="drift-tracks"
-                    maxLength={48}
-                    required
-                    autoComplete="off"
-                    defaultValue={DEFAULT_TRACK}
-                  />
-                  <datalist id="drift-tracks">
-                    {[...new Set(events.map((event) => event.track))].map((name) => (
-                      <option key={name} value={name} />
+                    className={styles.select}
+                    value={formTrack}
+                    onChange={(event) => setFormTrack(event.target.value)}
+                  >
+                    {coursesByDistrict(formMode).map(([district, courses]) => (
+                      <optgroup key={district} label={district}>
+                        {courses.map((course) => (
+                          <option key={course.name} value={course.name}>
+                            {course.name} — {course.miles.toFixed(2)} mi
+                          </option>
+                        ))}
+                      </optgroup>
                     ))}
-                  </datalist>
+                    {/* Reverse configurations are not named in the source, so
+                        there has to be a way out of the list. */}
+                    <option value={OTHER_TRACK}>Something else…</option>
+                  </select>
+
+                  {formTrack === OTHER_TRACK ? (
+                    <input
+                      name="track"
+                      className={styles.input}
+                      maxLength={48}
+                      required
+                      autoComplete="off"
+                      placeholder="Name the track"
+                      style={{ marginTop: 8 }}
+                    />
+                  ) : (
+                    <input type="hidden" name="track" value={formTrack} />
+                  )}
                 </div>
 
                 <div className={styles.field}>
