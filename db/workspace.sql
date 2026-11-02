@@ -171,3 +171,58 @@ create table if not exists workspace_login_attempts (
 
 create index if not exists workspace_login_attempts_cleanup_idx
   on workspace_login_attempts (updated_at);
+
+-- Stadium Drift 2 office leaderboard (hidden page, no workspace auth).
+create table if not exists drift_runs (
+  id uuid primary key default gen_random_uuid(),
+  driver text not null,
+  car_id text not null,
+  score integer not null,
+  best_lap integer,
+  note text not null default '',
+  shot_data bytea,
+  shot_mime text,
+  created_at timestamptz not null default now(),
+  check (char_length(driver) between 1 and 24),
+  check (score >= 0 and score <= 10000000),
+  check (best_lap is null or (best_lap >= 0 and best_lap <= 10000000)),
+  check (char_length(note) <= 120)
+);
+
+create index if not exists drift_runs_score_idx on drift_runs (score desc, created_at asc);
+create index if not exists drift_runs_recent_idx on drift_runs (created_at desc);
+
+-- Drift club, second pass: the board started as one track in one mode and now
+-- holds any Quick Race event. Stadium Drift 2 stays the house standard.
+alter table drift_runs add column if not exists mode text not null default 'drift';
+alter table drift_runs add column if not exists track text not null default 'Stadium Drift 2';
+alter table drift_runs add column if not exists track_key text not null default 'stadium-drift-2';
+-- Timed modes store milliseconds here; drift leaves it null and uses score.
+alter table drift_runs add column if not exists time_ms integer;
+alter table drift_runs alter column score drop not null;
+
+create index if not exists drift_runs_event_idx on drift_runs (mode, track_key);
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'drift_runs_mode_check') then
+    alter table drift_runs add constraint drift_runs_mode_check
+      check (mode in ('drift', 'circuit', 'sprint', 'street-x', 'drag'));
+  end if;
+
+  -- A run carries points or a time, never both, and which one is decided by
+  -- the mode rather than by whoever posted it.
+  if not exists (select 1 from pg_constraint where conname = 'drift_runs_value_check') then
+    alter table drift_runs add constraint drift_runs_value_check
+      check (
+        (mode = 'drift' and score is not null and time_ms is null)
+        or (mode <> 'drift' and time_ms is not null and score is null)
+      );
+  end if;
+
+  if not exists (select 1 from pg_constraint where conname = 'drift_runs_time_check') then
+    alter table drift_runs add constraint drift_runs_time_check
+      check (time_ms is null or (time_ms > 0 and time_ms <= 36000000));
+  end if;
+end
+$$;

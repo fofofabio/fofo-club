@@ -1,0 +1,1385 @@
+/* Drift club.
+   Built on the grammar of a 2004 console racing menu rather than on a web
+   layout: a title bar with a scroll track, a strip of tiles you move along, a
+   centred name for whatever is selected, translucent grey slabs over a blurred
+   night backdrop, labels in white italic above darker inset boxes holding
+   values in green, and the actions stacked bottom right.
+
+   All of it drawn here in CSS. Green is not a rare accent on this page, it is
+   the colour that values are written in - that is the whole system. */
+
+.root {
+  --ink: #eef1e9;
+  --ink-2: #b2bbab;
+  --ink-3: #828b7e;
+  --val: #bbe950;
+  --val-dim: #93bb3a;
+  --slab: rgba(196, 234, 186, 0.11);
+  --slab-hi: rgba(196, 234, 186, 0.18);
+  --slab-press: rgba(196, 234, 186, 0.06);
+  --inset: rgba(3, 10, 5, 0.52);
+  --edge: rgba(187, 233, 80, 0.26);
+  --edge-soft: rgba(196, 234, 186, 0.12);
+  --bar: rgba(12, 26, 14, 0.75);
+  --warn: #ff7a9c;
+
+  position: relative;
+  min-height: 100dvh;
+  background: #050a06;
+  color: var(--ink);
+  font-family: var(--font-barlow), var(--font-inter), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  overflow-x: hidden;
+}
+
+/* The backdrop is a night city, and in a night city every colour you see is a
+   light source: signs, headlights, tail lights. So the hues here are magenta,
+   cyan and sodium orange rather than more of the interface green, and they are
+   blurred far past their edges the way a bright light blooms on a cheap lens. */
+.root::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  pointer-events: none;
+  background:
+    radial-gradient(30% 20% at 14% 16%, rgba(255, 46, 134, 0.22), transparent 70%),
+    radial-gradient(26% 18% at 40% 6%, rgba(53, 208, 255, 0.18), transparent 72%),
+    radial-gradient(34% 22% at 86% 24%, rgba(255, 138, 61, 0.2), transparent 70%),
+    radial-gradient(28% 20% at 68% 40%, rgba(187, 233, 80, 0.12), transparent 72%),
+    radial-gradient(30% 18% at 6% 46%, rgba(53, 208, 255, 0.12), transparent 72%);
+  filter: blur(56px);
+  opacity: 0.95;
+}
+
+/* Vignette, so the menu sits in the middle of the frame the way it does on a
+   television. */
+.root::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  /* Deliberately below .frame: a vignette painted over the content would dim
+     the panels it is supposed to be sitting behind. */
+  z-index: 1;
+  background: radial-gradient(120% 95% at 50% 45%, transparent 34%, rgba(2, 6, 3, 0.88));
+}
+
+/* ---------------------------------------------------------- ground plane */
+
+/* Wet tarmac. Every reference for this look is a light source smeared down a
+   road, so the page gets a horizon and a floor that reflects what is above it:
+   the same hues, stretched vertically, blurred, and fading out as they run
+   toward the viewer. Without this the menu floats in a void. */
+.ground {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* The reflections themselves, scaled hard on Y so they read as smeared light
+   rather than as circles. */
+.ground::before {
+  content: "";
+  position: absolute;
+  inset: -40% -10% 0;
+  background:
+    radial-gradient(18% 50% at 16% 0%, rgba(255, 46, 134, 0.3), transparent 72%),
+    radial-gradient(14% 44% at 40% 0%, rgba(53, 208, 255, 0.24), transparent 72%),
+    radial-gradient(20% 54% at 86% 0%, rgba(255, 138, 61, 0.26), transparent 70%),
+    radial-gradient(16% 46% at 67% 0%, rgba(187, 233, 80, 0.2), transparent 72%);
+  filter: blur(22px);
+  opacity: 0.95;
+  transform: translateX(calc(var(--px, 0) * -18px));
+  transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* The road surface fading to black at the bottom edge, plus the horizon line
+   where the floor meets the night. */
+.ground::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* Light enough to let the reflections through. An earlier pass crushed this
+     to near-black and buried the only thing the layer exists to show. */
+  background:
+    linear-gradient(to bottom, rgba(187, 233, 80, 0.18), transparent 2px),
+    linear-gradient(to bottom, transparent, rgba(3, 7, 4, 0.45) 68%, rgba(3, 7, 4, 0.85));
+}
+
+/* Wireframe arcs drifting behind the menu, drawn in the page rather than as an
+   asset so they stay crisp and cost nothing. */
+/* Film grain over the whole frame. The reference images are all photographs of
+   a dark screen: compressed, hazy, never clean. A flat vector surface is the
+   one thing that era never looked like. */
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  /* Overlay darkens dark pixels, so this has to stay low or it dims every
+     panel it sits on. It is a texture, not a filter. */
+  opacity: 0.22;
+  mix-blend-mode: overlay;
+}
+
+/* Parallaxes a little against the pointer, so the arcs sit behind the menu in
+   depth rather than printed on it. --px/--py are set from the component. */
+.wire {
+  position: fixed;
+  inset: -4%;
+  width: 108%;
+  height: 108%;
+  pointer-events: none;
+  z-index: 0;
+  color: var(--val);
+  opacity: 0.17;
+  transform: translate3d(calc(var(--px, 0) * 26px), calc(var(--py, 0) * 20px), 0);
+  transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+  will-change: transform;
+}
+
+/* A second, nearer layer that moves further, which is what sells the depth. */
+.wireNear {
+  opacity: 0.1;
+  transform: translate3d(calc(var(--px, 0) * 54px), calc(var(--py, 0) * 40px), 0) scale(1.1);
+}
+
+/* The whole menu is a panel hanging in space: it leans toward wherever the
+   pointer is, which is what makes the parallax behind it read as distance
+   rather than as a moving wallpaper. */
+.frame {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: min(1240px, 100%);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 22px 20px 26px;
+}
+
+/* The frame used to tilt toward the pointer. It does not any more, and it is
+   not coming back: .frame is the entire scrolling column, so rotating it threw
+   the masthead out of the viewport once and skewed every control inside it
+   away from its own hit box. The page keeps its depth through the parallax
+   layers behind it, which nobody has to click. */
+
+/* ------------------------------------------------------------- title bar */
+
+.titleBar {
+  flex-shrink: 0;
+}
+
+/* The wordmark is a tag, built the way one is: fill first, then a fat dark
+   outline cut around it, then a hard shadow block offset behind. paint-order
+   puts the stroke underneath the fill so the letterforms keep their weight
+   instead of being eaten from the inside. */
+.titleWrap {
+  position: relative;
+  display: inline-block;
+  transform: rotate(-2.5deg);
+  transform-origin: left center;
+}
+
+.title {
+  position: relative;
+  margin: 0;
+  font-family: var(--font-marker), var(--font-barlow-condensed), sans-serif;
+  font-weight: 400;
+  font-size: 52px;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: var(--val);
+  /* No keyline. This face is defined by its ragged sprayed edge, and a stroke
+     traces neatly around that and flattens it back into a solid shape. The
+     depth comes from a soft dark backing and the halo a can throws on a wall
+     instead. */
+  text-shadow: 2px 3px 6px rgba(4, 10, 3, 0.95), 0 0 30px rgba(187, 233, 80, 0.45),
+    0 0 70px rgba(187, 233, 80, 0.2);
+}
+
+/* No .drip rules here on purpose. Two attempts at hand-placed runs of paint
+   never lined up with the glyphs they were supposed to be leaving, because
+   their positions are percentages of a box while the letters sit wherever the
+   font puts them. The typeface drips by itself instead. */
+
+/* The scroll track under the heading, nub parked at the left. */
+.track {
+  position: relative;
+  height: 6px;
+  margin-top: 10px;
+  border-radius: 3px;
+  background: rgba(228, 234, 222, 0.1);
+  border: 1px solid var(--edge-soft);
+}
+
+.trackNub {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--ink-2);
+}
+
+/* ----------------------------------------------------------- tile strip */
+
+.strip {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--slab);
+  border: 1px solid var(--edge-soft);
+}
+
+.tiles {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tiles::-webkit-scrollbar {
+  display: none;
+}
+
+/* The selected tile lifts forward out of the strip.
+   This is deliberately a 2D scale and not the rotateX/translateZ it used to
+   be. Under a perspective, a rotated tile projects to a TRAPEZOID while its
+   hit box stays the bounding rectangle around it, and for tiles far from the
+   perspective origin the middle of that rectangle falls outside the shape, so
+   clicks fell straight through to the strip behind. A 2D scale stays a
+   rectangle, so what you see is exactly what you can press. The depth now
+   comes from scale and shadow, which cost nothing to click. */
+@media (min-width: 760px) {
+  .tiles {
+    overflow: visible;
+  }
+
+  .tile {
+    transform: scale(0.97);
+    transform-origin: 50% 100%;
+  }
+
+  /* Lifted, and throwing light down onto the strip beneath it the way
+     underglow pools on tarmac. */
+  .tileActive,
+  .tileActive:hover {
+    transform: scale(1.045);
+    box-shadow: 0 16px 34px -14px rgba(0, 0, 0, 0.9),
+      0 26px 46px -18px rgba(187, 233, 80, 0.55),
+      0 0 70px -10px rgba(187, 233, 80, 0.3);
+  }
+
+  .tile:hover:not(.tileActive) {
+    transform: scale(1.005);
+  }
+}
+
+.tile {
+  flex: 1 1 0;
+  min-width: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: var(--slab-press);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease,
+    transform 0.26s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.26s ease;
+}
+
+.tile:hover {
+  background: var(--slab);
+  color: var(--ink);
+}
+
+/* The selected tile fills solid and flips to dark ink. That hard filled bar is
+   how the dashboards of this era showed you where you were, and it is the one
+   place on the page allowed to shout. */
+.tileActive,
+.tileActive:hover {
+  background: var(--val);
+  border-color: var(--val);
+  color: #0c1a06;
+}
+
+.tileGlyph {
+  display: block;
+  width: 30px;
+  height: 30px;
+  color: var(--ink-2);
+}
+
+.tileActive .tileGlyph {
+  color: #0c1a06;
+}
+
+.tileCount {
+  font-style: normal;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.tileActive .tileCount {
+  color: rgba(12, 26, 6, 0.72);
+}
+
+.stripArrow {
+  flex-shrink: 0;
+  width: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid var(--edge);
+  background: var(--slab-press);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.stripArrow:hover {
+  background: var(--slab-hi);
+}
+
+/* The name of whatever the strip has selected, centred under it. */
+.currentName {
+  flex-shrink: 0;
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-barlow-condensed), var(--font-barlow), sans-serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1.1;
+  color: var(--val);
+}
+
+/* ------------------------------------------------------- event picker */
+
+/* Which board you are reading. The club runs one standard event, so this sits
+   quietly above the standings rather than dominating them. */
+.picker {
+  display: flex;
+  align-items: center;
+  gap: 10px 16px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--slab);
+  border: 1px solid var(--edge-soft);
+}
+
+.pickerGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pickerLabel {
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.modeChip {
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--edge-soft);
+  background: var(--inset);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-style: italic;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+
+.modeChip:hover {
+  background: rgba(228, 234, 222, 0.09);
+  color: var(--ink);
+}
+
+.modeChipOn,
+.modeChipOn:hover {
+  background: var(--val);
+  border-color: var(--val);
+  color: #0c1a06;
+}
+
+.trackSelect {
+  min-width: 0;
+  max-width: 100%;
+  height: 38px;
+  padding: 0 34px 0 12px;
+  border-radius: 7px;
+  background: var(--inset);
+  border: 1px solid var(--edge-soft);
+  color: var(--val);
+  font-family: inherit;
+  font-style: italic;
+  font-size: 16px;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--val) 50%),
+    linear-gradient(135deg, var(--val) 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% + 1px), calc(100% - 13px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.trackSelect option {
+  background: #141814;
+  color: var(--ink);
+  font-style: normal;
+}
+
+.pickerNote {
+  margin-left: auto;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* ------------------------------------------------------------------ body */
+
+.body {
+  flex: 1;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+  align-content: start;
+  min-height: 0;
+}
+
+/* Preview on the left, the label/value stack on the right, as the game lays a
+   selection screen out. */
+.split {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .split {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  /* These halves used to turn a degree and a half toward the middle. They do
+     not any more: one of them holds the post form, and a 3D-rotated ancestor
+     skews every input and button inside it away from its own hit box, so the
+     fields became hard to click. Depth here is shadow only. */
+  .split > * {
+    box-shadow: 0 24px 50px -28px rgba(0, 0, 0, 0.95);
+  }
+}
+
+/* Every panel is a little window: a caption bar with its name and a set of
+   control boxes, then the body. Borrowed from a desktop of the same vintage as
+   the console this menu is pretending to be. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: 12px;
+  background: var(--slab);
+  border: 1px solid var(--edge-soft);
+  overflow: hidden;
+}
+
+.winBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: 7px 10px 7px 12px;
+  background: var(--bar);
+  border-bottom: 1px solid var(--edge-soft);
+}
+
+.winName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A ring, the way that dashboard hung a node off everything. */
+.winDot {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid var(--val);
+}
+
+.winGlyphs {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.winGlyphs i {
+  display: block;
+  width: 13px;
+  height: 11px;
+  border: 1px solid var(--edge-soft);
+  border-radius: 2px;
+}
+
+.winGlyphs i:last-child {
+  border-color: rgba(187, 233, 80, 0.4);
+}
+
+.winBody {
+  flex: 1;
+  min-width: 0;
+  padding: 16px;
+}
+
+.panelFlush .winBody {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --------------------------------------------------- label / value block */
+
+/* The core unit of the whole menu: a white italic label, then a darker inset
+   box with the value in green. */
+.field + .field {
+  margin-top: 14px;
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.fieldBox {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-height: 52px;
+  padding: 10px 16px;
+  border-radius: 9px;
+  background: var(--inset);
+  border: 1px solid var(--edge-soft);
+}
+
+.fieldValue {
+  font-style: italic;
+  font-weight: 500;
+  font-size: 23px;
+  line-height: 1.2;
+  color: var(--val);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* The one number that matters is treated as a light source, not as coloured
+   text: it bleeds. Reserved for this and the selected tile, so it stays a
+   signal rather than becoming the page's texture. */
+.fieldValueBig {
+  font-family: var(--font-barlow-condensed), var(--font-barlow), sans-serif;
+  font-size: 40px;
+  text-shadow: 0 0 24px rgba(187, 233, 80, 0.55), 0 0 60px rgba(187, 233, 80, 0.25);
+}
+
+.fieldSuffix {
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-3);
+}
+
+.fieldEmpty {
+  color: var(--ink-3);
+}
+
+/* ------------------------------------------------------- preview panel */
+
+/* Where the track map sits in the game. Here it holds the leader's own
+   screenshot, which is the only thing on the page with real light in it. */
+.preview {
+  position: relative;
+  display: block;
+  width: 100%;
+  flex: 1;
+  min-height: 260px;
+  padding: 0;
+  border: none;
+  background: var(--inset);
+  cursor: zoom-in;
+  overflow: hidden;
+}
+
+/* People post wildly different shapes, from a full 4:3 results screen to a
+   thin strip of the standings line. Contained, a strip leaves most of the
+   panel as dead black. So the same image also runs underneath, scaled up and
+   blurred out, and fills that space with light taken from the screenshot
+   itself rather than from anything the interface invented. */
+.previewHaze {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  object-fit: cover;
+  filter: blur(34px) saturate(1.5) brightness(0.72);
+  opacity: 0.75;
+  transform: scale(1.06);
+}
+
+/* Contained, not cropped. People post whatever shape their capture is, from a
+   full 4:3 results screen to a thin strip of the standings line, and cropping
+   a panorama to its middle hides the very number it is proving. */
+.previewImg {
+  /* Positioned so it stacks above .previewHaze, which is absolute and would
+     otherwise paint over this static sibling whatever the DOM order. */
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+  object-fit: contain;
+}
+
+.previewEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+
+/* The leader's name plate, over the bottom of their screenshot. */
+.plate {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(6, 9, 7, 0.72);
+  border: 1px solid var(--edge-soft);
+  text-align: left;
+}
+
+/* The crown draws itself on, one stroke at a time, like it is being scrawled
+   over the leader the moment the board loads. */
+.plateCrown {
+  flex-shrink: 0;
+  width: 52px;
+  height: auto;
+  color: var(--val);
+  transform: rotate(-6deg);
+}
+
+.plateCrown path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: scrawl 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.plateCrown path:nth-child(2) {
+  animation-delay: 0.38s;
+}
+
+.plateCrown path:nth-child(3) {
+  animation-delay: 0.62s;
+}
+
+.plateCrown path:nth-child(4) {
+  animation-delay: 0.7s;
+}
+
+.plateCrown path:nth-child(5) {
+  animation-delay: 0.78s;
+}
+
+@keyframes scrawl {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.plateName {
+  display: block;
+  font-family: var(--font-barlow-condensed), var(--font-barlow), sans-serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(26px, 4vw, 38px);
+  line-height: 1;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.plateUnder {
+  display: block;
+  margin-top: 2px;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------------- the list */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.listRow {
+  display: grid;
+  grid-template-columns: 26px 54px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  border-radius: 9px;
+  background: var(--inset);
+  border: 1px solid transparent;
+  text-align: left;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.listRow:hover {
+  background: rgba(228, 234, 222, 0.09);
+  border-color: var(--edge-soft);
+}
+
+.listPos {
+  font-style: italic;
+  font-size: 17px;
+  color: var(--ink-3);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.listThumb {
+  width: 54px;
+  height: 34px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid var(--edge-soft);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+  cursor: zoom-in;
+}
+
+.listThumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listThumbEmpty {
+  width: 54px;
+  height: 34px;
+  border-radius: 6px;
+  border: 1px dashed var(--edge-soft);
+}
+
+.listName {
+  display: block;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.listUnder {
+  display: block;
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--ink-3);
+  overflow-wrap: anywhere;
+}
+
+.listScore {
+  text-align: right;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--val);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.listLap {
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.rowTools {
+  margin-top: 2px;
+}
+
+.linkButton {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink-3);
+  font-family: inherit;
+  font-style: italic;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.linkButton:hover {
+  color: var(--ink);
+}
+
+.empty {
+  padding: 48px 20px;
+  text-align: center;
+  font-style: italic;
+  color: var(--ink-3);
+}
+
+/* Attract mode: left alone, the board starts showing itself off, walking the
+   highlight down the list the way a cabinet runs a demo reel. */
+.listRowAttract,
+.listRowAttract:hover {
+  background: var(--val);
+  border-color: var(--val);
+}
+
+.listRowAttract .listName,
+.listRowAttract .listScore,
+.listRowAttract .listPos {
+  color: #0c1a06;
+}
+
+.listRowAttract .listUnder {
+  color: rgba(12, 26, 6, 0.72);
+}
+
+.attractFlag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+.attractFlag::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--val);
+}
+
+/* --------------------------------------------------------------- ticker */
+
+/* A crawl of everything posted lately, because a leaderboard should feel
+   busier than its top three. */
+.ticker {
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 8px 0;
+  border-top: 1px solid var(--edge-soft);
+  border-bottom: 1px solid var(--edge-soft);
+  background: var(--bar);
+  border-radius: 8px;
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.tickerTrack {
+  display: inline-flex;
+  gap: 36px;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: crawl 42s linear infinite;
+}
+
+.tickerItem {
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.tickerItem b {
+  font-weight: 500;
+  color: var(--val);
+}
+
+.tickerItem::after {
+  content: "·";
+  margin-left: 36px;
+  color: var(--ink-3);
+}
+
+@keyframes crawl {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.ticker:hover .tickerTrack {
+  animation-play-state: paused;
+}
+
+/* --------------------------------------------------------------- cars */
+
+.carList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.carGroup {
+  margin: 14px 0 2px;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.carGroup:first-child {
+  margin-top: 0;
+}
+
+.carRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 16px;
+  align-items: baseline;
+  padding: 10px 14px;
+  border-radius: 9px;
+  background: var(--inset);
+  border: 1px solid transparent;
+}
+
+.carBanned {
+  border-color: rgba(255, 122, 156, 0.26);
+}
+
+.carName {
+  font-style: italic;
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--val);
+}
+
+.carBanned .carName {
+  color: var(--warn);
+  text-decoration: line-through;
+}
+
+.carFigs {
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.carWhy {
+  grid-column: 1 / -1;
+  font-size: 14px;
+  color: var(--ink-3);
+  max-width: 62ch;
+}
+
+/* --------------------------------------------------------------- rules */
+
+.rules {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: rule;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rule {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  padding: 12px 14px;
+  border-radius: 9px;
+  background: var(--inset);
+}
+
+.rule::before {
+  counter-increment: rule;
+  content: "0" counter(rule);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--val-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.ruleText {
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+.ruleText b {
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------- form */
+
+.input,
+.select {
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 16px;
+  border-radius: 9px;
+  background: var(--inset);
+  border: 1px solid var(--edge-soft);
+  color: var(--val);
+  font-family: inherit;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 21px;
+  font-variant-numeric: tabular-nums;
+}
+
+.select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--val) 50%),
+    linear-gradient(135deg, var(--val) 50%, transparent 50%);
+  background-position: calc(100% - 22px) calc(50% + 1px), calc(100% - 16px) calc(50% + 1px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 40px;
+}
+
+.select option {
+  background: #141814;
+  color: var(--ink);
+  font-style: normal;
+}
+
+.input::placeholder {
+  color: rgba(187, 233, 80, 0.3);
+}
+
+.input:focus-visible,
+.select:focus-visible,
+.drop:focus-visible,
+.btn:focus-visible,
+.tile:focus-visible,
+.stripArrow:focus-visible,
+.listRow:focus-visible,
+.listThumb:focus-visible,
+.preview:focus-visible,
+.linkButton:focus-visible {
+  outline: 2px solid var(--val);
+  outline-offset: 2px;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 132px;
+  padding: 14px;
+  border-radius: 9px;
+  border: 1px dashed var(--edge);
+  background: var(--inset);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-style: italic;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.drop:hover,
+.dropActive {
+  background: rgba(228, 234, 222, 0.09);
+  border-color: var(--val-dim);
+}
+
+.dropSub {
+  font-size: 14px;
+  color: var(--ink-3);
+}
+
+/* The file the poster just picked, shown inside the drop zone. Scoped to its
+   own class: a `.preview img` selector here would outrank .previewImg and
+   quietly letterbox the leader's screenshot. */
+.previewPick {
+  display: block;
+  width: 100%;
+  max-height: 210px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.feedback {
+  margin-top: 12px;
+  font-style: italic;
+  font-size: 15px;
+}
+
+.error {
+  color: var(--warn);
+}
+
+.ok {
+  color: var(--val);
+}
+
+/* --------------------------------------------------------- bottom bar */
+
+.footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+/* Bottom left is where the game prints whose profile is loaded. */
+.driverSlot {
+  font-style: italic;
+  font-size: 17px;
+  color: var(--ink-2);
+  min-width: 0;
+}
+
+.driverSlot b {
+  font-weight: 500;
+  color: var(--val);
+}
+
+.driverSlotHint {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Bottom-right actions, each led by a lettered ring the way a console prints
+   its button hints. The ring is drawn here, not an icon. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 164px;
+  padding: 10px 20px 10px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--edge);
+  background: var(--slab);
+  color: var(--ink);
+  font-family: inherit;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 18px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.btnKey {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--slab-hi);
+}
+
+.btn:active:not(:disabled) {
+  background: var(--slab-press);
+}
+
+.btnPrimary {
+  color: var(--val);
+  border-color: rgba(187, 233, 80, 0.5);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: rgba(187, 233, 80, 0.16);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.colophon {
+  flex-basis: 100%;
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.6;
+}
+
+/* ------------------------------------------------------------- lightbox */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: rgba(5, 7, 6, 0.93);
+  border: none;
+  cursor: zoom-out;
+}
+
+.lightboxImg {
+  max-width: min(1200px, 100%);
+  max-height: 82dvh;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid var(--edge-soft);
+}
+
+.lightboxCap {
+  position: absolute;
+  bottom: 26px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: 27px;
+  }
+  .currentName {
+    font-size: 24px;
+  }
+  .listRow {
+    grid-template-columns: 22px minmax(0, 1fr) auto;
+  }
+  .listThumb,
+  .listThumbEmpty {
+    display: none;
+  }
+  .btn {
+    flex: 1;
+    min-width: 0;
+  }
+  .actions {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile,
+  .listRow,
+  .btn,
+  .drop,
+  .stripArrow,
+  .wire {
+    transition: none;
+  }
+
+  /* Depth stays, the movement does not. */
+  .wire,
+  .wireNear,
+  .frame,
+  .ground::before {
+    transform: none;
+    transition: none;
+  }
+
+  .tickerTrack {
+    animation: none;
+    padding-left: 0;
+  }
+
+  /* The crown is simply already drawn. */
+  .plateCrown path {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+}

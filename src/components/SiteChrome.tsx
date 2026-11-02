@@ -9,6 +9,9 @@ import RouteTransitions from "./RouteTransitions";
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   if (pathname === "/workspace" || pathname.startsWith("/workspace/")) return <>{children}</>;
+  // Unlisted pages that bring their own skin and deliberately have no way back
+  // into the site nav.
+  if (pathname === "/drift-club") return <>{children}</>;
   return <>
         <LogoFly />
         <KeyboardNav />
