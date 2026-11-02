@@ -30,6 +30,42 @@ const NAME_KEY = "drift-club:driver";
 /** Sentinel for the track select: anything the course list does not name. */
 const OTHER_TRACK = "__other__";
 
+/* Kept out here so the strip can count them. The tile used to carry the number
+   written by hand and it was already wrong by one. */
+const HOUSE_RULES = [
+  <>
+    <b>Stadium Drift 2 is the house standard.</b> It is the board that settles arguments.
+    Anything else from Quick Race is fair game and keeps its own board
+  </>,
+  <>
+    <b>One track, one mode, one board.</b> A time on a reversed route is a different event
+    from the forward one, so post it as its own track
+  </>,
+  <>
+    <b>One try.</b> Whatever the results screen says is your run. No restarting a bad first
+    lap
+  </>,
+  <>
+    <b>One run a day.</b> Preferably on a day you are actually in the office. Nobody wants to
+    be beaten by someone who spent a quiet Sunday on it
+  </>,
+  <>
+    <b>Start-grid cars only.</b> The eight a fresh save gives you. The stage 4 unlocks are out
+  </>,
+  <>
+    <b>Tuning is your business.</b> Say nothing and we assume stock. Nobody is checking your
+    bodykit
+  </>,
+  <>
+    <b>Screenshot or it did not happen.</b> The results screen, total readable, one run per
+    post
+  </>,
+  <>
+    <b>Your best day stands.</b> A better run replaces a worse one. That is the only thing
+    that replaces it
+  </>,
+];
+
 type Tab = "board" | "rules" | "cars" | "post";
 
 const TABS: { id: Tab; label: string }[] = [
@@ -575,7 +611,7 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
 
   const tileCount: Record<Tab, string> = {
     board: `${standings.length} ${standings.length === 1 ? "driver" : "drivers"}`,
-    rules: "6 of them",
+    rules: `${HOUSE_RULES.length} of them`,
     cars: `${legalCars.length} allowed`,
     post: "one try",
   };
@@ -885,37 +921,7 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
           {tab === "rules" ? (
             <Panel name="house_rules.txt">
               <ol className={styles.rules}>
-                {[
-                  <>
-                    <b>Stadium Drift 2 is the house standard.</b> It is the board that settles
-                    arguments. Anything else from Quick Race is fair game and keeps its own
-                    board
-                  </>,
-                  <>
-                    <b>One track, one mode, one board.</b> A time on a reversed route is a
-                    different event from the forward one, so post it as its own track
-                  </>,
-                  <>
-                    <b>One try.</b> Whatever the results screen says is your run. No restarting a
-                    bad first lap
-                  </>,
-                  <>
-                    <b>Start-grid cars only.</b> The eight a fresh save gives you. The stage 4
-                    unlocks are out
-                  </>,
-                  <>
-                    <b>Tuning is your business.</b> Say nothing and we assume stock. Nobody is
-                    checking your bodykit
-                  </>,
-                  <>
-                    <b>Screenshot or it did not happen.</b> The results screen, total readable, one
-                    run per post
-                  </>,
-                  <>
-                    <b>Your best run stands.</b> Post as often as you like, the board keeps the
-                    highest
-                  </>,
-                ].map((text, index) => (
+                {HOUSE_RULES.map((text, index) => (
                   <li className={styles.rule} key={index}>
                     <span className={styles.ruleText}>{text}</span>
                   </li>
