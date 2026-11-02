@@ -30,6 +30,42 @@ const NAME_KEY = "drift-club:driver";
 /** Sentinel for the track select: anything the course list does not name. */
 const OTHER_TRACK = "__other__";
 
+/* Kept out here so the strip can count them. The tile used to carry the number
+   written by hand and it was already wrong by one. */
+const HOUSE_RULES = [
+  <>
+    <b>Stadium Drift 2 is the house standard.</b> It is the board that settles arguments.
+    Anything else from Quick Race is fair game and keeps its own board
+  </>,
+  <>
+    <b>One track, one mode, one board.</b> A time on a reversed route is a different event
+    from the forward one, so post it as its own track
+  </>,
+  <>
+    <b>One try.</b> Whatever the results screen says is your run. No restarting a bad first
+    lap
+  </>,
+  <>
+    <b>One run a day.</b> Preferably on a day you are actually in the office. Nobody wants to
+    be beaten by someone who spent a quiet Sunday on it
+  </>,
+  <>
+    <b>Start-grid cars only.</b> The eight a fresh save gives you. The stage 4 unlocks are out
+  </>,
+  <>
+    <b>Tuning is your business.</b> Say nothing and we assume stock. Nobody is checking your
+    bodykit
+  </>,
+  <>
+    <b>Post the results screen.</b> Total readable, one run per post. Not enforced, but a
+    number with nothing behind it is only worth what people decide it is
+  </>,
+  <>
+    <b>Your best day stands.</b> A better run replaces a worse one. That is the only thing
+    that replaces it
+  </>,
+];
+
 type Tab = "board" | "rules" | "cars" | "post";
 
 const TABS: { id: Tab; label: string }[] = [
@@ -504,12 +540,7 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
     const form = event.currentTarget;
     const data = new FormData(form);
 
-    if (!shot) {
-      setError("Add the screenshot of your results screen");
-      return;
-    }
-
-    data.set("shot", shot.file);
+    if (shot) data.set("shot", shot.file);
     setBusy(true);
     setError(null);
     setPosted(null);
@@ -575,7 +606,7 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
 
   const tileCount: Record<Tab, string> = {
     board: `${standings.length} ${standings.length === 1 ? "driver" : "drivers"}`,
-    rules: "6 of them",
+    rules: `${HOUSE_RULES.length} of them`,
     cars: `${legalCars.length} allowed`,
     post: "one try",
   };
@@ -709,37 +740,42 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
               <>
                 <div className={styles.split}>
                   <Panel name={`${leader.driver.toLowerCase()}_run.jpg`} flush>
-                    {leader.hasShot ? (
-                      <button
-                        type="button"
-                        className={styles.preview}
-                        onClick={() => setLightbox(leader)}
-                        aria-label={`Open the results screen posted by ${leader.driver}`}
-                      >
-                        {/* Same file, blurred out behind itself, so an oddly
-                            shaped capture does not leave the panel half empty.
-                            Decorative: the real one below carries the alt. */}
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img className={styles.previewHaze} src={`/api/drift/shot/${leader.id}`} alt="" />
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          className={styles.previewImg}
-                          src={`/api/drift/shot/${leader.id}`}
-                          alt={`Results screen, ${formatValue(leader.mode, leader.score, leader.timeMs)}`}
-                        />
-                        <span className={styles.plate}>
-                          <Crown className={styles.plateCrown} />
-                          <span>
-                            <span className={styles.plateName}>{leader.driver}</span>
-                            <span className={styles.plateUnder}>
-                              Holds the board since {formatDate(leader.createdAt)}
-                            </span>
+                    <div className={styles.previewWrap}>
+                      {leader.hasShot ? (
+                        <button
+                          type="button"
+                          className={styles.preview}
+                          onClick={() => setLightbox(leader)}
+                          aria-label={`Open the results screen posted by ${leader.driver}`}
+                        >
+                          {/* Same file, blurred out behind itself, so an oddly
+                              shaped capture does not leave the panel half empty.
+                              Decorative: the real one below carries the alt. */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img className={styles.previewHaze} src={`/api/drift/shot/${leader.id}`} alt="" />
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            className={styles.previewImg}
+                            src={`/api/drift/shot/${leader.id}`}
+                            alt={`Results screen, ${formatValue(leader.mode, leader.score, leader.timeMs)}`}
+                          />
+                        </button>
+                      ) : (
+                        <div className={styles.previewEmpty}>Posted without proof</div>
+                      )}
+
+                      {/* Outside the branch above: the crown belongs to whoever
+                          leads, screenshot or not. */}
+                      <span className={styles.plate}>
+                        <Crown className={styles.plateCrown} />
+                        <span>
+                          <span className={styles.plateName}>{leader.driver}</span>
+                          <span className={styles.plateUnder}>
+                            Holds the board since {formatDate(leader.createdAt)}
                           </span>
                         </span>
-                      </button>
-                    ) : (
-                      <div className={styles.previewEmpty}>No screenshot</div>
-                    )}
+                      </span>
+                    </div>
                   </Panel>
 
                   <Panel name="run_details">
@@ -885,37 +921,7 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
           {tab === "rules" ? (
             <Panel name="house_rules.txt">
               <ol className={styles.rules}>
-                {[
-                  <>
-                    <b>Stadium Drift 2 is the house standard.</b> It is the board that settles
-                    arguments. Anything else from Quick Race is fair game and keeps its own
-                    board
-                  </>,
-                  <>
-                    <b>One track, one mode, one board.</b> A time on a reversed route is a
-                    different event from the forward one, so post it as its own track
-                  </>,
-                  <>
-                    <b>One try.</b> Whatever the results screen says is your run. No restarting a
-                    bad first lap
-                  </>,
-                  <>
-                    <b>Start-grid cars only.</b> The eight a fresh save gives you. The stage 4
-                    unlocks are out
-                  </>,
-                  <>
-                    <b>Tuning is your business.</b> Say nothing and we assume stock. Nobody is
-                    checking your bodykit
-                  </>,
-                  <>
-                    <b>Screenshot or it did not happen.</b> The results screen, total readable, one
-                    run per post
-                  </>,
-                  <>
-                    <b>Your best run stands.</b> Post as often as you like, the board keeps the
-                    highest
-                  </>,
-                ].map((text, index) => (
+                {HOUSE_RULES.map((text, index) => (
                   <li className={styles.rule} key={index}>
                     <span className={styles.ruleText}>{text}</span>
                   </li>
@@ -970,7 +976,9 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
                   ) : (
                     <>
                       <span>Drop your screenshot here</span>
-                      <span className={styles.dropSub}>or click to choose a file</span>
+                      <span className={styles.dropSub}>
+                        or click to choose · optional, but everyone can see who skipped it
+                      </span>
                     </>
                   )}
                 </button>
