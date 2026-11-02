@@ -380,6 +380,93 @@
   color: var(--val);
 }
 
+/* ------------------------------------------------------- event picker */
+
+/* Which board you are reading. The club runs one standard event, so this sits
+   quietly above the standings rather than dominating them. */
+.picker {
+  display: flex;
+  align-items: center;
+  gap: 10px 16px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--slab);
+  border: 1px solid var(--edge-soft);
+}
+
+.pickerGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pickerLabel {
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.modeChip {
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--edge-soft);
+  background: var(--inset);
+  color: var(--ink-2);
+  font-family: inherit;
+  font-style: italic;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+
+.modeChip:hover {
+  background: rgba(228, 234, 222, 0.09);
+  color: var(--ink);
+}
+
+.modeChipOn,
+.modeChipOn:hover {
+  background: var(--val);
+  border-color: var(--val);
+  color: #0c1a06;
+}
+
+.trackSelect {
+  min-width: 0;
+  max-width: 100%;
+  height: 38px;
+  padding: 0 34px 0 12px;
+  border-radius: 7px;
+  background: var(--inset);
+  border: 1px solid var(--edge-soft);
+  color: var(--val);
+  font-family: inherit;
+  font-style: italic;
+  font-size: 16px;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--val) 50%),
+    linear-gradient(135deg, var(--val) 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% + 1px), calc(100% - 13px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.trackSelect option {
+  background: #141814;
+  color: var(--ink);
+  font-style: normal;
+}
+
+.pickerNote {
+  margin-left: auto;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
 /* ------------------------------------------------------------------ body */
 
 .body {

@@ -3,6 +3,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { CARS_BY_ID, DRIFT_CARS, type DriftCar } from "@/lib/driftCars";
+import {
+  beats,
+  compareRuns,
+  DEFAULT_MODE,
+  DEFAULT_TRACK,
+  DEFAULT_TRACK_KEY,
+  formatTime,
+  formatValue,
+  MODES,
+  modeOf,
+  scoreKind,
+  trackKey as toTrackKey,
+} from "@/lib/driftEvents";
 import type { DriftRun } from "@/lib/driftRuns";
 
 import Crown from "./Crown";
@@ -81,6 +94,16 @@ function useCountUp(target: number, delayMs = 0) {
 
 function Odometer({ value, delay }: { value: number; delay?: number }) {
   return <>{fmt.format(useCountUp(value, delay))}</>;
+}
+
+/* A run's headline figure. Points tally up the way a results screen counts
+   them; a lap time does not, because a clock running backwards to your time
+   reads as the timer still going rather than as a score being totted up. */
+function RunValue({ run, delay }: { run: DriftRun; delay?: number }) {
+  if (scoreKind(run.mode) === "time") {
+    return <>{formatValue(run.mode, run.score, run.timeMs)}</>;
+  }
+  return <Odometer value={run.score ?? 0} delay={delay} />;
 }
 
 /* A one-word read on a score. Nobody needs it, everybody will check it. */
@@ -286,6 +309,12 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
   const [lightbox, setLightbox] = useState<DriftRun | null>(null);
   const [savedName, setSavedName] = useState("");
   const [attract, setAttract] = useState<number | null>(null);
+  // Which board you are looking at. Stadium Drift 2 is the house standard.
+  const [mode, setMode] = useState<string>(DEFAULT_MODE);
+  const [track, setTrack] = useState<string>(DEFAULT_TRACK_KEY);
+  // The post form picks its own mode, so you can log a sprint while reading
+  // the drift board.
+  const [formMode, setFormMode] = useState<string>(DEFAULT_MODE);
 
   const fileRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -370,19 +399,58 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
     };
   }, [tab]);
 
-  /* One line per driver: their best run. Everything else stays in the database
-     as history but does not clog the board. */
+  /* Every event anyone has posted to, plus the house standard so the default
+     board exists on an empty database. */
+  const events = useMemo(() => {
+    const found = new Map<string, { mode: string; track: string; trackKey: string; runs: number }>();
+    found.set(`${DEFAULT_MODE}:${DEFAULT_TRACK_KEY}`, {
+      mode: DEFAULT_MODE,
+      track: DEFAULT_TRACK,
+      trackKey: DEFAULT_TRACK_KEY,
+      runs: 0,
+    });
+
+    for (const run of runs) {
+      const id = `${run.mode}:${run.trackKey}`;
+      const held = found.get(id);
+      if (held) held.runs += 1;
+      else found.set(id, { mode: run.mode, track: run.track, trackKey: run.trackKey, runs: 1 });
+    }
+
+    return [...found.values()];
+  }, [runs]);
+
+  const tracksInMode = useMemo(
+    () => events.filter((event) => event.mode === mode).sort((a, b) => b.runs - a.runs),
+    [events, mode],
+  );
+
+  const currentEvent = useMemo(
+    () => tracksInMode.find((event) => event.trackKey === track) ?? tracksInMode[0],
+    [tracksInMode, track],
+  );
+
+  /* One line per driver: their best run on THIS event. Points rank downward
+     and times upward, which is why the comparison is delegated rather than
+     written as a sort here. */
   const standings = useMemo(() => {
+    if (!currentEvent) return [];
     const best = new Map<string, DriftRun>();
 
     for (const run of runs) {
+      if (run.mode !== currentEvent.mode || run.trackKey !== currentEvent.trackKey) continue;
       const key = run.driver.toLowerCase();
       const held = best.get(key);
-      if (!held || run.score > held.score) best.set(key, run);
+      if (!held || beats(run.mode, run, held)) best.set(key, run);
     }
 
-    return [...best.values()].sort((a, b) => b.score - a.score);
-  }, [runs]);
+    return [...best.values()].sort((a, b) => compareRuns(currentEvent.mode, a, b));
+  }, [runs, currentEvent]);
+
+  const kind = currentEvent ? scoreKind(currentEvent.mode) : "points";
+  // The form follows its own mode, which need not be the board being read.
+  const formKind = scoreKind(formMode);
+  const formHasBestLap = modeOf(formMode)?.hasBestLap ?? false;
 
   /* Everything posted lately, newest first, for the crawl. Unlike the
      standings this keeps repeat runs, which is the point: it shows the board
@@ -451,14 +519,24 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
       }
 
       const run = payload.run;
-      const tookIt = run.score >= (standings[0]?.score ?? 0);
+      // Leading is per event, so compare against the top of the board this run
+      // actually belongs to rather than whatever is on screen.
+      const sameEvent = standings.filter(
+        (held) => held.mode === run.mode && held.trackKey === run.trackKey,
+      );
+      const tookIt = !sameEvent[0] || beats(run.mode, run, sameEvent[0]);
+      const shown = formatValue(run.mode, run.score, run.timeMs);
 
-      setRuns((current) => [...current, run].sort((a, b) => b.score - a.score));
+      setRuns((current) => [run, ...current]);
       setPosted(
         tookIt
-          ? `${run.driver} takes the board with ${fmt.format(run.score)}`
-          : `Posted, ${fmt.format(run.score)} points`,
+          ? `${run.driver} takes ${run.track} with ${shown}`
+          : `Posted, ${shown} on ${run.track}`,
       );
+
+      // Drop the reader on the board they just posted to.
+      setMode(run.mode);
+      setTrack(run.trackKey);
 
       try {
         window.localStorage.setItem(NAME_KEY, run.driver);
@@ -478,7 +556,8 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
   }
 
   async function handleDelete(run: DriftRun) {
-    if (!window.confirm(`Delete the ${fmt.format(run.score)} run by ${run.driver}?`)) return;
+    const shown = formatValue(run.mode, run.score, run.timeMs);
+    if (!window.confirm(`Delete the ${shown} run by ${run.driver} on ${run.track}?`)) return;
 
     const response = await fetch(`/api/drift/runs/${run.id}`, { method: "DELETE" });
     if (response.ok) setRuns((current) => current.filter((item) => item.id !== run.id));
@@ -558,11 +637,70 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
 
         <div className={styles.body}>
           {tab === "board" ? (
-            !leader ? (
-              <Panel name="standings.dat">
-                <p className={styles.empty}>No runs posted yet. Somebody has to go first.</p>
-              </Panel>
-            ) : (
+            <>
+              <div className={styles.picker}>
+                <div className={styles.pickerGroup}>
+                  <span className={styles.pickerLabel}>Mode</span>
+                  {MODES.map((entry) => {
+                    const has = events.some((event) => event.mode === entry.id);
+                    return (
+                      <button
+                        key={entry.id}
+                        type="button"
+                        className={`${styles.modeChip} ${
+                          mode === entry.id ? styles.modeChipOn : ""
+                        }`}
+                        title={entry.blurb}
+                        onClick={() => {
+                          setMode(entry.id);
+                          // Jump to that mode's busiest board rather than
+                          // leaving a track key that belongs to another mode.
+                          const first = events
+                            .filter((event) => event.mode === entry.id)
+                            .sort((a, b) => b.runs - a.runs)[0];
+                          setTrack(first ? first.trackKey : DEFAULT_TRACK_KEY);
+                        }}
+                      >
+                        {entry.name}
+                        {has ? "" : " ·"}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className={styles.pickerGroup}>
+                  <span className={styles.pickerLabel}>Track</span>
+                  <select
+                    className={styles.trackSelect}
+                    value={currentEvent?.trackKey ?? ""}
+                    onChange={(event) => setTrack(event.target.value)}
+                    aria-label="Track"
+                  >
+                    {tracksInMode.length === 0 ? (
+                      <option value="">Nothing posted yet</option>
+                    ) : (
+                      tracksInMode.map((event) => (
+                        <option key={event.trackKey} value={event.trackKey}>
+                          {event.track}
+                          {event.runs ? ` (${event.runs})` : ""}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
+                <span className={styles.pickerNote}>
+                  {kind === "time" ? "Lowest time wins" : "Highest points win"}
+                </span>
+              </div>
+
+              {!leader ? (
+                <Panel name="standings.dat">
+                  <p className={styles.empty}>
+                    Nothing posted on this one yet. Somebody has to go first.
+                  </p>
+                </Panel>
+              ) : (
               <>
                 <div className={styles.split}>
                   <Panel name={`${leader.driver.toLowerCase()}_run.jpg`} flush>
@@ -582,7 +720,7 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
                         <img
                           className={styles.previewImg}
                           src={`/api/drift/shot/${leader.id}`}
-                          alt={`Results screen, ${fmt.format(leader.score)} points`}
+                          alt={`Results screen, ${formatValue(leader.mode, leader.score, leader.timeMs)}`}
                         />
                         <span className={styles.plate}>
                           <Crown className={styles.plateCrown} />
@@ -601,12 +739,16 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
 
                   <Panel name="run_details">
                     <div className={styles.field}>
-                      <span className={styles.fieldLabel}>Points</span>
+                      <span className={styles.fieldLabel}>
+                        {kind === "time" ? "Time" : "Points"}
+                      </span>
                       <span className={styles.fieldBox}>
                         <span className={`${styles.fieldValue} ${styles.fieldValueBig}`}>
-                          <Odometer value={leader.score} delay={220} />
+                          <RunValue run={leader} delay={220} />
                         </span>
-                        <span className={styles.fieldSuffix}>{verdict(leader.score)}</span>
+                        {leader.score !== null ? (
+                          <span className={styles.fieldSuffix}>{verdict(leader.score)}</span>
+                        ) : null}
                       </span>
                     </div>
 
@@ -633,7 +775,11 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
                             leader.bestLap ? "" : styles.fieldEmpty
                           }`}
                         >
-                          {leader.bestLap ? fmt.format(leader.bestLap) : "not given"}
+                          {leader.bestLap
+                            ? kind === "time"
+                              ? formatTime(leader.bestLap)
+                              : fmt.format(leader.bestLap)
+                            : "not given"}
                         </span>
                       </span>
                     </div>
@@ -641,8 +787,14 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
                     <div className={styles.field}>
                       <span className={styles.fieldLabel}>Track</span>
                       <span className={styles.fieldBox}>
-                        <span className={styles.fieldValue}>Stadium Drift 2</span>
-                        <span className={styles.fieldSuffix}>quick race, drift</span>
+                        {/* The board's name, not whichever spelling the
+                            current leader happened to type. */}
+                        <span className={styles.fieldValue}>
+                          {currentEvent?.track ?? leader.track}
+                        </span>
+                        <span className={styles.fieldSuffix}>
+                          quick race, {modeOf(leader.mode)?.name.toLowerCase() ?? leader.mode}
+                        </span>
                       </span>
                     </div>
                   </Panel>
@@ -702,10 +854,16 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
 
                             <span>
                               <span className={styles.listScore}>
-                                <Odometer value={run.score} delay={340 + index * 110} />
+                                <RunValue run={run} delay={340 + index * 110} />
                               </span>
                               <span className={styles.listUnder} style={{ display: "block", textAlign: "right" }}>
-                                {run.bestLap ? `best lap ${fmt.format(run.bestLap)}` : formatDate(run.createdAt)}
+                                {run.bestLap
+                                  ? `best lap ${
+                                      kind === "time"
+                                        ? formatTime(run.bestLap)
+                                        : fmt.format(run.bestLap)
+                                    }`
+                                  : formatDate(run.createdAt)}
                               </span>
                             </span>
                           </div>
@@ -715,7 +873,8 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
                   </Panel>
                 ) : null}
               </>
-            )
+              )}
+            </>
           ) : null}
 
           {tab === "rules" ? (
@@ -723,12 +882,17 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
               <ol className={styles.rules}>
                 {[
                   <>
-                    <b>Stadium Drift 2 only</b>, from Quick Race. No other track counts, including
-                    the other stadium layout
+                    <b>Stadium Drift 2 is the house standard.</b> It is the board that settles
+                    arguments. Anything else from Quick Race is fair game and keeps its own
+                    board
                   </>,
                   <>
-                    <b>Three laps, one try.</b> Whatever the results screen says is your run. No
-                    restarting a bad first lap
+                    <b>One track, one mode, one board.</b> A time on a reversed route is a
+                    different event from the forward one, so post it as its own track
+                  </>,
+                  <>
+                    <b>One try.</b> Whatever the results screen says is your run. No restarting a
+                    bad first lap
                   </>,
                   <>
                     <b>Start-grid cars only.</b> The eight a fresh save gives you. The stage 4
@@ -849,34 +1013,80 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
                 </div>
 
                 <div className={styles.field}>
-                  <div className={styles.pair}>
+                  <label className={styles.fieldLabel} htmlFor="mode">
+                    Mode
+                  </label>
+                  <select
+                    id="mode"
+                    name="mode"
+                    className={styles.select}
+                    value={formMode}
+                    onChange={(event) => setFormMode(event.target.value)}
+                  >
+                    {MODES.map((entry) => (
+                      <option key={entry.id} value={entry.id}>
+                        {entry.name} — {entry.blurb.toLowerCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.field}>
+                  <label className={styles.fieldLabel} htmlFor="track">
+                    Track
+                  </label>
+                  {/* Free text with the known names offered, so the list grows
+                      from what people actually race without anyone inventing a
+                      course list up front. Names are folded to a key server
+                      side, so casing and stray spaces still group together. */}
+                  <input
+                    id="track"
+                    name="track"
+                    className={styles.input}
+                    list="drift-tracks"
+                    maxLength={48}
+                    required
+                    autoComplete="off"
+                    defaultValue={DEFAULT_TRACK}
+                  />
+                  <datalist id="drift-tracks">
+                    {[...new Set(events.map((event) => event.track))].map((name) => (
+                      <option key={name} value={name} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div className={styles.field}>
+                  <div className={formKind === "time" && !formHasBestLap ? "" : styles.pair}>
                     <span>
-                      <label className={styles.fieldLabel} htmlFor="score">
-                        Points
+                      <label className={styles.fieldLabel} htmlFor="value">
+                        {formKind === "time" ? "Time" : "Points"}
                       </label>
                       <input
-                        id="score"
-                        name="score"
+                        id="value"
+                        name="value"
                         className={styles.input}
-                        inputMode="numeric"
+                        inputMode={formKind === "time" ? "text" : "numeric"}
                         required
                         autoComplete="off"
-                        placeholder="53,108"
+                        placeholder={formKind === "time" ? "1:23.45" : "53,108"}
                       />
                     </span>
-                    <span>
-                      <label className={styles.fieldLabel} htmlFor="bestLap">
-                        Best lap
-                      </label>
-                      <input
-                        id="bestLap"
-                        name="bestLap"
-                        className={styles.input}
-                        inputMode="numeric"
-                        autoComplete="off"
-                        placeholder="18,357"
-                      />
-                    </span>
+                    {formHasBestLap ? (
+                      <span>
+                        <label className={styles.fieldLabel} htmlFor="bestLap">
+                          Best lap
+                        </label>
+                        <input
+                          id="bestLap"
+                          name="bestLap"
+                          className={styles.input}
+                          inputMode={formKind === "time" ? "text" : "numeric"}
+                          autoComplete="off"
+                          placeholder={formKind === "time" ? "0:27.90" : "18,357"}
+                        />
+                      </span>
+                    ) : null}
                   </div>
                 </div>
 
@@ -903,8 +1113,8 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
             <div className={styles.tickerTrack}>
               {[...recent, ...recent].map((run, index) => (
                 <span className={styles.tickerItem} key={`${run.id}-${index}`}>
-                  <b>{run.driver}</b> {fmt.format(run.score)} in the{" "}
-                  {CARS_BY_ID.get(run.carId)?.name ?? run.carId}
+                  <b>{run.driver}</b> {formatValue(run.mode, run.score, run.timeMs)} on{" "}
+                  {run.track} in the {CARS_BY_ID.get(run.carId)?.name ?? run.carId}
                   {run.note ? ` — ${run.note}` : ""}
                 </span>
               ))}
@@ -1007,7 +1217,8 @@ export default function DriftBoard({ initialRuns, canModerate }: Props) {
             alt={`Results screen posted by ${lightbox.driver}`}
           />
           <span className={styles.lightboxCap}>
-            {lightbox.driver} · {fmt.format(lightbox.score)} points · click anywhere to close
+            {lightbox.driver} · {formatValue(lightbox.mode, lightbox.score, lightbox.timeMs)} ·{" "}
+            {lightbox.track} · click anywhere to close
           </span>
         </button>
       ) : null}
