@@ -171,3 +171,23 @@ create table if not exists workspace_login_attempts (
 
 create index if not exists workspace_login_attempts_cleanup_idx
   on workspace_login_attempts (updated_at);
+
+-- Stadium Drift 2 office leaderboard (hidden page, no workspace auth).
+create table if not exists drift_runs (
+  id uuid primary key default gen_random_uuid(),
+  driver text not null,
+  car_id text not null,
+  score integer not null,
+  best_lap integer,
+  note text not null default '',
+  shot_data bytea,
+  shot_mime text,
+  created_at timestamptz not null default now(),
+  check (char_length(driver) between 1 and 24),
+  check (score >= 0 and score <= 10000000),
+  check (best_lap is null or (best_lap >= 0 and best_lap <= 10000000)),
+  check (char_length(note) <= 120)
+);
+
+create index if not exists drift_runs_score_idx on drift_runs (score desc, created_at asc);
+create index if not exists drift_runs_recent_idx on drift_runs (created_at desc);
