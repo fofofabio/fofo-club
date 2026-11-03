@@ -53,8 +53,9 @@ const HOUSE_RULES = [
     <b>Start-grid cars only.</b> The eight a fresh save gives you. The stage 4 unlocks are out
   </>,
   <>
-    <b>Tuning is your business.</b> Say nothing and we assume stock. Nobody is checking your
-    bodykit
+    <b>Stock performance. Visuals as you like.</b> No performance parts and no dyno tuning,
+    including the Level 1 package a fresh save already hands you. Bodykits, paint, vinyls,
+    rims and neon are nobody else&rsquo;s business
   </>,
   <>
     <b>Post the results screen.</b> Total readable, one run per post. Not enforced, but a
