@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowRight, CalendarDays, Sun, TriangleAlert } from "lucide-react";
+import { parsePgTimestamp } from "@/lib/pgTimestamp";
 
 type Todo = {
   id: string;
@@ -70,10 +71,7 @@ function formatDuration(totalMinutes: number) {
   return `${h}h ${m}m`;
 }
 
-// Postgres timestamps arrive as "2026-11-09 10:00:00+01"; make them ISO so every browser parses them.
-function parseTimestamp(value: string) {
-  return new Date(value.replace(" ", "T").replace(/([+-]\d{2})$/, "$1:00"));
-}
+const parseTimestamp = parsePgTimestamp;
 
 function ageDays(createdAt: string) {
   return Math.floor((Date.now() - parseTimestamp(createdAt).getTime()) / (1000 * 60 * 60 * 24));

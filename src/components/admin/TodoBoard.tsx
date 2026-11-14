@@ -21,6 +21,7 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
+import { parsePgTimestamp } from "@/lib/pgTimestamp";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -77,11 +78,7 @@ function ageLabel(createdAt: string) {
 }
 
 // Postgres ::text timestamps ("2026-11-12 10:22:33.1+01") are not reliably parsed by Date.
-function parseTimestamp(value: string) {
-  const iso = value.trim().replace(" ", "T").replace(/([+-]\d{2})$/, "$1:00");
-  const parsed = new Date(iso);
-  return Number.isNaN(parsed.getTime()) ? new Date(value) : parsed;
-}
+const parseTimestamp = parsePgTimestamp;
 
 function localKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;

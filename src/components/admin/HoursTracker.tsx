@@ -19,6 +19,7 @@ import { projectColor } from "@/lib/projectColor";
 import DateField from "./DateField";
 import DayDial from "./DayDial";
 import { Disclosure, Feedback, WorkspaceButton, WorkspaceTable } from "./WorkspaceUI";
+import { parsePgTimestamp } from "@/lib/pgTimestamp";
 
 const SLOT_MINUTES = 15;
 const VISIBLE_START_MINUTE = 6 * 60;
@@ -566,7 +567,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
       return 0;
     }
 
-    const startedAt = new Date(activeSession.startedAt);
+    const startedAt = parsePgTimestamp(activeSession.startedAt);
     return Math.max(1, Math.round((timerTick - startedAt.getTime()) / 60000));
   }, [activeSession, timerTick]);
 
@@ -623,7 +624,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
       return null;
     }
 
-    const startedAt = new Date(activeSession.startedAt);
+    const startedAt = parsePgTimestamp(activeSession.startedAt);
     const start = startedAt.getHours() * 60 + startedAt.getMinutes();
     const end = Math.min(24 * 60, start + activeMinutes);
 
@@ -851,7 +852,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
 
   useEffect(() => {
     if (!hydrated) return;
-    onTimerState?.({ running: Boolean(activeSession), project: activeSession?.project ?? "", task: activeSession?.task ?? "", error: loadFailed, elapsed: activeSession ? formatElapsed(timerTick - new Date(activeSession.startedAt).getTime()) : "00:00:00", busy, stop: () => { void stopTimer(); } });
+    onTimerState?.({ running: Boolean(activeSession), project: activeSession?.project ?? "", task: activeSession?.task ?? "", error: loadFailed, elapsed: activeSession ? formatElapsed(timerTick - parsePgTimestamp(activeSession.startedAt).getTime()) : "00:00:00", busy, stop: () => { void stopTimer(); } });
     // stopTimer uses the owner state; republish when entries/session change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSession, activeMinutes, timerTick, busy, hydrated, onTimerState, entries, loadFailed]);
