@@ -87,3 +87,36 @@ test('Postgres timestamp text parses the same in every engine', () => {
   };
   for (const [input, expected] of Object.entries(cases)) assert.equal(parsePgTimestamp(input).toISOString(), expected, input);
 });
+
+const { isDateKey, isUuid, invalidTaskField, invalidTimeEntry, isTimeZone } = await load('../src/lib/workspaceValidation.ts');
+
+test('date checks accept real calendar days and reject rolled-over ones', () => {
+  for (const ok of ['2026-11-14', '2028-02-29', '2026-12-31']) assert.ok(isDateKey(ok), ok);
+  for (const bad of ['2026-02-29', '2026-02-31', '2026-13-01', '2026-11-1', '14.11.2026', '', null, 20261114]) assert.ok(!isDateKey(bad), String(bad));
+});
+
+test('task updates accept what the UI sends and reject the rest', () => {
+  for (const ok of [{ done: true }, { dueDate: null }, { dueDate: '' }, { dueDate: '2026-11-30', pinned: false }, { text: 'Call bank', project: 'Home', notes: '' }]) {
+    assert.equal(invalidTaskField(ok), null, JSON.stringify(ok));
+  }
+  assert.match(invalidTaskField({ dueDate: '2026-02-31' }), /real date/);
+  assert.match(invalidTaskField({ done: 'yes' }), /true or false/);
+  assert.match(invalidTaskField({ text: 5 }), /string/);
+  assert.match(invalidTaskField({ text: 'x'.repeat(1001) }), /too long/);
+});
+
+test('time entries need a real date and clock times', () => {
+  const entry = { project: 'EREX', task: 'Review', date: '2026-11-14', start: '09:30', end: '24:00' };
+  assert.equal(invalidTimeEntry(entry), null);
+  assert.equal(invalidTimeEntry({ ...entry, start: '09:30:00' }), null);
+  assert.match(invalidTimeEntry({ ...entry, date: '2026-02-30' }), /real date/);
+  assert.match(invalidTimeEntry({ ...entry, end: '25:00' }), /time like/);
+  assert.match(invalidTimeEntry({ ...entry, project: 'x'.repeat(201) }), /at most 200/);
+});
+
+test('ids and time zones are checked before they reach Postgres', () => {
+  assert.ok(isUuid('3f2b8c1e-9a4d-4e7b-8c2f-1a2b3c4d5e6f'));
+  assert.ok(!isUuid('42'));
+  assert.ok(isTimeZone('Europe/Vienna'));
+  assert.ok(!isTimeZone('Mars/Olympus'));
+});
