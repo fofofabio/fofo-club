@@ -903,6 +903,32 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
     }
   }
 
+  // ← / → step through days and T jumps to today, while the Hours view is showing and nothing is being typed in.
+  const selectDateRef = useRef(selectDate);
+  selectDateRef.current = selectDate;
+  const dayNavState = useRef({ selectedDate, todayKey });
+  dayNavState.current = { selectedDate, todayKey };
+  const hoursRootRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      const key = event.key === "ArrowLeft" || event.key === "ArrowRight" ? event.key : event.key.toLowerCase();
+      if (key !== "ArrowLeft" && key !== "ArrowRight" && key !== "t") return;
+      const target = event.target;
+      if (target instanceof Element && target.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], [role='slider'], details[open]")) return;
+      const root = hoursRootRef.current;
+      if (!root || root.offsetParent === null) return; // view hidden
+      const { selectedDate: current, todayKey: today } = dayNavState.current;
+      const next = key === "t" ? today : addDays(current, key === "ArrowLeft" ? -1 : 1);
+      if (next === current) return;
+      event.preventDefault();
+      selectDateRef.current(next);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   function handleTimelinePointerDown(event: React.PointerEvent<HTMLDivElement>) {
     const viewport = timelineViewportRef.current;
 
@@ -971,7 +997,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
   }
 
   return (
-    <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+    <section ref={hoursRootRef} className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="ws-hours-head flex flex-col gap-4 px-1 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="meta text-fofo-blue">HOURS TRACKER</p>
@@ -1012,6 +1038,8 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
                 type="button"
                 onClick={() => selectDate(addDays(selectedDate, -1))}
                 aria-label="Previous day"
+                aria-keyshortcuts="ArrowLeft"
+                title="Previous day (←)"
                 className="inline-flex items-center justify-center rounded-none border-[2px] border-black bg-white p-2 text-black transition hover:bg-fofo-blue hover:text-white"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -1019,6 +1047,8 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
               <button
                 type="button"
                 onClick={() => selectDate(todayKey)}
+                aria-keyshortcuts="T"
+                title="Today (T)"
                 className="rounded-none border-[2px] border-black bg-black px-3 py-2 font-mono text-[12px] uppercase tracking-wide text-white transition hover:bg-fofo-blue"
               >
                 today
@@ -1027,6 +1057,8 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
                 type="button"
                 onClick={() => selectDate(addDays(selectedDate, 1))}
                 aria-label="Next day"
+                aria-keyshortcuts="ArrowRight"
+                title="Next day (→)"
                 className="inline-flex items-center justify-center rounded-none border-[2px] border-black bg-white p-2 text-black transition hover:bg-fofo-blue hover:text-white"
               >
                 <ChevronRight className="h-4 w-4" />
