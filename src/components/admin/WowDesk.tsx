@@ -202,6 +202,9 @@ function LevelRing({ level }: { level: number }) {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+// When the engineering AH margins below were last checked. Update together with the figures.
+const MARGINS_CHECKED_ON = "2026-11-13";
+const MARGINS_STALE_DAYS = 14;
 
 // Calendar-time levelling pace over the last two weeks of armory logouts,
 // plus when the next milestone level (40, then 60) lands at that pace.
@@ -914,7 +917,7 @@ function Gold({ skill }: { skill: number }) {
     <div className="wow-stack">
       <section className="wow-panel">
         <PanelHead icon={<Coins className="h-4 w-4" />} title="Engineering crafts for gold" aside={`your skill: ${skill}`} />
-        <p className="wow-lede">Rough AH margins from 13 Nov 2026 (EU where known). Prices move, so check the AH before crafting a stack.</p>
+        <MarginsAge />
         <ul className="wow-crafts">
           {GOLD_CRAFTS.map((c) => {
             const canCraft = skill >= c.skill && c.verdict !== "skip";
@@ -952,4 +955,18 @@ function Gold({ skill }: { skill: number }) {
       </section>
     </div>
   );
+}
+
+function MarginsAge() {
+  // Read the clock after mount so server and client render the same text.
+  const [ageDays, setAgeDays] = useState<number | null>(null);
+  useEffect(() => {
+    setAgeDays(Math.floor((Date.now() - Date.parse(`${MARGINS_CHECKED_ON}T12:00:00`)) / DAY_MS));
+  }, []);
+  const checked = new Date(`${MARGINS_CHECKED_ON}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  const stale = ageDays !== null && ageDays > MARGINS_STALE_DAYS;
+  return <p className="wow-lede">
+    Rough AH margins from {checked} (EU where known). Prices move, so check the AH before crafting a stack.
+    {stale ? <strong className="wow-stale"> These figures are {Math.floor(ageDays / 7)} weeks old, so treat them as a starting point only.</strong> : null}
+  </p>;
 }

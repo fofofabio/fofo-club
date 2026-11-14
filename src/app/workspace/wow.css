@@ -318,3 +318,4 @@
 @media (prefers-reduced-motion: reduce) {
   .wow * { transition: none !important; animation: none !important; }
 }
+.wow .wow-stale { color: var(--state-warn); font-weight: 600; }
