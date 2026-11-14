@@ -15,8 +15,8 @@ export function WorkspaceButton({ primary, className = "", ...props }: ButtonHTM
   return <button type="button" className={`ws-button ${primary ? "ws-primary" : ""} ${className}`} {...props} />;
 }
 
-export function Disclosure({ title, children, className = "" }: { title: string; children: ReactNode; className?: string }) {
-  return <details className={`ws-disclosure ${className}`}><summary>{title}</summary><div className="ws-disclosure-body">{children}</div></details>;
+export function Disclosure({ title, children, className = "", id }: { title: string; children: ReactNode; className?: string; id?: string }) {
+  return <details id={id} className={`ws-disclosure ${className}`}><summary>{title}</summary><div className="ws-disclosure-body">{children}</div></details>;
 }
 
 export function Feedback({ children, error = false }: { children: ReactNode; error?: boolean }) {
