@@ -1,4 +1,5 @@
 import { query } from "@/lib/db";
+import { displayMerchant } from "@/lib/merchantName";
 
 export const FINANCE_CATEGORIES = [
   "Housing",
@@ -149,8 +150,8 @@ export async function listWorkspaceFinance(userId: string): Promise<FinancePaylo
   ]);
 
   return {
-    transactions: transactions.rows,
-    subscriptions: subscriptions.rows,
+    transactions: transactions.rows.map((row) => ({ ...row, merchant: displayMerchant(row.merchant) })),
+    subscriptions: subscriptions.rows.map((row) => ({ ...row, name: displayMerchant(row.name) })),
     monthlyExpenses: monthlyExpenses.rows,
     meta: meta.rows[0] ?? { dataStart: null, dataEnd: null, transactionCount: 0 },
   };
@@ -243,5 +244,6 @@ export async function updateFinanceSubscriptionStatus(
     `,
     [userId, subscriptionId, status],
   );
-  return result.rows[0] ?? null;
+  const row = result.rows[0];
+  return row ? { ...row, name: displayMerchant(row.name) } : null;
 }

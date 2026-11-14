@@ -150,6 +150,8 @@ function canonicalMerchant(raw) {
   if (upper.includes("ONE MOBILITY")) return "One Mobility";
   if (upper.includes("ENERGIE STEIERMARK")) return "Energie Steiermark";
   if (upper.includes("OERAG")) return "OERAG";
+  // Display cleanup (legal forms, branch notes) lives in src/lib/merchantName.ts and
+  // runs when the ledger is read, so stored names stay close to the bank's text.
   return titleCase(source || "Unknown").slice(0, 100);
 }
 
