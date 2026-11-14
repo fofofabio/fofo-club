@@ -176,6 +176,7 @@
 .ws-tool :where(button, a)[class~='bg-black'], .ws-tool :where(button, a)[class~='bg-fofo-blue'] { color: var(--paper-raised) !important; }
 .ws-cinema section .sticky { position: static; }
 .ws-tool .ws-screening-link { color: var(--ink) !important; }
+.ws-tool .ws-release-listed { color: var(--state-ok) !important; }
 .ws-undo-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 400; display: flex; align-items: center; gap: 16px; max-width: calc(100vw - 32px); padding: 10px 16px; background: var(--ink); color: var(--paper); font-size: 14px; }
 .ws-undo-toast > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ws-undo-toast > button { color: var(--paper); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; background: transparent; border: 0; cursor: pointer; }

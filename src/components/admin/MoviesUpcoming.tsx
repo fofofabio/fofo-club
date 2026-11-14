@@ -21,6 +21,7 @@ function dateKey(offset = 0) { const value = new Date(); value.setDate(value.get
 function dateLabel(date: string) { return new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" }).format(new Date(`${date}T12:00:00`)); }
 function isOriginal(screening: Screening) { return screening.versionCode !== "DF"; }
 const LATE_ENTRY_MINUTES = 10;
+function titleKey(title: string) { return title.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); }
 const HORIZON_LABELS: Record<Horizon, string> = { tonight: "Tonight", tomorrow: "Tomorrow", week: "This week", coming: "Coming soon", watchlist: "Watchlist" };
 function clockMinutes(value: string) { const [hours, minutes] = value.split(":").map(Number); return hours * 60 + minutes; }
 function estimatedFinishMinutes(screening: Screening, runtime: number, buffer: number) { return clockMinutes(screening.time) + runtime + buffer; }
@@ -337,6 +338,14 @@ function ReleaseRadar() {
     });
   }, [query, releases, states, windowDays]);
 
+  // Titles already on the Nonstop programme (presales count), matched loosely by title.
+  const [nonstopTitles, setNonstopTitles] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    requestJson<{ movies: Movie[] }>("/api/workspace/movies")
+      .then((data) => setNonstopTitles(new Set(data.movies.map((movie) => titleKey(movie.title)))))
+      .catch(() => {});
+  }, []);
+
   const grouped = useMemo(() => {
     const months = new Map<string, UpcomingRelease[]>();
     for (const movie of filtered) {
@@ -371,7 +380,7 @@ function ReleaseRadar() {
       const releaseDate = new Date(`${movie.releaseDate}T12:00:00`);
       const checkedDate = refreshedAt.slice(0, 10) || dateKey();
       const daysAway = Math.max(0, Math.round((Date.parse(`${movie.releaseDate}T00:00:00Z`) - Date.parse(`${checkedDate}T00:00:00Z`)) / 86_400_000));
-      return <article key={movie.key} className="grid min-h-28 grid-cols-[4rem_1fr] bg-white"><button type="button" onClick={() => setSelected(movie)} aria-label={`View details for ${movie.title}`} className="relative m-3 mr-0 h-16 overflow-hidden border-2 border-black bg-[#241231]">{movie.imageUrl ? <Image src={movie.imageUrl} alt="" fill sizes="64px" className="object-cover" /> : <Film className="m-4 h-7 w-7 text-white" />}</button><div className="flex min-w-0 flex-col p-3"><p className="font-mono text-[9px] uppercase text-fofo-blue">{new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" }).format(releaseDate)} · {daysAway === 0 ? "today" : `in ${daysAway} days`}</p><button type="button" onClick={() => setSelected(movie)} className="mt-1 text-left"><h4 className="line-clamp-2 font-display text-lg font-bold leading-tight hover:text-fofo-blue">{movie.title}</h4></button><p className="mt-1 text-[10px] text-black/45">Not yet confirmed for Nonstop</p><div className="mt-auto flex gap-2 pt-2"><button type="button" onClick={() => setReleaseState(movie.key, state === "watchlist" ? null : "watchlist")} className={clsx("flex items-center gap-1 border-2 border-black px-2 py-1 font-mono text-[9px] uppercase", state === "watchlist" && "bg-fofo-yellow")}><Bookmark className="h-3 w-3" />{state === "watchlist" ? "Saved" : "Save"}</button><button type="button" onClick={() => setReleaseState(movie.key, "dismissed")} className="border-2 border-black px-2 py-1 font-mono text-[9px] uppercase">Hide</button><button type="button" onClick={() => setSelected(movie)} aria-label={`Open details for ${movie.title}`} className="ml-auto border-2 border-black bg-fofo-blue p-1.5 text-white"><ExternalLink className="h-3 w-3" /></button></div></div></article>;
+      return <article key={movie.key} className="grid min-h-28 grid-cols-[4rem_1fr] bg-white"><button type="button" onClick={() => setSelected(movie)} aria-label={`View details for ${movie.title}`} className="relative m-3 mr-0 h-16 overflow-hidden border-2 border-black bg-[#241231]">{movie.imageUrl ? <Image src={movie.imageUrl} alt="" fill sizes="64px" className="object-cover" /> : <Film className="m-4 h-7 w-7 text-white" />}</button><div className="flex min-w-0 flex-col p-3"><p className="font-mono text-[9px] uppercase text-fofo-blue">{new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" }).format(releaseDate)} · {daysAway === 0 ? "today" : `in ${daysAway} days`}</p><button type="button" onClick={() => setSelected(movie)} className="mt-1 text-left"><h4 className="line-clamp-2 font-display text-lg font-bold leading-tight hover:text-fofo-blue">{movie.title}</h4></button>{nonstopTitles.has(titleKey(movie.title)) ? <p className="ws-release-listed mt-1 text-[10px] font-semibold">Already on the Nonstop programme</p> : <p className="mt-1 text-[10px] text-black/45">Not yet confirmed for Nonstop</p>}<div className="mt-auto flex gap-2 pt-2"><button type="button" onClick={() => setReleaseState(movie.key, state === "watchlist" ? null : "watchlist")} className={clsx("flex items-center gap-1 border-2 border-black px-2 py-1 font-mono text-[9px] uppercase", state === "watchlist" && "bg-fofo-yellow")}><Bookmark className="h-3 w-3" />{state === "watchlist" ? "Saved" : "Save"}</button><button type="button" onClick={() => setReleaseState(movie.key, "dismissed")} className="border-2 border-black px-2 py-1 font-mono text-[9px] uppercase">Hide</button><button type="button" onClick={() => setSelected(movie)} aria-label={`Open details for ${movie.title}`} className="ml-auto border-2 border-black bg-fofo-blue p-1.5 text-white"><ExternalLink className="h-3 w-3" /></button></div></div></article>;
     })}</div></section>)}</div>
     {!message && !filtered.length ? <div className="p-12 text-center"><CalendarDays className="mx-auto h-10 w-10 text-black/25" /><h3 className="mt-4 font-display text-2xl font-bold lowercase">no releases in that view.</h3><p className="mt-2 text-sm text-black/45">Widen the date window or clear the search.</p></div> : null}
     {selected ? <UpcomingMoviePanel movie={selected} detail={detail} state={states[selected.key]?.state ?? null} onState={(state) => setReleaseState(selected.key, state)} onClose={() => setSelected(null)} /> : null}
