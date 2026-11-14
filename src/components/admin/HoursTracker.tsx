@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clipboard,
+  Download,
   PencilLine,
   Play,
   Square,
@@ -20,6 +21,7 @@ import DateField from "./DateField";
 import DayDial from "./DayDial";
 import { Disclosure, Feedback, WorkspaceButton, WorkspaceTable } from "./WorkspaceUI";
 import { parsePgTimestamp } from "@/lib/pgTimestamp";
+import { buildHoursCsv } from "@/lib/hoursCsv";
 
 const SLOT_MINUTES = 15;
 const VISIBLE_START_MINUTE = 6 * 60;
@@ -1005,6 +1007,18 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
     }
   }
 
+  function downloadWeekCsv() {
+    const csv = buildHoursCsv(
+      selectedWeekEntries.map((entry) => ({ ...entry, minutes: getDurationMinutes(entry) })),
+    );
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `hours-${toDateKey(selectedWeekDays[0])}.csv`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   return (
     <section ref={hoursRootRef} className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="ws-hours-head flex flex-col gap-4 px-1 md:flex-row md:items-end md:justify-between">
@@ -1364,6 +1378,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
                   booking-ready
                 </h3>
               </div>
+              <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={copyWeekReport}
@@ -1376,6 +1391,16 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
                     ? "Failed"
                     : "Copy"}
               </button>
+              <button
+                type="button"
+                onClick={downloadWeekCsv}
+                title="Download this week as CSV for Excel or Sheets"
+                className="inline-flex items-center gap-2 rounded-none border-[2px] border-black bg-white px-3 py-1.5 text-sm text-black/70 transition hover:bg-fofo-blue hover:text-white"
+              >
+                <Download className="h-4 w-4" />
+                CSV
+              </button>
+              </div>
             </div>
 
             <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">

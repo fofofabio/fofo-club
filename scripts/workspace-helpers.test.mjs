@@ -120,3 +120,18 @@ test('ids and time zones are checked before they reach Postgres', () => {
   assert.ok(isTimeZone('Europe/Vienna'));
   assert.ok(!isTimeZone('Mars/Olympus'));
 });
+
+const { buildHoursCsv } = await load('../src/lib/hoursCsv.ts');
+
+test('the Hours CSV is sorted, Excel-safe and totals the week', () => {
+  const csv = buildHoursCsv([
+    { date: '2026-11-11', start: '13:00', end: '14:30', minutes: 90, project: 'EREX', task: 'Review; "renderer"' },
+    { date: '2026-11-10', start: '09:00', end: '09:20', minutes: 20, project: '=HYPERLINK("x")', task: 'Größe prüfen' },
+  ]);
+  assert.ok(csv.startsWith('﻿Date;Start;End;Hours;Project;Task\r\n'));
+  assert.deepEqual(csv.slice(1).trimEnd().split('\r\n').slice(1), [
+    `2026-11-10;09:00;09:20;0,33;"'=HYPERLINK(""x"")";Größe prüfen`,
+    '2026-11-11;13:00;14:30;1,50;EREX;"Review; ""renderer"""',
+    'Total;;;1,83;;',
+  ]);
+});
