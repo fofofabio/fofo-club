@@ -175,6 +175,8 @@
 }
 .ws-tool :where(button, a)[class~='bg-black'], .ws-tool :where(button, a)[class~='bg-fofo-blue'] { color: var(--paper-raised) !important; }
 .ws-cinema section .sticky { position: static; }
+.ws-tool .ws-screening-link { color: var(--ink) !important; }
+.ws-tool .ws-screening-link:hover { background: var(--paper-well) !important; }
 
 .ws-finance-nav { display: flex; flex-wrap: wrap; gap: 20px; order: -2; border-bottom: 1px solid var(--rule); padding-bottom: 12px; font-size: 14px; }
 .ws-finance-nav a { text-decoration: underline; text-underline-offset: 4px; }

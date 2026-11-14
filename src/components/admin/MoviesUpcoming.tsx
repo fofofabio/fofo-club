@@ -21,6 +21,7 @@ function dateKey(offset = 0) { const value = new Date(); value.setDate(value.get
 function dateLabel(date: string) { return new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" }).format(new Date(`${date}T12:00:00`)); }
 function isOriginal(screening: Screening) { return screening.versionCode !== "DF"; }
 const LATE_ENTRY_MINUTES = 10;
+const HORIZON_LABELS: Record<Horizon, string> = { tonight: "Tonight", tomorrow: "Tomorrow", week: "This week", coming: "Coming soon", watchlist: "Watchlist" };
 function clockMinutes(value: string) { const [hours, minutes] = value.split(":").map(Number); return hours * 60 + minutes; }
 function estimatedFinishMinutes(screening: Screening, runtime: number, buffer: number) { return clockMinutes(screening.time) + runtime + buffer; }
 function finishLabel(screening: Screening, runtime: number, buffer: number) {
@@ -189,7 +190,7 @@ function NonstopProgramme() {
   return <section className="ws-programme border-[2.5px] border-black bg-white shadow-brutal">
     <div className="ws-programme-head"><h3>Playing in Graz</h3><p>Original versions preferred · {refreshedAt ? `Checked ${new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(refreshedAt))}` : "Loading programme…"}</p></div>
     <div className="flex flex-wrap gap-2 border-b-[2.5px] border-black bg-fofo-paper p-3">
-      {(["tonight", "tomorrow", "week", "coming", "watchlist"] as Horizon[]).map((value) => <button type="button" key={value} aria-pressed={horizon === value} onClick={() => setHorizon(value)} className={clsx("border-2 border-black px-4 py-2 font-mono text-xs font-bold uppercase", horizon === value ? "bg-black text-white" : "bg-white hover:bg-fofo-yellow")}>{value === "week" ? "This week" : value === "coming" ? "Coming soon" : value}</button>)}
+      {(["tonight", "tomorrow", "week", "coming", "watchlist"] as Horizon[]).map((value) => <button type="button" key={value} aria-pressed={horizon === value} onClick={() => setHorizon(value)} className={clsx("border-2 border-black px-4 py-2 font-mono text-xs font-bold uppercase", horizon === value ? "bg-black text-white" : "bg-white hover:bg-fofo-yellow")}>{HORIZON_LABELS[value]}</button>)}
       <button type="button" onClick={helpMeChoose} className="ml-auto flex items-center gap-2 border-2 border-black bg-fofo-yellow px-4 py-2 font-mono text-xs font-bold uppercase"><Sparkles className="h-4 w-4" />Help me choose</button>
     </div>
     <div className="grid border-b-[2.5px] border-black sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.3fr]">
@@ -379,7 +380,12 @@ function MoviePanel({ movie, detail, detailLoaded, stateRecord, isNew, onState, 
   const grouped = useMemo(() => {
     const map = new Map<string, Screening[]>();
     const screenings = detail?.screenings.length ? detail.screenings : movie.screenings;
+    const today = dateKey();
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
     for (const screening of screenings) {
+      // Same cut-off as the list: gone once the ads are over.
+      if (screening.date < today || (screening.date === today && clockMinutes(screening.time) < nowMinutes - LATE_ENTRY_MINUTES)) continue;
       map.set(screening.date, [...(map.get(screening.date) ?? []), screening]);
     }
     return [...map];
@@ -420,7 +426,7 @@ function MoviePanel({ movie, detail, detailLoaded, stateRecord, isNew, onState, 
           <h3 className="font-display text-2xl font-bold">All Graz screenings</h3>
           <p className="mt-1 text-xs text-black/55">Listed by nonstop. Check the cinema for seats and booking details.</p>
           <div className="mt-5 space-y-5">
-            {grouped.map(([date, screenings]) => <div key={date}><h4 className="border-b-2 border-black pb-2 font-display text-lg font-bold">{dateLabel(date)}</h4><div>{screenings.map((screening) => <div key={screening.id} className="grid grid-cols-[4rem_1fr_auto] items-center gap-3 border-b border-black/15 py-3"><strong className="font-mono text-lg">{screening.time}</strong><div><p className="text-sm font-semibold">{screening.venue}</p><p className="text-xs text-black/55">{screening.versionLabel}</p></div><div className="flex gap-1">{screening.calendarUrl ? <a href={screening.calendarUrl} aria-label="Add to calendar" className="border-2 border-black p-2"><CalendarPlus className="h-4 w-4" /></a> : null}<a href={screening.cinemaUrl ?? movie.url} target="_blank" rel="noreferrer" aria-label={screening.cinemaUrl ? "Open cinema programme" : "Open nonstop film page"} className="border-2 border-black bg-fofo-blue p-2 text-white"><ExternalLink className="h-4 w-4" /></a></div></div>)}</div></div>)}
+            {grouped.map(([date, screenings]) => <div key={date}><h4 className="border-b-2 border-black pb-2 font-display text-lg font-bold">{dateLabel(date)}</h4><div>{screenings.map((screening) => <div key={screening.id} className="grid grid-cols-[4rem_1fr_auto] items-center gap-3 border-b border-black/15 py-3"><strong className="font-mono text-lg">{screening.time}</strong><div><p className="text-sm font-semibold">{screening.venue}</p><p className="text-xs text-black/55">{screening.versionLabel}</p></div><div className="flex gap-1">{screening.calendarUrl ? <a href={screening.calendarUrl} aria-label="Add to calendar" className="border-2 border-black p-2"><CalendarPlus className="h-4 w-4" /></a> : null}<a href={screening.cinemaUrl ?? movie.url} target="_blank" rel="noreferrer" aria-label={screening.cinemaUrl ? "Open cinema programme" : "Open nonstop film page"} className="ws-screening-link border-2 border-black bg-fofo-blue p-2 text-white"><ExternalLink className="h-4 w-4" /></a></div></div>)}</div></div>)}
           </div>
         </div>
         <div className="border-t-[3px] border-black bg-fofo-paper p-5 md:p-7">
