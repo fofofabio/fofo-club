@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import FinanceDashboard from "./FinanceDashboard";
 import HoursTracker, { type TimerStripState } from "./HoursTracker";
@@ -52,6 +52,22 @@ export default function WorkspaceDesk({ displayName, userId }: { displayName: st
     document.title = `${timerRunning && timerElapsed ? `● ${timerElapsed} · ` : ""}${label} · Workspace | Fofo Club`;
   }, [view, timerRunning, timerElapsed]);
 
+  // 1–6 switch views in nav order, unless something is being typed into.
+  const navigateRef = useRef<(next: WorkspaceView) => void>(() => {});
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || event.repeat) return;
+      const index = Number(event.key) - 1;
+      if (!Number.isInteger(index) || index < 0 || index >= destinations.length) return;
+      const target = event.target;
+      if (target instanceof Element && target.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], details[open]")) return;
+      event.preventDefault();
+      navigateRef.current(destinations[index].id);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   function navigate(next: WorkspaceView) {
     if (next === view) return;
     setView(next);
@@ -62,10 +78,12 @@ export default function WorkspaceDesk({ displayName, userId }: { displayName: st
     window.scrollTo({ top: 0, behavior: "instant" });
   }
 
+  navigateRef.current = navigate;
+
   return <>
     <header className="ws-topbar">
       <h1><span className="ws-wordmark">fofo</span><span>Workspace</span></h1>
-      <nav aria-label="Workspace destinations">{destinations.map(({ id, label }) => <a key={id} href={`?view=${id}`} aria-current={view === id ? "page" : undefined} onClick={(event) => {
+      <nav aria-label="Workspace destinations">{destinations.map(({ id, label }, index) => <a key={id} href={`?view=${id}`} aria-keyshortcuts={String(index + 1)} title={`${label} (${index + 1})`} aria-current={view === id ? "page" : undefined} onClick={(event) => {
         if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault(); navigate(id);
       }}>{label}</a>)}</nav>
