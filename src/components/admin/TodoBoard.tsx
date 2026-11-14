@@ -100,7 +100,7 @@ export default function TodoBoard({ onStartTimer, userId }: Props) {
     function onKey(event: KeyboardEvent) {
       if (event.key.toLowerCase() !== "n" || event.metaKey || event.ctrlKey || event.altKey || event.repeat) return;
       const target = event.target as HTMLElement | null;
-      if (target?.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], details[open]")) return;
+      if (target?.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], dialog, details[open]")) return;
       const input = addInputRef.current;
       if (!input || input.offsetParent === null) return; // view hidden
       event.preventDefault();

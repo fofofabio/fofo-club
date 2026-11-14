@@ -916,7 +916,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
       const key = event.key === "ArrowLeft" || event.key === "ArrowRight" ? event.key : event.key.toLowerCase();
       if (key !== "ArrowLeft" && key !== "ArrowRight" && key !== "t") return;
       const target = event.target;
-      if (target instanceof Element && target.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], [role='slider'], details[open]")) return;
+      if (target instanceof Element && target.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], dialog, [role='slider'], details[open]")) return;
       const root = hoursRootRef.current;
       if (!root || root.offsetParent === null) return; // view hidden
       const { selectedDate: current, todayKey: today } = dayNavState.current;

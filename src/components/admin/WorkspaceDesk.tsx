@@ -19,6 +19,16 @@ const destinations: { id: WorkspaceView; label: string }[] = [
   { id: "wow", label: "WoW" },
 ];
 
+const shortcutGroups: { title: string; items: [string[], string][] }[] = [
+  { title: "Anywhere", items: [
+    [["1", "–", String(destinations.length)], destinations.map((item) => item.label).join(", ")],
+    [["?"], "Show this list"],
+    [["Esc"], "Close a dialog"],
+  ] },
+  { title: "Hours", items: [[["←", "→"], "Previous / next day"], [["T"], "Jump to today"]] },
+  { title: "Tasks", items: [[["N"], "Add a task"]] },
+];
+
 export default function WorkspaceDesk({ displayName, userId }: { displayName: string; userId: string }) {
   const [pendingDraft, setPendingDraft] = useState<{ project: string; task: string } | null>(null);
   const [view, setView] = useState<WorkspaceView>("hours");
@@ -52,15 +62,22 @@ export default function WorkspaceDesk({ displayName, userId }: { displayName: st
     document.title = `${timerRunning && timerElapsed ? `● ${timerElapsed} · ` : ""}${label} · Workspace | Fofo Club`;
   }, [view, timerRunning, timerElapsed]);
 
-  // 1–6 switch views in nav order, unless something is being typed into.
+  // 1–6 switch views in nav order and ? lists every shortcut, unless something is being typed into.
   const navigateRef = useRef<(next: WorkspaceView) => void>(() => {});
+  const shortcutsRef = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || event.repeat) return;
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.repeat) return;
+      const target = event.target;
+      if (target instanceof Element && target.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], dialog, details[open]")) return;
+      if (event.key === "?") {
+        event.preventDefault();
+        shortcutsRef.current?.showModal();
+        return;
+      }
+      if (event.shiftKey) return;
       const index = Number(event.key) - 1;
       if (!Number.isInteger(index) || index < 0 || index >= destinations.length) return;
-      const target = event.target;
-      if (target instanceof Element && target.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], details[open]")) return;
       event.preventDefault();
       navigateRef.current(destinations[index].id);
     }
@@ -105,5 +122,10 @@ export default function WorkspaceDesk({ displayName, userId }: { displayName: st
       <div hidden={view !== "movies"} className="ws-tool ws-cinema">{visited.has("movies") ? <MoviesUpcoming /> : null}</div>
       <div hidden={view !== "wow"} className="ws-tool ws-wow">{visited.has("wow") ? <WowDesk /> : null}</div>
     </main>
+    <dialog ref={shortcutsRef} className="ws-shortcuts" aria-labelledby="ws-shortcuts-title" onClick={(event) => { if (event.target === event.currentTarget) event.currentTarget.close(); }}>
+      <header><h2 id="ws-shortcuts-title">Keyboard shortcuts</h2><form method="dialog"><button type="submit" aria-label="Close shortcuts">Close</button></form></header>
+      {shortcutGroups.map(({ title, items }) => <section key={title}><h3>{title}</h3><dl>{items.map(([keys, what]) => <div key={what}><dt>{keys.map((key) => <kbd key={key}>{key}</kbd>)}</dt><dd>{what}</dd></div>)}</dl></section>)}
+      <p>Shortcuts pause while you are typing in a field.</p>
+    </dialog>
   </>;
 }
