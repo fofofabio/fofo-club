@@ -40,6 +40,18 @@ export default function WorkspaceDesk({ displayName, userId }: { displayName: st
     return () => window.removeEventListener("popstate", readView);
   }, []);
 
+  // Browser tab title: the current view, plus the running timer so it can be seen from other tabs.
+  const timerRunning = Boolean(timer?.running);
+  const timerElapsed = timer?.elapsed ?? "";
+  useEffect(() => {
+    const original = document.title;
+    return () => { document.title = original; };
+  }, []);
+  useEffect(() => {
+    const label = destinations.find((item) => item.id === view)?.label ?? "Workspace";
+    document.title = `${timerRunning && timerElapsed ? `● ${timerElapsed} · ` : ""}${label} · Workspace | Fofo Club`;
+  }, [view, timerRunning, timerElapsed]);
+
   function navigate(next: WorkspaceView) {
     if (next === view) return;
     setView(next);
