@@ -828,7 +828,7 @@ function Zones({ level }: { level: number }) {
                 <p className="wow-stop-zones">{z.zones}</p>
                 {z.note && <p className="wow-stop-note">{z.note}</p>}
                 {z.dungeons && z.dungeons.length > 0 && (
-                  <p className="wow-stop-dungeons"><span>Dungeons</span>{z.dungeons.join(" · ")}</p>
+                  <p className="wow-stop-dungeons"><span>Dungeons</span>{" "}{z.dungeons.join(" · ")}</p>
                 )}
               </div>
             </li>
