@@ -86,6 +86,19 @@ export default function ProjectNotes({ projects, initialProject, links, onSave, 
       setError(null); setMessage(`${imported.size} project ${imported.size === 1 ? "link" : "links"} imported on this browser.`);
     } catch (e) { setError(e instanceof Error ? e.message : "Could not import project links."); }
   }
+  // The links live in this browser only; a file carries them to another browser via Import.
+  function exportLinks() {
+    try {
+      const blob = new Blob([serializeProjectNoteLinks(links)], { type: "application/json" });
+      const href = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = href;
+      anchor.download = "project-note-links.json";
+      anchor.click();
+      setTimeout(() => URL.revokeObjectURL(href), 1000);
+      setError(null); setMessage(`${links.size} project ${links.size === 1 ? "link" : "links"} exported. Import the file on your other browser.`);
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not export project links."); }
+  }
   async function copyTasksLink() {
     try { await navigator.clipboard.writeText(tasksUrl); setError(null); setMessage("Task-board link copied. Paste it into your Obsidian project note."); }
     catch { setError("Could not copy automatically. Select the task-board address below and copy it."); }
@@ -115,7 +128,7 @@ export default function ProjectNotes({ projects, initialProject, links, onSave, 
         <label className="ws-field" htmlFor="obsidian-tasks-return">Task-board link<input id="obsidian-tasks-return" value={tasksUrl} readOnly onFocus={(e) => e.currentTarget.select()} /></label>
         <WorkspaceButton disabled={!project.trim()} onClick={copyTasksLink}><Copy size={16} />Copy tasks link</WorkspaceButton>
       </div>
-      <footer><input ref={fileInput} type="file" accept="application/json,.json" hidden aria-label="Import Obsidian project links" onChange={importLinks} /><WorkspaceButton onClick={() => fileInput.current?.click()}>Import project links</WorkspaceButton><WorkspaceButton onClick={onClose}>Done</WorkspaceButton></footer>
+      <footer><input ref={fileInput} type="file" accept="application/json,.json" hidden aria-label="Import Obsidian project links" onChange={importLinks} /><WorkspaceButton onClick={() => fileInput.current?.click()}>Import project links</WorkspaceButton>{links.size ? <WorkspaceButton onClick={exportLinks}>Export project links</WorkspaceButton> : null}<WorkspaceButton onClick={onClose}>Done</WorkspaceButton></footer>
     </section>
   </div>;
 }
