@@ -387,8 +387,8 @@ html:has(.ws-shell[data-theme='dark']) body { background: #161714; }
 .ws-task-due-flag { font-weight: 600; }
 .ws-tasks [draggable][data-due='overdue'] { box-shadow: -12px 0 0 -9px var(--state-bad) !important; }
 .ws-tasks [draggable][data-due='today'] { box-shadow: -12px 0 0 -9px var(--state-warn) !important; }
-[data-due='overdue'] .ws-task-due-flag { color: var(--state-bad) !important; }
-[data-due='today'] .ws-task-due-flag { color: var(--state-warn) !important; }
+[data-due='overdue'] .ws-task-due-flag, .ws-task-due-flag[data-due='overdue'] { color: var(--state-bad) !important; }
+[data-due='today'] .ws-task-due-flag, .ws-task-due-flag[data-due='today'] { color: var(--state-warn) !important; }
 [data-due='overdue'] .ws-task-meta .ws-date-field { color: var(--state-bad) !important; }
 [data-due='today'] .ws-task-meta .ws-date-field { color: var(--state-warn) !important; }
 @media (max-width: 1000px) {

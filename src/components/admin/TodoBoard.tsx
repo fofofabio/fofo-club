@@ -211,6 +211,8 @@ export default function TodoBoard({ onStartTimer, userId }: Props) {
 
   const pendingCount = activeTodos.filter((t) => !t.done).length;
   const doneCount = activeTodos.filter((t) => t.done).length;
+  const overdueCount = activeTodos.filter((t) => isOverdue(t.dueDate, t.done)).length;
+  const dueTodayCount = activeTodos.filter((t) => isDueToday(t.dueDate, t.done)).length;
 
   // ─── Quick-add ─────────────────────────────────────────────────────────────
 
@@ -505,7 +507,7 @@ export default function TodoBoard({ onStartTimer, userId }: Props) {
         {/* Quick-add */}
         <div className="ws-task-compose rounded-none border-[2.5px] border-black bg-white p-4 shadow-brutal md:p-5">
           <header className="ws-task-heading">
-            <div><h2>Tasks</h2><p>{pendingCount} open · {doneCount} completed</p></div>
+            <div><h2>Tasks</h2><p>{pendingCount} open{overdueCount ? <> · <strong className="ws-task-due-flag" data-due="overdue">{overdueCount} overdue</strong></> : null}{dueTodayCount ? <> · <strong className="ws-task-due-flag" data-due="today">{dueTodayCount} due today</strong></> : null} · {doneCount} completed</p></div>
             <button type="button" className="ws-button" onClick={() => setNotesProject(activeFilter ?? draftProject)}><BookOpen size={16} />Project notes</button>
           </header>
 
