@@ -174,6 +174,12 @@ function formatDayLabel(dateKey: string) {
   }).format(new Date(`${dateKey}T12:00:00`));
 }
 
+// "Today · Saturday, Nov 14" so stepping through days keeps you oriented.
+function relativeDayLabel(dateKey: string, todayKey: string) {
+  const relative = dateKey === todayKey ? "Today" : dateKey === addDays(todayKey, -1) ? "Yesterday" : dateKey === addDays(todayKey, 1) ? "Tomorrow" : null;
+  return relative ? `${relative} · ${formatDayLabel(dateKey)}` : formatDayLabel(dateKey);
+}
+
 function formatWeekday(dateKey: string) {
   return new Intl.DateTimeFormat("en-US", {
     weekday: "short",
@@ -1069,7 +1075,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
 
       <div className="min-w-0 space-y-4">
         <div className="ws-ledger">
-          <div className="ws-ledger-head"><h3>{formatDayLabel(selectedDate)}</h3><span>{formatDuration(selectedDayMinutes)} saved</span></div>
+          <div className="ws-ledger-head"><h3>{relativeDayLabel(selectedDate, todayKey)}</h3><span>{formatDuration(selectedDayMinutes)} saved</span></div>
           <WorkspaceTable label="Daily time entries"><thead><tr><th>Project / task</th><th>Time</th><th>Duration</th><th>Actions</th></tr></thead><tbody>
             {!hydrated ? <tr><td colSpan={4}>Loading entries…</td></tr> : selectedDayEntries.length ? selectedDayEntries.map((entry) => <tr key={entry.id}>
               <td><strong>{entry.project}</strong>{entry.task ? <p>{entry.task}</p> : null}</td><td>{entry.start}–{entry.end}</td><td>{formatDuration(getDurationMinutes(entry))}</td>
