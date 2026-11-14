@@ -256,18 +256,25 @@ function Hero({ state, update, saveState }: { state: WowState; update: (m: (s: W
   const stateRef = useRef(state);
   stateRef.current = state;
 
+  const inFlight = useRef(false);
+
   const sync = useCallback(async (quiet = false) => {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setSyncing(true);
     if (!quiet) setSyncMessage(null);
     try {
       const before = stateRef.current;
       const data = await requestJson<{ state: WowState }>("/api/workspace/wow/sync", { method: "POST" });
       update(() => data.state);
-      setNews(syncNews(before, data.state));
+      const fresh = syncNews(before, data.state);
+      // a quiet sync with nothing new keeps whatever banner is already up
+      if (fresh.length || !quiet) setNews(fresh);
       setSyncMessage({ text: "Synced from the armory", error: false });
     } catch (err) {
       if (!quiet) setSyncMessage({ text: err instanceof Error ? err.message : "Sync failed", error: true });
     } finally {
+      inFlight.current = false;
       setSyncing(false);
     }
   }, [update]);
@@ -279,6 +286,20 @@ function Hero({ state, update, saveState }: { state: WowState; update: (m: (s: W
     const age = state.syncedAt ? Date.now() - new Date(state.syncedAt).getTime() : Infinity;
     if (age > 60 * 60 * 1000) void sync(true);
   }, [state.characterSlug, state.syncedAt, sync]);
+
+  // Coming back to the browser after logging out of the game picks up the new
+  // armory snapshot; at most once per 10 minutes.
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState !== "visible") return;
+      const { characterSlug, syncedAt } = stateRef.current;
+      if (!characterSlug) return;
+      const age = syncedAt ? Date.now() - new Date(syncedAt).getTime() : Infinity;
+      if (age > 10 * 60 * 1000) void sync(true);
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [sync]);
 
   const ticks = useMemo(() => [...new Set([10, 20, 30, 40, 50, 60])], []);
   const nextGate = MILESTONE_GOALS.filter((m) => m.level && m.level > state.level && !goalDone(m, state)).sort((a, b) => (a.level ?? 0) - (b.level ?? 0))[0];
