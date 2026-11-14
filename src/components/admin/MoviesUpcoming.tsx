@@ -349,19 +349,6 @@ function ReleaseRadar() {
     requestJson<UpcomingMovieDetail>(`/api/workspace/movies/upcoming/${movieId}`).then(setDetail).catch((error) => setMessage(error.message));
   }, [selected]);
 
-  const filtered = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase("de-AT");
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const limit = new Date(today); if (windowDays !== "saved") limit.setDate(limit.getDate() + windowDays);
-    return releases.filter((movie) => {
-      const state = states[movie.key]?.state;
-      if (state === "dismissed") return false;
-      if (normalizedQuery && !movie.title.toLocaleLowerCase("de-AT").includes(normalizedQuery)) return false;
-      if (windowDays === "saved") return state === "watchlist";
-      return new Date(`${movie.releaseDate}T12:00:00`) <= limit;
-    });
-  }, [query, releases, states, windowDays]);
-
   // Titles already on the Nonstop programme (presales count), matched loosely by title.
   const [nonstopTitles, setNonstopTitles] = useState<Set<string>>(new Set());
   useEffect(() => {
@@ -369,6 +356,22 @@ function ReleaseRadar() {
       .then((data) => setNonstopTitles(new Set(data.movies.map((movie) => titleKey(movie.title)))))
       .catch(() => {});
   }, []);
+
+  const [onlyNonstop, setOnlyNonstop] = useState(false);
+
+  const filtered = useMemo(() => {
+    const normalizedQuery = query.trim().toLocaleLowerCase("de-AT");
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const limit = new Date(today); if (windowDays !== "saved") limit.setDate(limit.getDate() + windowDays);
+    return releases.filter((movie) => {
+      const state = states[movie.key]?.state;
+      if (state === "dismissed") return false;
+      if (onlyNonstop && !nonstopTitles.has(titleKey(movie.title))) return false;
+      if (normalizedQuery && !movie.title.toLocaleLowerCase("de-AT").includes(normalizedQuery)) return false;
+      if (windowDays === "saved") return state === "watchlist";
+      return new Date(`${movie.releaseDate}T12:00:00`) <= limit;
+    });
+  }, [nonstopTitles, onlyNonstop, query, releases, states, windowDays]);
 
   const grouped = useMemo(() => {
     const months = new Map<string, UpcomingRelease[]>();
@@ -397,7 +400,7 @@ function ReleaseRadar() {
 
   return <section className="ws-programme border-[2.5px] border-black bg-white shadow-brutal">
     <div className="ws-programme-head"><div><h3>Upcoming Austrian releases</h3><p>Announced release dates; Graz screenings may follow.</p></div><a href={sourceUrl} target="_blank" rel="noreferrer">Source: UNCUT</a><p>{refreshedAt ? `Checked ${new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(refreshedAt))}` : "Loading releases…"}</p></div>
-    <div className="flex flex-wrap gap-2 border-b-[2.5px] border-black bg-fofo-paper p-3">{([30, 90, 180] as const).map((days) => <button type="button" key={days} aria-pressed={windowDays === days} onClick={() => setWindowDays(days)} className={clsx("border-2 border-black px-4 py-2 font-mono text-xs font-bold uppercase", windowDays === days ? "bg-black text-white" : "bg-white hover:bg-fofo-yellow")}>Next {days} days</button>)}<button type="button" aria-pressed={windowDays === "saved"} onClick={() => setWindowDays("saved")} className={clsx("border-2 border-black px-4 py-2 font-mono text-xs font-bold uppercase", windowDays === "saved" ? "bg-fofo-yellow" : "bg-white hover:bg-fofo-yellow")}>Saved</button><label className="ml-auto flex min-w-64 items-center gap-2 border-2 border-black bg-white px-3"><Search className="h-4 w-4" /><input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search releases" placeholder="Search releases" className="w-full bg-transparent py-2 text-sm outline-none" /></label></div>
+    <div className="flex flex-wrap gap-2 border-b-[2.5px] border-black bg-fofo-paper p-3">{([30, 90, 180] as const).map((days) => <button type="button" key={days} aria-pressed={windowDays === days} onClick={() => setWindowDays(days)} className={clsx("border-2 border-black px-4 py-2 font-mono text-xs font-bold uppercase", windowDays === days ? "bg-black text-white" : "bg-white hover:bg-fofo-yellow")}>Next {days} days</button>)}<button type="button" aria-pressed={windowDays === "saved"} onClick={() => setWindowDays("saved")} className={clsx("border-2 border-black px-4 py-2 font-mono text-xs font-bold uppercase", windowDays === "saved" ? "bg-fofo-yellow" : "bg-white hover:bg-fofo-yellow")}>Saved</button><button type="button" aria-pressed={onlyNonstop} onClick={() => setOnlyNonstop((value) => !value)} disabled={!nonstopTitles.size} title={nonstopTitles.size ? "Show only releases already on the Nonstop programme" : "The Nonstop programme has not loaded"} className={clsx("border-2 border-black px-4 py-2 font-mono text-xs font-bold uppercase disabled:opacity-40", onlyNonstop ? "bg-fofo-yellow" : "bg-white hover:bg-fofo-yellow")}>On Nonstop only</button><label className="ml-auto flex min-w-64 items-center gap-2 border-2 border-black bg-white px-3"><Search className="h-4 w-4" /><input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search releases" placeholder="Search releases" className="w-full bg-transparent py-2 text-sm outline-none" /></label></div>
     {message ? <p className="p-6 font-mono text-sm">{message}</p> : null}
     <div>{grouped.map(([month, movies]) => <section key={month}><div className="sticky top-20 z-10 border-y-[2.5px] border-black bg-fofo-pink px-5 py-3 text-white first:border-t-0"><h3 className="font-display text-2xl font-bold lowercase">{month}</h3><p className="font-mono text-[9px] uppercase">{movies.length} announced releases</p></div><div className="ws-film-grid grid gap-px bg-black md:grid-cols-2 xl:grid-cols-3">{movies.map((movie) => {
       const state = states[movie.key]?.state ?? null;
@@ -406,7 +409,7 @@ function ReleaseRadar() {
       const daysAway = Math.max(0, Math.round((Date.parse(`${movie.releaseDate}T00:00:00Z`) - Date.parse(`${checkedDate}T00:00:00Z`)) / 86_400_000));
       return <article key={movie.key} className="grid min-h-28 grid-cols-[4rem_1fr] bg-white"><button type="button" onClick={() => setSelected(movie)} aria-label={`View details for ${movie.title}`} className="relative m-3 mr-0 h-16 overflow-hidden border-2 border-black bg-[#241231]">{movie.imageUrl ? <Image src={movie.imageUrl} alt="" fill sizes="64px" className="object-cover" /> : <Film className="m-4 h-7 w-7 text-white" />}</button><div className="flex min-w-0 flex-col p-3"><p className="font-mono text-[9px] uppercase text-fofo-blue">{new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" }).format(releaseDate)} · {daysAway === 0 ? "today" : `in ${daysAway} days`}</p><button type="button" onClick={() => setSelected(movie)} className="mt-1 text-left"><h4 className="line-clamp-2 font-display text-lg font-bold leading-tight hover:text-fofo-blue">{movie.title}</h4></button>{nonstopTitles.has(titleKey(movie.title)) ? <p className="ws-release-listed mt-1 text-[10px] font-semibold">Already on the Nonstop programme</p> : <p className="mt-1 text-[10px] text-black/45">Not yet confirmed for Nonstop</p>}<div className="mt-auto flex gap-2 pt-2"><button type="button" onClick={() => setReleaseState(movie.key, state === "watchlist" ? null : "watchlist")} className={clsx("flex items-center gap-1 border-2 border-black px-2 py-1 font-mono text-[9px] uppercase", state === "watchlist" && "bg-fofo-yellow")}><Bookmark className="h-3 w-3" />{state === "watchlist" ? "Saved" : "Save"}</button><button type="button" onClick={() => setReleaseState(movie.key, "dismissed")} className="border-2 border-black px-2 py-1 font-mono text-[9px] uppercase">Hide</button><button type="button" onClick={() => setSelected(movie)} aria-label={`Open details for ${movie.title}`} className="ml-auto border-2 border-black bg-fofo-blue p-1.5 text-white"><ExternalLink className="h-3 w-3" /></button></div></div></article>;
     })}</div></section>)}</div>
-    {!message && !filtered.length ? <div className="p-12 text-center"><CalendarDays className="mx-auto h-10 w-10 text-black/25" /><h3 className="mt-4 font-display text-2xl font-bold lowercase">no releases in that view.</h3><p className="mt-2 text-sm text-black/45">Widen the date window or clear the search.</p></div> : null}
+    {!message && !filtered.length ? <div className="p-12 text-center"><CalendarDays className="mx-auto h-10 w-10 text-black/25" /><h3 className="mt-4 font-display text-2xl font-bold lowercase">no releases in that view.</h3><p className="mt-2 text-sm text-black/45">{onlyNonstop ? "Nonstop has not listed any of these yet. Turn off On Nonstop only or widen the date window." : "Widen the date window or clear the search."}</p></div> : null}
     {selected ? <UpcomingMoviePanel movie={selected} detail={detail} state={states[selected.key]?.state ?? null} onState={(state) => setReleaseState(selected.key, state)} onClose={() => setSelected(null)} /> : null}
     {undoToast.node}
   </section>;
