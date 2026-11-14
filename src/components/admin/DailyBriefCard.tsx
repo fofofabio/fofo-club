@@ -70,8 +70,17 @@ function formatDuration(totalMinutes: number) {
   return `${h}h ${m}m`;
 }
 
+// Postgres timestamps arrive as "2026-11-09 10:00:00+01"; make them ISO so every browser parses them.
+function parseTimestamp(value: string) {
+  return new Date(value.replace(" ", "T").replace(/([+-]\d{2})$/, "$1:00"));
+}
+
 function ageDays(createdAt: string) {
-  return Math.floor((Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24));
+  return Math.floor((Date.now() - parseTimestamp(createdAt).getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function daysLate(dueDate: string, today: string) {
+  return Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${dueDate}T00:00:00Z`)) / 86_400_000);
 }
 
 type Props = {
@@ -86,13 +95,20 @@ export default function DailyBriefCard({ todos }: Props) {
   const today = currentDateKey();
   const storageKey = `workspace_brief_seen_${today}`;
 
+  // "Dismiss for today" is remembered until the date changes.
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(storageKey)) setVisible(false);
+    } catch {}
+  }, [storageKey]);
+
   useEffect(() => {
     if (!visible) return;
 
     fetch("/api/workspace/time-entries")
       .then((r) => r.json())
       .then((payload: { entries?: HourEntry[] }) => {
-        const cutoff = dateKeyBefore(7);
+        const cutoff = dateKeyBefore(6); // today plus the six days before it
         const recent = (payload.entries ?? []).filter(
           (e) => e.date >= cutoff && e.date <= today,
         );
@@ -108,16 +124,28 @@ export default function DailyBriefCard({ todos }: Props) {
   }, [visible, today]);
 
   function dismiss() {
-    localStorage.setItem(storageKey, "1");
+    try {
+      localStorage.setItem(storageKey, "1");
+    } catch {}
     setVisible(false);
   }
 
-  if (!visible) return <button type="button" onClick={() => setVisible(true)} className="ws-button">Open daily brief</button>;
+  function reopen() {
+    try {
+      localStorage.removeItem(storageKey);
+    } catch {}
+    setVisible(true);
+  }
+
+  if (!visible) return <button type="button" onClick={reopen} className="ws-button">Open daily brief</button>;
 
   const dueToday = todos.filter((t) => !t.done && t.dueDate === today);
+  const overdue = todos
+    .filter((t) => !t.done && t.dueDate && t.dueDate < today)
+    .sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""));
 
   const lingering = todos
-    .filter((t) => !t.done && !t.pinned && ageDays(t.createdAt) >= 7)
+    .filter((t) => !t.done && !t.pinned && !(t.dueDate && t.dueDate < today) && ageDays(t.createdAt) >= 7)
     .sort((a, b) => ageDays(b.createdAt) - ageDays(a.createdAt))
     .slice(0, 3);
 
@@ -158,11 +186,20 @@ export default function DailyBriefCard({ todos }: Props) {
       <div className="grid divide-y divide-white/10 lg:grid-cols-4 lg:divide-x lg:divide-y-0">
         {/* Due today */}
         <div className="px-6 py-5">
-          <p className="meta text-white/45">DUE TODAY</p>
-          {dueToday.length === 0 ? (
+          <p className="meta text-white/45">{overdue.length ? "OVERDUE & DUE TODAY" : "DUE TODAY"}</p>
+          {dueToday.length === 0 && overdue.length === 0 ? (
             <p className="mt-3 text-sm text-white/40">Nothing due, clear day.</p>
           ) : (
             <ul className="mt-3 space-y-2.5">
+              {overdue.map((t) => (
+                <li key={t.id} className="flex items-start gap-2">
+                  <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-fofo-pink" />
+                  <span className="text-sm leading-snug">
+                    <span className="text-white/85">{t.text}</span>
+                    <span className="ml-1.5 text-fofo-pink">{daysLate(t.dueDate!, today)}d late</span>
+                  </span>
+                </li>
+              ))}
               {dueToday.map((t) => (
                 <li key={t.id} className="flex items-start gap-2">
                   <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-none bg-fofo-yellow" />
@@ -199,7 +236,7 @@ export default function DailyBriefCard({ todos }: Props) {
           {weeklyMinutes === null ? (
             <p className="mt-3 text-sm text-white/40">Loading…</p>
           ) : weeklyMinutes === 0 ? (
-            <p className="mt-3 text-sm text-white/40">No hours logged yet this week.</p>
+            <p className="mt-3 text-sm text-white/40">No hours logged in the last 7 days.</p>
           ) : (
             <div className="mt-3">
               <p className="font-display font-bold lowercase text-3xl tracking-tight">
