@@ -747,14 +747,17 @@ function Gold({ skill }: { skill: number }) {
         <ul className="wow-crafts">
           {GOLD_CRAFTS.map((c) => {
             const canCraft = skill >= c.skill && c.verdict !== "skip";
+            const verdict = c.verdict === "later" && canCraft ? "sell" : c.verdict;
+            const gap = c.skill - skill;
             return (
-              <li key={c.name} className={`wow-craft is-${c.verdict}`}>
-                <span className={`wow-badge is-${c.verdict}`}>{verdictLabel[c.verdict]}</span>
+              <li key={c.name} className={`wow-craft is-${verdict}`}>
+                <span className={`wow-badge is-${verdict}`}>{verdictLabel[verdict]}</span>
                 <div className="wow-craft-body">
                   <p className="wow-craft-name">
                     {c.name}
                     <span className="wow-check-meta">skill {c.skill}</span>
                     {canCraft && <span className="wow-ready">You can craft this</span>}
+                    {verdict === "later" && <span className="wow-gap">{gap <= 15 ? `${gap} skill away` : `in ${gap} skill`}</span>}
                   </p>
                   <p className="wow-check-detail">{c.detail}</p>
                 </div>
