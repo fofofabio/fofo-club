@@ -104,7 +104,7 @@ export default function WorkspaceDesk({ displayName, userId }: { displayName: st
         if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault(); navigate(id);
       }}>{label}</a>)}</nav>
-      <details className="ws-account"><summary>Account</summary><div><p>{displayName}</p><WorkspaceAppearance /><Link href="/">← Back to Fofo Club</Link><form action={logoutAdminAction}><WorkspaceButton type="submit">Sign out</WorkspaceButton></form></div></details>
+      <details className="ws-account"><summary>Account</summary><div><p>{displayName}</p><WorkspaceAppearance /><button type="button" className="ws-account-shortcuts" aria-keyshortcuts="?" onClick={(event) => { event.currentTarget.closest("details")?.removeAttribute("open"); shortcutsRef.current?.showModal(); }}>Keyboard shortcuts <kbd>?</kbd></button><Link href="/">← Back to Fofo Club</Link><form action={logoutAdminAction}><WorkspaceButton type="submit">Sign out</WorkspaceButton></form></div></details>
     </header>
     <div className="ws-timer-strip" aria-label="Persistent timer">
       <span className={`ws-status ${timer?.running ? "" : "ws-status-idle"}`} aria-hidden="true" />

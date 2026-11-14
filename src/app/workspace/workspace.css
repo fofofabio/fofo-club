@@ -483,3 +483,7 @@ html:has(.ws-shell[data-theme='dark']) body { background: #161714; }
 /* Cinema: "in 25 min" next to today's screening times */
 .ws-starts-in { display: inline-block; font: 600 10px/1.2 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .03em; padding: 2px 6px; border: 1px solid var(--rule-strong); color: var(--ink); background: var(--paper-well); white-space: nowrap; }
 small.ws-starts-in { display: block; width: max-content; margin-top: 4px; }
+.ws-account .ws-account-shortcuts { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-block: 8px; font-size: 14px; text-align: left; background: none; border: 0; color: var(--ink); cursor: pointer; }
+.ws-account .ws-account-shortcuts:hover { text-decoration: underline; }
+.ws-account .ws-account-shortcuts kbd { font: 12px/1 ui-monospace, monospace; padding: 3px 6px; border: 1px solid var(--rule-strong); border-bottom-width: 2px; }
+@media (hover: none) { .ws-account .ws-account-shortcuts { display: none; } }
