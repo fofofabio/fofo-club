@@ -12,6 +12,16 @@ declare global {
   var __fofoBlizzardToken: CachedToken | undefined;
 }
 
+// Battle.net can stall; without a limit the armory sync would hang with it.
+const BLIZZARD_TIMEOUT_MS = 10_000;
+
+function timeoutMessage(error: unknown): never {
+  if (error instanceof Error && error.name === "TimeoutError") {
+    throw new Error("Battle.net did not answer within 10 seconds. Try the sync again in a moment.");
+  }
+  throw error;
+}
+
 async function getAccessToken(): Promise<string> {
   const cached = global.__fofoBlizzardToken;
   if (cached && cached.expiresAt > Date.now() + 60_000) return cached.token;
@@ -30,7 +40,8 @@ async function getAccessToken(): Promise<string> {
     },
     body: "grant_type=client_credentials",
     cache: "no-store",
-  });
+    signal: AbortSignal.timeout(BLIZZARD_TIMEOUT_MS),
+  }).catch(timeoutMessage);
   if (!response.ok) throw new Error(`Blizzard token request failed (${response.status}).`);
   const body = (await response.json()) as { access_token: string; expires_in: number };
   global.__fofoBlizzardToken = { token: body.access_token, expiresAt: Date.now() + body.expires_in * 1000 };
@@ -45,7 +56,8 @@ async function profileFetch<T>(path: string): Promise<T | null> {
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
-  });
+    signal: AbortSignal.timeout(BLIZZARD_TIMEOUT_MS),
+  }).catch(timeoutMessage);
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`Blizzard API request failed (${response.status}) for ${path}.`);
   return (await response.json()) as T;
