@@ -73,7 +73,9 @@ export default function WorkspaceFrame({ children }: { children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
   useWorkspaceDialogs(root);
   useEffect(() => {
-    const stored = localStorage.getItem("fofo-workspace-theme");
+    // Storage can be blocked (privacy settings); fall back to the system theme.
+    let stored: string | null = null;
+    try { stored = localStorage.getItem("fofo-workspace-theme"); } catch {}
     setTheme(stored === "dark" || (stored !== "light" && matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light");
   }, []);
   useEffect(() => {
@@ -86,7 +88,7 @@ export default function WorkspaceFrame({ children }: { children: ReactNode }) {
     const timer = window.setTimeout(() => setFeedback(null), 4000);
     return () => window.clearTimeout(timer);
   }, [feedback]);
-  return <AppearanceContext.Provider value={{ theme, toggle: () => { const next = theme === "light" ? "dark" : "light"; setTheme(next); localStorage.setItem("fofo-workspace-theme", next); } }}><div ref={root} className="ws-shell" data-theme={theme}>
+  return <AppearanceContext.Provider value={{ theme, toggle: () => { const next = theme === "light" ? "dark" : "light"; setTheme(next); try { localStorage.setItem("fofo-workspace-theme", next); } catch {} } }}><div ref={root} className="ws-shell" data-theme={theme}>
     <a href="#workspace-content" className="ws-skip">Skip to working content</a>
     {pathname === "/workspace/login" ? <div className="ws-utility"><Link href="/">← Back to Fofo Club</Link><WorkspaceAppearance /></div> : null}
     {children}
