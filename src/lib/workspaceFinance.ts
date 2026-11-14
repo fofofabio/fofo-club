@@ -32,6 +32,8 @@ export type FinanceTransaction = {
   id: string;
   bookedOn: string;
   merchant: string;
+  /** The name as the bank exported it, when the display name was shortened. */
+  merchantRaw?: string;
   description: string;
   amountCents: number;
   currency: string;
@@ -150,7 +152,10 @@ export async function listWorkspaceFinance(userId: string): Promise<FinancePaylo
   ]);
 
   return {
-    transactions: transactions.rows.map((row) => ({ ...row, merchant: displayMerchant(row.merchant) })),
+    transactions: transactions.rows.map((row) => {
+      const merchant = displayMerchant(row.merchant);
+      return merchant === row.merchant ? row : { ...row, merchant, merchantRaw: row.merchant };
+    }),
     subscriptions: subscriptions.rows.map((row) => ({ ...row, name: displayMerchant(row.name) })),
     monthlyExpenses: monthlyExpenses.rows,
     meta: meta.rows[0] ?? { dataStart: null, dataEnd: null, transactionCount: 0 },
