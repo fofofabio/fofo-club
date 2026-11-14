@@ -58,6 +58,24 @@ function todayKey() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+// Whole calendar days between two YYYY-MM-DD keys, ignoring daylight-saving shifts.
+function daysBetween(fromKey: string, toKey: string) {
+  const [fy, fm, fd] = fromKey.slice(0, 10).split("-").map(Number);
+  const [ty, tm, td] = toKey.slice(0, 10).split("-").map(Number);
+  return Math.round((Date.UTC(ty, tm - 1, td) - Date.UTC(fy, fm - 1, fd)) / 86_400_000);
+}
+
+function dayCount(days: number) {
+  return `${days} ${days === 1 ? "day" : "days"}`;
+}
+
+function ageLabel(createdAt: string) {
+  const created = new Date(createdAt);
+  const createdKey = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, "0")}-${String(created.getDate()).padStart(2, "0")}`;
+  const days = Math.max(0, daysBetween(createdKey, todayKey()));
+  return days === 0 ? "Added today" : `${dayCount(days)} old`;
+}
+
 function isOverdue(dueDate: string | null, done: boolean) {
   if (!dueDate || done) return false;
   return dueDate < todayKey();
@@ -909,7 +927,7 @@ function TodoRow({
               />
             ) : null}
 
-          <p className="ws-task-age">{overdue ? <strong className="ws-task-due-flag">Overdue · </strong> : dueToday ? <strong className="ws-task-due-flag">Due today · </strong> : null}{todo.done ? "Completed" : `${Math.max(0, Math.floor((Date.now() - new Date(todo.createdAt).getTime()) / 86400000))} days old`}</p>
+          <p className="ws-task-age">{overdue && todo.dueDate ? <strong className="ws-task-due-flag">Overdue by {dayCount(daysBetween(todo.dueDate, todayKey()))} · </strong> : dueToday ? <strong className="ws-task-due-flag">Due today · </strong> : null}{todo.done ? "Completed" : ageLabel(todo.createdAt)}</p>
             {todo.subtasks.length > 0 && (
               <button
                 type="button"
