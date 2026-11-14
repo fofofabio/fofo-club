@@ -112,7 +112,7 @@ const ARCHIVE_DAYS = 7;
 
 function isArchived(todo: Todo) {
   if (!todo.done || !todo.doneAt) return false;
-  const doneMs = new Date(todo.doneAt).getTime();
+  const doneMs = parseTimestamp(todo.doneAt).getTime();
   return Date.now() - doneMs > ARCHIVE_DAYS * 24 * 60 * 60 * 1000;
 }
 
@@ -214,7 +214,10 @@ export default function TodoBoard({ onStartTimer, userId }: Props) {
   const projects = Array.from(new Set(todos.map((t) => t.project).filter(Boolean))).sort();
 
   const activeTodos = todos.filter((t) => !isArchived(t));
-  const archivedTodos = todos.filter((todo) => isArchived(todo) && (activeFilter === null || todo.project === activeFilter));
+  // Newest completion first, so the archive reads as a history.
+  const archivedTodos = todos
+    .filter((todo) => isArchived(todo) && (activeFilter === null || todo.project === activeFilter))
+    .sort((a, b) => parseTimestamp(b.doneAt ?? "").getTime() - parseTimestamp(a.doneAt ?? "").getTime());
 
   const filtered = activeTodos.filter((t) => {
     if (activeFilter === null) return true;
