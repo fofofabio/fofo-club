@@ -317,13 +317,17 @@ function detectSubscriptions(transactions, dataEnd) {
     if (deviation > 0.2) continue;
     const interval = Math.round(median(intervals));
     const lastChargeOn = dates.at(-1);
+    // Show what the next charge will likely cost: after a price rise the median of the
+    // whole history lags for months, so use the median of the latest three charges,
+    // which follows a new price yet ignores a single odd amount.
+    const latestCents = median([...items].sort((a, b) => a.bookedOn.localeCompare(b.bookedOn)).slice(-3).map((item) => Math.abs(item.amountCents)));
     let nextChargeOn = plusDays(lastChargeOn, Math.min(40, Math.max(24, interval)));
     while (nextChargeOn <= dataEnd) nextChargeOn = plusDays(nextChargeOn, 30);
     const active = dateDiffDays(lastChargeOn, dataEnd) <= 75;
     subscriptions.push({
       key,
       name: items[0].merchant === "Foodora" ? "Foodora Pro" : items[0].merchant,
-      amountCents,
+      amountCents: latestCents,
       cadence: "monthly",
       lastChargeOn,
       nextChargeOn: active ? nextChargeOn : null,
