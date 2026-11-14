@@ -339,6 +339,8 @@ html:has(.ws-shell[data-theme='dark']) body { background: #161714; }
 .ws-tool .ws-task-compose { padding: 0 0 24px; border-bottom: 1px solid var(--rule) !important; }
 .ws-task-capture { display: grid !important; grid-template-columns: minmax(0,1fr) 170px auto auto; align-items: center; gap: 10px; margin-top: 0; }
 .ws-task-capture > .relative { display: block; min-width: 0; }
+/* The date field is also .relative; keep it a one-line chip the height of the inputs. */
+.ws-task-capture > .ws-date-field { display: inline-flex; align-items: center; min-height: 48px; white-space: nowrap; }
 .ws-task-capture > input { width: 100%; min-width: 0; }
 .ws-task-capture input { min-height: 48px !important; }
 .ws-task-capture > .relative > input { font-size: 17px !important; padding-right: 16px; }
@@ -393,6 +395,7 @@ html:has(.ws-shell[data-theme='dark']) body { background: #161714; }
  .ws-task-row > .flex > .min-w-0 { flex-basis: calc(100% - 90px); }
  .ws-task-capture { grid-template-columns: minmax(0,1fr) auto auto; }
  .ws-task-capture > .relative { grid-column: 1 / -1; }
+ .ws-task-capture > .ws-date-field { grid-column: auto; }
 }
 @media (max-width: 720px) {
  .ws-task-capture { grid-template-columns: minmax(0,1fr) auto; }
