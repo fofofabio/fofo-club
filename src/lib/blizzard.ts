@@ -51,14 +51,33 @@ async function profileFetch<T>(path: string): Promise<T | null> {
   return (await response.json()) as T;
 }
 
+export type ArmoryPet = { name: string; family: string; level: number | null };
+
 export type ArmoryCharacter = {
   level: number | null;
   name: string | null;
   equippedRanged: string | null;
   engineeringSkill: number | null;
+  // XP earned inside the current level
+  experience: number | null;
+  guild: string | null;
+  itemLevel: number | null;
+  // ISO timestamp of the logout the armory snapshot comes from
+  lastLogin: string | null;
+  pet: ArmoryPet | null;
 };
 
-type CharacterProfile = { name?: string; level?: number };
+type CharacterProfile = {
+  name?: string;
+  level?: number;
+  experience?: number;
+  guild?: { name?: string };
+  equipped_item_level?: number;
+  last_login_timestamp?: number;
+};
+type HunterPetsResponse = {
+  hunter_pets?: Array<{ name?: string; level?: number; is_active?: boolean; creature?: { name?: string } }>;
+};
 type EquipmentResponse = {
   equipped_items?: Array<{ slot?: { type?: string }; name?: string }>;
 };
@@ -77,10 +96,16 @@ export async function fetchForeverCharacter(slug: string): Promise<ArmoryCharact
   const profile = await profileFetch<CharacterProfile>(base);
   if (!profile) return null;
 
-  const [equipment, professions] = await Promise.all([
+  const [equipment, professions, pets] = await Promise.all([
     profileFetch<EquipmentResponse>(`${base}/equipment`).catch(() => null),
     profileFetch<ProfessionsResponse>(`${base}/professions`).catch(() => null),
+    profileFetch<HunterPetsResponse>(`${base}/hunter-pets`).catch(() => null),
   ]);
+
+  const activePet = pets?.hunter_pets?.find((p) => p.is_active) ?? pets?.hunter_pets?.[0];
+  const pet: ArmoryPet | null = activePet?.name
+    ? { name: activePet.name, family: activePet.creature?.name ?? "", level: typeof activePet.level === "number" ? activePet.level : null }
+    : null;
 
   const ranged = equipment?.equipped_items?.find((item) => item.slot?.type === "RANGED")?.name ?? null;
 
@@ -100,5 +125,10 @@ export async function fetchForeverCharacter(slug: string): Promise<ArmoryCharact
     name: profile.name ?? null,
     equippedRanged: ranged,
     engineeringSkill,
+    experience: typeof profile.experience === "number" ? profile.experience : null,
+    guild: profile.guild?.name ?? null,
+    itemLevel: typeof profile.equipped_item_level === "number" ? profile.equipped_item_level : null,
+    lastLogin: typeof profile.last_login_timestamp === "number" ? new Date(profile.last_login_timestamp).toISOString() : null,
+    pet,
   };
 }

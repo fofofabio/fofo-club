@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BookOpen, Check, Coins, Compass, Crosshair, ExternalLink, Flag, Flame, Lock, MapPin, RefreshCw, Sparkles, Swords, Wrench } from "lucide-react";
+import { BookOpen, Check, Coins, Compass, Crosshair, ExternalLink, Flag, Flame, Lock, MapPin, PawPrint, RefreshCw, Shield, Sparkles, Swords, Wrench } from "lucide-react";
 
 import {
   BUFF_RITUAL,
@@ -14,6 +14,7 @@ import {
   MILESTONE_GOALS,
   ROTATION_NOTES,
   TALENT_STEPS,
+  XP_TO_NEXT_LEVEL,
   ZONE_ROUTE,
   type EngineeringStep,
   type Milestone,
@@ -28,6 +29,14 @@ type WowState = {
   characterSlug: string;
   syncedAt: string;
   equippedRanged: string;
+  experience: number;
+  experienceLevel: number;
+  guild: string;
+  itemLevel: number;
+  lastLogin: string;
+  petName: string;
+  petFamily: string;
+  petLevel: number;
 };
 
 type Section = "overview" | "talents" | "engineering" | "zones" | "goals" | "gold";
@@ -205,6 +214,10 @@ function LevelRing({ level }: { level: number }) {
   );
 }
 
+function formatStamp(iso: string) {
+  return new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
 // What an armory sync brought in, in plain words. Empty when nothing changed.
 function syncNews(before: WowState, after: WowState): string[] {
   const news: string[] = [];
@@ -221,6 +234,11 @@ function syncNews(before: WowState, after: WowState): string[] {
   }
   if (after.equippedRanged && before.equippedRanged && after.equippedRanged !== before.equippedRanged) {
     news.push(`New weapon equipped: ${after.equippedRanged}.`);
+  }
+  if (after.petName && after.petName === before.petName && after.petLevel > before.petLevel) {
+    news.push(`${after.petName} reached level ${after.petLevel}.`);
+  } else if (after.petName && before.petName && after.petName !== before.petName) {
+    news.push(`New pet out: ${after.petName}${after.petFamily ? ` (${after.petFamily})` : ""}.`);
   }
   return news;
 }
@@ -259,6 +277,11 @@ function Hero({ state, update, saveState }: { state: WowState; update: (m: (s: W
 
   const ticks = useMemo(() => [...new Set([10, 20, 30, 40, 50, 60])], []);
   const nextGate = MILESTONE_GOALS.filter((m) => m.level && m.level > state.level && !goalDone(m, state)).sort((a, b) => (a.level ?? 0) - (b.level ?? 0))[0];
+  const xpNeed = XP_TO_NEXT_LEVEL[state.level];
+  // only trust the armory XP while it belongs to the level shown
+  const xp = xpNeed && state.experienceLevel === state.level && state.experience > 0
+    ? { have: state.experience, need: xpNeed, share: Math.min(0.999, state.experience / xpNeed) }
+    : null;
 
   return (
     <section className="wow-hero">
@@ -268,11 +291,21 @@ function Hero({ state, update, saveState }: { state: WowState; update: (m: (s: W
         <div className="wow-hero-id">
           <p className="wow-eyebrow">WoW Forever · EU · Horde</p>
           <p className="wow-hero-name">{nameFromSlug(state.characterSlug)}</p>
-          <p className="wow-hero-sub">Troll Hunter · Beast Mastery</p>
+          <p className="wow-hero-sub">
+            Troll Hunter · Beast Mastery
+            {state.guild && <span className="wow-guild">&lt;{state.guild}&gt;</span>}
+          </p>
           <div className="wow-chips">
             {state.equippedRanged && <span className="wow-chip wow-chip-item"><Crosshair className="h-3.5 w-3.5" />{state.equippedRanged}</span>}
+            {state.petName && (
+              <span className="wow-chip wow-chip-pet" title={state.petLevel && state.petLevel < state.level ? "Your pet is behind you — it gains XP faster while lower level." : undefined}>
+                <PawPrint className="h-3.5 w-3.5" />{state.petName}
+                <span className="wow-muted">{[state.petFamily, state.petLevel ? `lv ${state.petLevel}` : ""].filter(Boolean).join(" · ")}</span>
+              </span>
+            )}
             <span className="wow-chip"><Wrench className="h-3.5 w-3.5" />Engineering {state.engineeringSkill}/300</span>
             <span className="wow-chip"><Swords className="h-3.5 w-3.5" />{Math.max(0, state.level - 9)} talent points</span>
+            {state.itemLevel > 0 && <span className="wow-chip"><Shield className="h-3.5 w-3.5" />Item level {state.itemLevel}</span>}
           </div>
         </div>
         <div className="wow-hero-sync">
@@ -281,9 +314,11 @@ function Hero({ state, update, saveState }: { state: WowState; update: (m: (s: W
             {syncing ? "Syncing…" : "Sync armory"}
           </button>
           <p className={syncMessage?.error ? "wow-sync-note wow-sync-error" : "wow-sync-note"}>
-            {syncMessage?.text ?? (state.syncedAt
-              ? `Last sync ${new Date(state.syncedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`
-              : state.characterSlug ? "Not synced yet" : "Set your character below")}
+            {syncMessage?.text ?? (state.lastLogin
+              ? `Armory as of logout ${formatStamp(state.lastLogin)}`
+              : state.syncedAt
+                ? `Last sync ${formatStamp(state.syncedAt)}`
+                : state.characterSlug ? "Not synced yet" : "Set your character below")}
             {saveState === "saving" && " · saving…"}
             {saveState === "error" && " · save failed"}
           </p>
@@ -319,16 +354,24 @@ function Hero({ state, update, saveState }: { state: WowState; update: (m: (s: W
       )}
 
       <div className="wow-track" aria-hidden="true">
-        <div className="wow-track-bar"><div className="wow-track-fill" style={{ width: `${(state.level / 60) * 100}%` }} /></div>
+        <div className="wow-track-bar"><div className="wow-track-fill" style={{ width: `${(Math.min(60, state.level + (xp?.share ?? 0)) / 60) * 100}%` }} /></div>
         <div className="wow-track-ticks">
           {ticks.map((t) => (
             <span key={t} className={t <= state.level ? "wow-tick wow-tick-done" : "wow-tick"} style={{ left: `${(t / 60) * 100}%` }}>{t}</span>
           ))}
         </div>
       </div>
-      {nextGate && (
-        <p className="wow-hero-next"><Sparkles className="h-4 w-4" />Level {nextGate.level}: {nextGate.label}<span className="wow-muted"> · {nextGate.level! - state.level} to go</span></p>
-      )}
+      <div className="wow-hero-foot">
+        {nextGate && (
+          <p className="wow-hero-next"><Sparkles className="h-4 w-4" />Level {nextGate.level}: {nextGate.label}<span className="wow-muted"> · {nextGate.level! - state.level} to go</span></p>
+        )}
+        {xp && (
+          <p className="wow-hero-xp" title="Measured at your last logout, against the Classic XP table">
+            <b>{Math.floor(xp.share * 100)}%</b> to level {state.level + 1}
+            <span className="wow-muted"> · {xp.have.toLocaleString("en-GB")} / {xp.need.toLocaleString("en-GB")} XP</span>
+          </p>
+        )}
+      </div>
     </section>
   );
 }

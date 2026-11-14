@@ -36,6 +36,14 @@ export async function POST() {
       engineeringSkill: Math.max(character.engineeringSkill ?? 0, current.engineeringSkill),
       equippedRanged: character.equippedRanged ?? current.equippedRanged,
       syncedAt: new Date().toISOString(),
+      experience: character.experience ?? current.experience,
+      experienceLevel: character.experience !== null && character.level !== null ? character.level : current.experienceLevel,
+      guild: character.guild ?? current.guild,
+      itemLevel: character.itemLevel ?? current.itemLevel,
+      lastLogin: character.lastLogin ?? current.lastLogin,
+      petName: character.pet?.name ?? current.petName,
+      petFamily: character.pet?.family ?? current.petFamily,
+      petLevel: character.pet?.level ?? current.petLevel,
     });
 
     return NextResponse.json(

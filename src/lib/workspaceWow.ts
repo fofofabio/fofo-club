@@ -13,6 +13,15 @@ export type WowState = {
   // last successful armory sync (ISO timestamp) and equipped ranged weapon
   syncedAt: string;
   equippedRanged: string;
+  // armory snapshot extras; 0 / "" = unknown
+  experience: number;
+  experienceLevel: number; // the level `experience` was measured at
+  guild: string;
+  itemLevel: number;
+  lastLogin: string;
+  petName: string;
+  petFamily: string;
+  petLevel: number;
 };
 
 export const DEFAULT_WOW_STATE: WowState = {
@@ -23,6 +32,14 @@ export const DEFAULT_WOW_STATE: WowState = {
   characterSlug: "",
   syncedAt: "",
   equippedRanged: "",
+  experience: 0,
+  experienceLevel: 0,
+  guild: "",
+  itemLevel: 0,
+  lastLogin: "",
+  petName: "",
+  petFamily: "",
+  petLevel: 0,
 };
 
 function clampInt(value: unknown, min: number, max: number, fallback: number) {
@@ -46,6 +63,14 @@ export function sanitizeWowState(input: unknown): WowState {
     characterSlug: text(raw.characterSlug, 64).toLowerCase().trim(),
     syncedAt: text(raw.syncedAt, 40),
     equippedRanged: text(raw.equippedRanged, 120),
+    experience: clampInt(raw.experience, 0, 1_000_000, 0),
+    experienceLevel: clampInt(raw.experienceLevel, 0, 60, 0),
+    guild: text(raw.guild, 80),
+    itemLevel: clampInt(raw.itemLevel, 0, 1000, 0),
+    lastLogin: text(raw.lastLogin, 40),
+    petName: text(raw.petName, 40),
+    petFamily: text(raw.petFamily, 40),
+    petLevel: clampInt(raw.petLevel, 0, 60, 0),
   };
 }
 

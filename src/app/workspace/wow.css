@@ -87,6 +87,13 @@
 .wow .wow-tick-done { color: #abd473; }
 .wow .wow-hero-next { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; color: #e3b341; }
 .wow .wow-hero-next .wow-muted { color: #8a8e7e; }
+.wow .wow-hero-foot { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; }
+.wow .wow-hero-xp { font-size: 14px; color: #d6d4c8; font-variant-numeric: tabular-nums; }
+.wow .wow-hero-xp b { color: #abd473; font-weight: 650; }
+.wow .wow-hero-xp .wow-muted { color: #8a8e7e; }
+.wow .wow-guild { margin-left: 10px; color: #8fcf6a; }
+.wow .wow-chip .wow-muted { color: #8a8e7e; }
+.wow .wow-chip-pet svg { color: #e3b341; }
 
 /* Section tabs */
 .wow .wow-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--rule-strong); overflow-x: auto; scrollbar-width: none; }
