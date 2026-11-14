@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--max-old-space-size=1500 next dev",
+    "import:finances": "node scripts/workspace-import-finances.mjs",
     "prebuild": "node scripts/workspace-refresh-routes.mjs",
     "build": "next build",
     "start": "next start",
