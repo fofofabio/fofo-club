@@ -369,7 +369,22 @@ html:has(.ws-shell[data-theme='dark']) body { background: #161714; }
 .ws-task-reference .ws-disclosure-body .meta, .ws-task-reference h3 { display: none; }
 .ws-task-reference .ws-disclosure-body > div > .mt-4 { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 0; }
 .ws-task-reference .ws-disclosure-body > div > .mt-4 > button { margin: 0; }
+/* Fixed-width action slots so Notes / Subtasks / More line up down the list. */
+.ws-task-actions > .ws-task-track, .ws-task-track-slot { width: 112px; justify-content: flex-start; }
+.ws-task-track-slot { display: inline-block; margin-right: 8px; }
+.ws-tasks .ws-task-actions > .ws-task-notes-toggle { display: inline-flex; align-items: center; gap: 6px; width: 62px; }
+.ws-task-has-notes { width: 6px; height: 6px; border-radius: 50%; background: var(--ink); }
+/* Due state: the one place the task list uses colour; a bar in the gutter, no indent. */
+.ws-task-due-flag { font-weight: 600; }
+.ws-tasks [draggable][data-due='overdue'] { box-shadow: -12px 0 0 -9px var(--state-bad) !important; }
+.ws-tasks [draggable][data-due='today'] { box-shadow: -12px 0 0 -9px var(--state-warn) !important; }
+[data-due='overdue'] .ws-task-due-flag { color: var(--state-bad) !important; }
+[data-due='today'] .ws-task-due-flag { color: var(--state-warn) !important; }
+[data-due='overdue'] .ws-task-meta .ws-date-field { color: var(--state-bad) !important; }
+[data-due='today'] .ws-task-meta .ws-date-field { color: var(--state-warn) !important; }
 @media (max-width: 1000px) {
+ .ws-task-track-slot { display: none; }
+ .ws-task-actions > .ws-task-track, .ws-tasks .ws-task-actions > .ws-task-notes-toggle { width: auto; }
  .ws-task-actions { flex-basis: 100%; margin-left: 62px; }
  .ws-task-row > .flex { flex-wrap: wrap; }
  .ws-task-row > .flex > .min-w-0 { flex-basis: calc(100% - 90px); }

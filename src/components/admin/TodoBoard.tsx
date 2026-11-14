@@ -788,6 +788,7 @@ function TodoRow({
       onDragOver={onDragOver}
       onDrop={onDrop}
       onDragEnd={onDragEnd}
+      data-due={overdue ? "overdue" : dueToday ? "today" : undefined}
       style={{
         ...(todo.project && !todo.done ? { borderLeft: `5px solid ${ink.ink}` } : {}),
       }}
@@ -893,7 +894,7 @@ function TodoRow({
               />
             ) : null}
 
-          <p className="ws-task-age">{overdue ? "Overdue · " : dueToday ? "Due today · " : ""}{todo.done ? "Completed" : `${Math.max(0, Math.floor((Date.now() - new Date(todo.createdAt).getTime()) / 86400000))} days old`}</p>
+          <p className="ws-task-age">{overdue ? <strong className="ws-task-due-flag">Overdue · </strong> : dueToday ? <strong className="ws-task-due-flag">Due today · </strong> : null}{todo.done ? "Completed" : `${Math.max(0, Math.floor((Date.now() - new Date(todo.createdAt).getTime()) / 86400000))} days old`}</p>
             {todo.subtasks.length > 0 && (
               <button
                 type="button"
@@ -908,10 +909,11 @@ function TodoRow({
 
         {/* Everyday actions stay visible; occasional commands have a labelled disclosure. */}
         <div className="ws-task-actions flex shrink-0 items-center gap-1">
-          {todo.project && !todo.done ? <button type="button" onClick={onStartTimer} aria-label={`Start timer for ${todo.text}`} className="ws-task-track"><Play className="h-4 w-4" />Start timer</button> : null}
-          <button type="button" onClick={onToggleNotes} aria-expanded={notesOpen}>Notes{todo.notes ? " ·" : ""}</button>
+          {/* Fixed slots keep the action columns lined up from row to row. */}
           {projectNotesHref ? <a className="ws-task-notes-link" href={projectNotesHref} aria-label={`Open project notes for ${todo.project}`}><BookOpen size={15} />Open notes</a> : null}
-          <button type="button" onClick={onToggleSubtasks} aria-expanded={subtasksOpen}>Subtasks{todo.subtasks.length ? ` ${doneCount}/${todo.subtasks.length}` : ""}</button>
+          {todo.project && !todo.done ? <button type="button" onClick={onStartTimer} aria-label={`Start timer for ${todo.text}`} className="ws-task-track"><Play className="h-4 w-4" />Start timer</button> : <span aria-hidden className="ws-task-track-slot" />}
+          <button type="button" className="ws-task-notes-toggle" onClick={onToggleNotes} aria-expanded={notesOpen} aria-label={todo.notes ? `Notes for ${todo.text} (has notes)` : `Notes for ${todo.text}`}>Notes{todo.notes ? <span aria-hidden className="ws-task-has-notes" /> : null}</button>
+          <button type="button" className="ws-task-subtasks-toggle" onClick={onToggleSubtasks} aria-expanded={subtasksOpen}>Subtasks</button>
           <details className="ws-task-more" onKeyDown={(event) => { if (event.key === "Escape") { event.currentTarget.open = false; event.currentTarget.querySelector("summary")?.focus(); } }} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) event.currentTarget.open = false; }}>
             <summary aria-label={`More actions for ${todo.text}`}>More <ChevronDown className="h-3 w-3" /></summary>
             <div>
