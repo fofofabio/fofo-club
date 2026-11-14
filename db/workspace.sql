@@ -161,6 +161,12 @@ create table if not exists workspace_route_states (
 create index if not exists workspace_route_states_user_idx
   on workspace_route_states (user_id, saved desc, ridden desc, updated_at desc);
 
+create table if not exists workspace_wow_state (
+  user_id uuid primary key references workspace_users(id) on delete cascade,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists workspace_login_attempts (
   bucket_key text primary key,
   attempts integer not null default 0,

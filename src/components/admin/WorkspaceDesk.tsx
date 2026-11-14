@@ -7,14 +7,16 @@ import HoursTracker, { type TimerStripState } from "./HoursTracker";
 import TodoBoard from "./TodoBoard";
 import CyclingRoutes from "./CyclingRoutes";
 import MoviesUpcoming from "./MoviesUpcoming";
+import WowDesk from "./WowDesk";
 import DailyCow from "@/components/DailyCow";
 import { logoutAdminAction } from "@/app/workspace/actions";
 import { WorkspaceAppearance, WorkspaceButton } from "./WorkspaceUI";
 
-type WorkspaceView = "hours" | "tasks" | "finances" | "cycling" | "movies";
+type WorkspaceView = "hours" | "tasks" | "finances" | "cycling" | "movies" | "wow";
 const destinations: { id: WorkspaceView; label: string }[] = [
   { id: "hours", label: "Hours" }, { id: "tasks", label: "Tasks" },
   { id: "finances", label: "Finances" }, { id: "cycling", label: "Cycling" }, { id: "movies", label: "Cinema" },
+  { id: "wow", label: "WoW" },
 ];
 
 export default function WorkspaceDesk({ displayName, userId }: { displayName: string; userId: string }) {
@@ -69,6 +71,7 @@ export default function WorkspaceDesk({ displayName, userId }: { displayName: st
       <div hidden={view !== "finances"} className="ws-tool ws-finances">{visited.has("finances") ? <FinanceDashboard /> : null}</div>
       <div hidden={view !== "cycling"} className="ws-tool ws-cycling">{visited.has("cycling") ? <CyclingRoutes /> : null}</div>
       <div hidden={view !== "movies"} className="ws-tool ws-cinema">{visited.has("movies") ? <MoviesUpcoming /> : null}</div>
+      <div hidden={view !== "wow"} className="ws-tool ws-wow">{visited.has("wow") ? <WowDesk /> : null}</div>
     </main>
   </>;
 }
