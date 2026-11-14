@@ -83,6 +83,18 @@ export default function WowDesk() {
   const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
   const [section, setSection] = useState<Section>("overview");
   const saveTimer = useRef<number | null>(null);
+  // The body of a save still waiting out its debounce, sent with keepalive if the page is left.
+  const pendingSave = useRef<string | null>(null);
+  useEffect(() => {
+    function flush() {
+      if (!pendingSave.current) return;
+      if (saveTimer.current) window.clearTimeout(saveTimer.current);
+      void fetch("/api/workspace/wow", { method: "PUT", headers: { "Content-Type": "application/json" }, body: pendingSave.current, keepalive: true }).catch(() => {});
+      pendingSave.current = null;
+    }
+    window.addEventListener("pagehide", flush);
+    return () => window.removeEventListener("pagehide", flush);
+  }, []);
 
   useEffect(() => {
     const saved = readLocal<Section>(SECTION_KEY, "overview");
@@ -97,9 +109,13 @@ export default function WowDesk() {
       if (!current) return current;
       const next = mutate(current);
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
+      pendingSave.current = JSON.stringify({ state: next });
       saveTimer.current = window.setTimeout(() => {
+        const body = pendingSave.current;
+        pendingSave.current = null;
+        if (!body) return;
         setSaveState("saving");
-        requestJson<{ state: WowState }>("/api/workspace/wow", { method: "PUT", body: JSON.stringify({ state: next }) })
+        requestJson<{ state: WowState }>("/api/workspace/wow", { method: "PUT", body })
           .then(() => setSaveState("idle"))
           .catch(() => setSaveState("error"));
       }, 500);
