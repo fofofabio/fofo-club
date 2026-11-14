@@ -95,8 +95,11 @@
   border-bottom: 2px solid transparent; background: none; color: var(--ink-2); font-size: 15px; white-space: nowrap;
 }
 .wow .wow-tab:hover { color: var(--ink); background: var(--paper-raised); }
-.wow .wow-tab[aria-current] { color: var(--ink); border-bottom-color: var(--wow-accent); font-weight: 600; }
-.wow .wow-tab[aria-current] svg { color: var(--wow-accent); }
+.wow .wow-tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--wow-accent); font-weight: 600; }
+.wow .wow-tab[aria-selected="true"] svg { color: var(--wow-accent); }
+.wow .wow-tab:focus-visible { outline: 2px solid var(--wow-accent); outline-offset: -2px; }
+.wow .wow-tabpanel { display: grid; gap: inherit; }
+.wow .wow-tabpanel:focus-visible { outline: none; }
 
 /* Panels */
 .wow .wow-panel { display: grid; gap: 14px; align-content: start; padding: 20px; border: 1px solid var(--rule); background: var(--paper-raised); }

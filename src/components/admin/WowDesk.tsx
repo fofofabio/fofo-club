@@ -116,6 +116,21 @@ export default function WowDesk() {
     writeLocal(SECTION_KEY, next);
   }
 
+  function onTabKey(event: React.KeyboardEvent<HTMLDivElement>) {
+    const index = SECTIONS.findIndex((s) => s.id === section);
+    const target =
+      event.key === "ArrowRight" ? (index + 1) % SECTIONS.length
+      : event.key === "ArrowLeft" ? (index - 1 + SECTIONS.length) % SECTIONS.length
+      : event.key === "Home" ? 0
+      : event.key === "End" ? SECTIONS.length - 1
+      : -1;
+    if (target < 0) return;
+    event.preventDefault();
+    const next = SECTIONS[target].id;
+    choose(next);
+    document.getElementById(`wow-tab-${next}`)?.focus();
+  }
+
   if (!state) {
     return (
       <div className="wow ws-data-surface">
@@ -131,21 +146,33 @@ export default function WowDesk() {
     <div className="wow ws-data-surface">
       <Hero state={state} update={update} saveState={saveState} />
 
-      <nav className="wow-tabs" aria-label="WoW sections">
+      <div className="wow-tabs" role="tablist" aria-label="WoW sections" onKeyDown={onTabKey}>
         {SECTIONS.map((s) => (
-          <button key={s.id} type="button" className="wow-tab" aria-current={section === s.id ? "page" : undefined} onClick={() => choose(s.id)}>
+          <button
+            key={s.id}
+            id={`wow-tab-${s.id}`}
+            type="button"
+            role="tab"
+            className="wow-tab"
+            aria-selected={section === s.id}
+            aria-controls="wow-panel"
+            tabIndex={section === s.id ? 0 : -1}
+            onClick={() => choose(s.id)}
+          >
             {s.icon}
             <span>{s.label}</span>
           </button>
         ))}
-      </nav>
+      </div>
 
-      {section === "overview" && <Overview state={state} onJump={choose} />}
-      {section === "talents" && <Talents level={state.level} />}
-      {section === "engineering" && <Engineering state={state} update={update} />}
-      {section === "zones" && <Zones level={state.level} />}
-      {section === "goals" && <Goals state={state} update={update} toggleChecked={toggleChecked} />}
-      {section === "gold" && <Gold skill={state.engineeringSkill} />}
+      <div id="wow-panel" role="tabpanel" aria-labelledby={`wow-tab-${section}`} className="wow-tabpanel">
+        {section === "overview" && <Overview state={state} onJump={choose} />}
+        {section === "talents" && <Talents level={state.level} />}
+        {section === "engineering" && <Engineering state={state} update={update} />}
+        {section === "zones" && <Zones level={state.level} />}
+        {section === "goals" && <Goals state={state} update={update} toggleChecked={toggleChecked} />}
+        {section === "gold" && <Gold skill={state.engineeringSkill} />}
+      </div>
     </div>
   );
 }
