@@ -29,13 +29,16 @@ const CATEGORIES = {
 };
 
 function parseArgs(argv) {
-  const values = {};
-  for (let index = 0; index < argv.length; index += 2) {
-    values[argv[index]?.replace(/^--/, "")] = argv[index + 1];
+  // --dry-run takes no value: run the whole import in a transaction, report, then roll back.
+  const dryRun = argv.includes("--dry-run");
+  const rest = argv.filter((arg) => arg !== "--dry-run");
+  const values = { dryRun };
+  for (let index = 0; index < rest.length; index += 2) {
+    values[rest[index]?.replace(/^--/, "")] = rest[index + 1];
   }
   if (!values.user || !values.bank || !values.paypal) {
     throw new Error(
-      "Usage: node scripts/workspace-import-finances.mjs --user EMAIL --bank BANK.csv --paypal PAYPAL.csv",
+      "Usage: node scripts/workspace-import-finances.mjs --user EMAIL --bank BANK.csv --paypal PAYPAL.csv [--dry-run]",
     );
   }
   return values;
@@ -435,6 +438,11 @@ try {
   );
   if (userResult.rowCount !== 1) throw new Error(`No unique workspace user found for ${args.user}.`);
   const userId = userResult.rows[0].id;
+  const before = await client.query(
+    "select count(*)::int as rows from workspace_finance_transactions where user_id = $1 and source = 'bank'",
+    [userId],
+  );
+  const rowsBefore = before.rows[0].rows;
 
   // Bank exports contain statement notices and quarterly closing markers with a
   // zero amount. They are not financial movements and should not appear in the ledger.
@@ -499,23 +507,39 @@ try {
      from workspace_finance_transactions where user_id = $1 and source = 'bank'`,
     [userId],
   );
-  if (Number(reconciliation.rows[0].total_cents) !== sourceTotalCents || reconciliation.rows[0].rows !== transactions.length) {
-    throw new Error(
-      `Reconciliation failed: source ${transactions.length}/${sourceTotalCents}, database ${reconciliation.rows[0].rows}/${reconciliation.rows[0].total_cents}`,
-    );
+  const reconciled = Number(reconciliation.rows[0].total_cents) === sourceTotalCents && reconciliation.rows[0].rows === transactions.length;
+  if (args.dryRun) {
+    // Nothing is kept: report what a real run would do, including a failed reconciliation.
+    await client.query("rollback");
+    console.log(JSON.stringify({
+      dryRun: true,
+      transactionsInFile: transactions.length,
+      bankRowsBefore: rowsBefore,
+      bankRowsAfter: reconciliation.rows[0].rows,
+      newRows: reconciliation.rows[0].rows - rowsBefore,
+      dataEnd,
+      wouldReconcile: reconciled,
+      hint: reconciled ? "Safe to import." : "The database would hold rows this file does not: the export is probably not your full history, or IDs shifted. Do not import.",
+    }, null, 2));
+  } else {
+    if (!reconciled) {
+      throw new Error(
+        `Reconciliation failed: source ${transactions.length}/${sourceTotalCents}, database ${reconciliation.rows[0].rows}/${reconciliation.rows[0].total_cents}`,
+      );
+    }
+    await client.query("commit");
+    console.log(JSON.stringify({
+      user: userResult.rows[0].name,
+      transactions: transactions.length,
+      sourceTotalCents,
+      paypalPurchases: paypalPurchases.length,
+      paypalMatches: paypalPurchases.filter((item) => item.used).length,
+      subscriptions: subscriptions.length,
+      monthlyExpenses: expenses.length,
+      dataEnd,
+      reconciled: true,
+    }, null, 2));
   }
-  await client.query("commit");
-  console.log(JSON.stringify({
-    user: userResult.rows[0].name,
-    transactions: transactions.length,
-    sourceTotalCents,
-    paypalPurchases: paypalPurchases.length,
-    paypalMatches: paypalPurchases.filter((item) => item.used).length,
-    subscriptions: subscriptions.length,
-    monthlyExpenses: expenses.length,
-    dataEnd,
-    reconciled: true,
-  }, null, 2));
 } catch (error) {
   await client.query("rollback");
   throw error;
