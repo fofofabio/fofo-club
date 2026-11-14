@@ -228,3 +228,21 @@ export const XP_TO_NEXT_LEVEL: Record<number, number> = {
   41: 95800, 42: 101000, 43: 106300, 44: 111800, 45: 117500, 46: 123200, 47: 129100, 48: 135100, 49: 141200, 50: 147500,
   51: 153900, 52: 160400, 53: 167100, 54: 173900, 55: 180800, 56: 187900, 57: 195000, 58: 202300, 59: 209800,
 };
+
+// Total XP earned since level 1, given a level and the XP into that level.
+export function totalXp(level: number, experience: number): number {
+  let total = experience;
+  for (let l = 1; l < level; l++) total += XP_TO_NEXT_LEVEL[l] ?? 0;
+  return total;
+}
+
+// Fractional level for a total XP amount (e.g. 34.65).
+export function levelFromTotalXp(total: number): number {
+  let level = 1;
+  let rest = total;
+  while (level < 60 && rest >= (XP_TO_NEXT_LEVEL[level] ?? Infinity)) {
+    rest -= XP_TO_NEXT_LEVEL[level];
+    level++;
+  }
+  return level >= 60 ? 60 : level + rest / XP_TO_NEXT_LEVEL[level];
+}

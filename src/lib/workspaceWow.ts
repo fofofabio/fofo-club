@@ -22,7 +22,11 @@ export type WowState = {
   petName: string;
   petFamily: string;
   petLevel: number;
+  // one entry per armory logout seen: total XP since level 1
+  xpLog: XpSnapshot[];
 };
+
+export type XpSnapshot = { at: string; total: number };
 
 export const DEFAULT_WOW_STATE: WowState = {
   level: 33,
@@ -40,7 +44,10 @@ export const DEFAULT_WOW_STATE: WowState = {
   petName: "",
   petFamily: "",
   petLevel: 0,
+  xpLog: [],
 };
+
+export const XP_LOG_LIMIT = 60;
 
 function clampInt(value: unknown, min: number, max: number, fallback: number) {
   const n = typeof value === "number" ? Math.round(value) : NaN;
@@ -71,6 +78,13 @@ export function sanitizeWowState(input: unknown): WowState {
     petName: text(raw.petName, 40),
     petFamily: text(raw.petFamily, 40),
     petLevel: clampInt(raw.petLevel, 0, 60, 0),
+    xpLog: Array.isArray(raw.xpLog)
+      ? raw.xpLog
+          .filter((e): e is XpSnapshot =>
+            !!e && typeof e.at === "string" && e.at.length <= 40 && !Number.isNaN(Date.parse(e.at)) && typeof e.total === "number")
+          .map((e) => ({ at: e.at, total: clampInt(e.total, 0, 10_000_000, 0) }))
+          .slice(-XP_LOG_LIMIT)
+      : [],
   };
 }
 

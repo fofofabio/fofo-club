@@ -16,6 +16,8 @@ import {
   TALENT_STEPS,
   XP_TO_NEXT_LEVEL,
   ZONE_ROUTE,
+  levelFromTotalXp,
+  totalXp,
   type EngineeringStep,
   type Milestone,
   type TalentStep,
@@ -37,6 +39,7 @@ type WowState = {
   petName: string;
   petFamily: string;
   petLevel: number;
+  xpLog: { at: string; total: number }[];
 };
 
 type Section = "overview" | "talents" | "engineering" | "zones" | "goals" | "gold";
@@ -214,6 +217,25 @@ function LevelRing({ level }: { level: number }) {
   );
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Calendar-time levelling pace over the last two weeks of armory logouts,
+// plus when the next milestone level (40, then 60) lands at that pace.
+function levelPace(log: WowState["xpLog"]) {
+  if (log.length < 2) return null;
+  const last = log[log.length - 1];
+  const recent = log.filter((e) => Date.parse(last.at) - Date.parse(e.at) <= 14 * DAY_MS);
+  const first = recent[0];
+  const days = (Date.parse(last.at) - Date.parse(first.at)) / DAY_MS;
+  const gained = last.total - first.total;
+  if (days < 2 / 24 || gained <= 0) return null;
+  const levelsPerDay = (levelFromTotalXp(last.total) - levelFromTotalXp(first.total)) / days;
+  const target = levelFromTotalXp(last.total) < 40 ? 40 : 60;
+  const remaining = totalXp(target, 0) - last.total;
+  const eta = remaining > 0 ? new Date(Date.parse(last.at) + (remaining / (gained / days)) * DAY_MS) : null;
+  return { levelsPerDay, target, eta };
+}
+
 function formatStamp(iso: string) {
   return new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
@@ -282,6 +304,7 @@ function Hero({ state, update, saveState }: { state: WowState; update: (m: (s: W
   const xp = xpNeed && state.experienceLevel === state.level && state.experience > 0
     ? { have: state.experience, need: xpNeed, share: Math.min(0.999, state.experience / xpNeed) }
     : null;
+  const pace = useMemo(() => levelPace(state.xpLog), [state.xpLog]);
 
   return (
     <section className="wow-hero">
@@ -369,6 +392,12 @@ function Hero({ state, update, saveState }: { state: WowState; update: (m: (s: W
           <p className="wow-hero-xp" title="Measured at your last logout, against the Classic XP table">
             <b>{Math.floor(xp.share * 100)}%</b> to level {state.level + 1}
             <span className="wow-muted"> · {xp.have.toLocaleString("en-GB")} / {xp.need.toLocaleString("en-GB")} XP</span>
+            {pace && (
+              <span className="wow-pace" title={`Based on ${state.xpLog.length} armory logouts, counting calendar days rather than played time`}>
+                {" · "}~{pace.levelsPerDay >= 1 ? pace.levelsPerDay.toFixed(1) : pace.levelsPerDay.toFixed(2)} levels/day
+                {pace.eta && <> · level {pace.target} around {pace.eta.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</>}
+              </span>
+            )}
           </p>
         )}
       </div>

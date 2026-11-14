@@ -2,9 +2,18 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { fetchForeverCharacter } from "@/lib/blizzard";
-import { getWowState, setWowState } from "@/lib/workspaceWow";
+import { totalXp } from "@/data/wowHunter";
+import { getWowState, setWowState, XP_LOG_LIMIT, type XpSnapshot } from "@/lib/workspaceWow";
 
 export const dynamic = "force-dynamic";
+
+// One snapshot per logout: the armory only changes when the character logs out.
+function appendXpSnapshot(log: XpSnapshot[], at: string | null, level: number | null, experience: number | null): XpSnapshot[] {
+  if (!at || level === null || experience === null) return log;
+  if (log.some((entry) => entry.at === at)) return log;
+  const next = [...log, { at, total: totalXp(level, experience) }].sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+  return next.slice(-XP_LOG_LIMIT);
+}
 
 export async function POST() {
   const session = await auth();
@@ -44,6 +53,7 @@ export async function POST() {
       petName: character.pet?.name ?? current.petName,
       petFamily: character.pet?.family ?? current.petFamily,
       petLevel: character.pet?.level ?? current.petLevel,
+      xpLog: appendXpSnapshot(current.xpLog, character.lastLogin, character.level, character.experience),
     });
 
     return NextResponse.json(
