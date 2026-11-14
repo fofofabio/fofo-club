@@ -103,6 +103,19 @@ function useUndoToast() {
   return { offer, node };
 }
 
+type ProgrammePayload = { movies: Movie[]; states: MovieState[]; refreshedAt: string };
+// The programme and the release radar both need the Nonstop list on mount; share one request
+// (and React's dev double-mount) instead of fetching it twice. Short-lived so a later visit refetches.
+let programmeRequest: { at: number; promise: Promise<ProgrammePayload> } | null = null;
+function loadProgramme() {
+  if (!programmeRequest || Date.now() - programmeRequest.at > 10_000) {
+    const promise = requestJson<ProgrammePayload>("/api/workspace/movies");
+    programmeRequest = { at: Date.now(), promise };
+    promise.catch(() => { if (programmeRequest?.promise === promise) programmeRequest = null; });
+  }
+  return programmeRequest.promise;
+}
+
 export default function MoviesUpcoming() {
   const [view, setView] = useState<"programme" | "radar">("programme");
   return <div><header className="ws-view-head mb-5"><h2>Cinema</h2><p className="mt-2 text-sm">Screenings in Graz and upcoming releases.</p></header><div className="ws-cinema-tabs mb-3 grid grid-cols-2 border-[2.5px] border-black bg-white shadow-brutal-sm"><button type="button" aria-pressed={view === "programme"} onClick={() => setView("programme")} className={clsx("p-4 font-mono text-xs font-bold uppercase", view === "programme" ? "bg-black text-white" : "hover:bg-fofo-yellow")}>Playing in Graz</button><button type="button" aria-pressed={view === "radar"} onClick={() => setView("radar")} className={clsx("border-l-[2.5px] border-black p-4 font-mono text-xs font-bold uppercase", view === "radar" ? "bg-fofo-pink text-white" : "hover:bg-fofo-pink/20")}>Movies coming up</button></div><div hidden={view !== "programme"}><NonstopProgramme /></div><div hidden={view !== "radar"}><ReleaseRadar /></div></div>;
@@ -148,7 +161,7 @@ function NonstopProgramme() {
   }, []);
 
   useEffect(() => {
-    requestJson<{ movies: Movie[]; states: MovieState[]; refreshedAt: string }>("/api/workspace/movies")
+    loadProgramme()
       .then((data) => { setMovies(data.movies); setNewMovieKeys(newlyAddedMovies(data.movies)); setStates(Object.fromEntries(data.states.map((state) => [state.movieKey, state]))); setRefreshedAt(data.refreshedAt); setMessage(""); })
       .catch((error) => setMessage(error.message));
   }, []);
@@ -352,7 +365,7 @@ function ReleaseRadar() {
   // Titles already on the Nonstop programme (presales count), matched loosely by title.
   const [nonstopTitles, setNonstopTitles] = useState<Set<string>>(new Set());
   useEffect(() => {
-    requestJson<{ movies: Movie[] }>("/api/workspace/movies")
+    loadProgramme()
       .then((data) => setNonstopTitles(new Set(data.movies.map((movie) => titleKey(movie.title)))))
       .catch(() => {});
   }, []);
