@@ -931,7 +931,7 @@ function Gold({ skill }: { skill: number }) {
                     {c.name}
                     <span className="wow-check-meta">skill {c.skill}</span>
                     {canCraft && <span className="wow-ready">You can craft this</span>}
-                    {verdict === "later" && <span className="wow-gap">{gap <= 15 ? `${gap} skill away` : `in ${gap} skill`}</span>}
+                    {verdict === "later" && <span className="wow-gap">{`${gap} skill to go`}</span>}
                   </p>
                   <p className="wow-check-detail">{c.detail}</p>
                 </div>
