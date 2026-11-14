@@ -70,10 +70,32 @@ function dayCount(days: number) {
 }
 
 function ageLabel(createdAt: string) {
-  const created = new Date(createdAt);
-  const createdKey = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, "0")}-${String(created.getDate()).padStart(2, "0")}`;
-  const days = Math.max(0, daysBetween(createdKey, todayKey()));
+  const created = parseTimestamp(createdAt);
+  if (Number.isNaN(created.getTime())) return "";
+  const days = Math.max(0, daysBetween(localKey(created), todayKey()));
   return days === 0 ? "Added today" : `${dayCount(days)} old`;
+}
+
+// Postgres ::text timestamps ("2026-11-12 10:22:33.1+01") are not reliably parsed by Date.
+function parseTimestamp(value: string) {
+  const iso = value.trim().replace(" ", "T").replace(/([+-]\d{2})$/, "$1:00");
+  const parsed = new Date(iso);
+  return Number.isNaN(parsed.getTime()) ? new Date(value) : parsed;
+}
+
+function localKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function completedLabel(doneAt: string | null) {
+  if (!doneAt) return "Completed";
+  const done = parseTimestamp(doneAt);
+  if (Number.isNaN(done.getTime())) return "Completed";
+  const days = Math.max(0, daysBetween(localKey(done), todayKey()));
+  if (days === 0) return "Completed today";
+  if (days === 1) return "Completed yesterday";
+  if (days < 7) return `Completed ${days} days ago`;
+  return `Completed ${done.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
 }
 
 function isOverdue(dueDate: string | null, done: boolean) {
@@ -927,7 +949,7 @@ function TodoRow({
               />
             ) : null}
 
-          <p className="ws-task-age">{overdue && todo.dueDate ? <strong className="ws-task-due-flag">Overdue by {dayCount(daysBetween(todo.dueDate, todayKey()))} · </strong> : dueToday ? <strong className="ws-task-due-flag">Due today · </strong> : null}{todo.done ? "Completed" : ageLabel(todo.createdAt)}</p>
+          <p className="ws-task-age">{overdue && todo.dueDate ? <strong className="ws-task-due-flag">Overdue by {dayCount(daysBetween(todo.dueDate, todayKey()))} · </strong> : dueToday ? <strong className="ws-task-due-flag">Due today · </strong> : null}{todo.done ? completedLabel(todo.doneAt) : ageLabel(todo.createdAt)}</p>
             {todo.subtasks.length > 0 && (
               <button
                 type="button"
