@@ -112,6 +112,7 @@
 .ws-finance-overview { order: -2; }
 .ws-finance-head { order: -3; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .ws-finance-head p { color: var(--ink-2); font-size: 14px; }
+.ws-finance-head .ws-finance-stale { color: var(--state-warn); font-weight: 600; }
 .ws-finances [class*='text-4xl'], .ws-finances [class*='text-5xl'] { font-size: 28px !important; }
 .ws-route-list { display: flex !important; flex-direction: column; gap: 0 !important; background: var(--paper-raised) !important; }
 .ws-route-list article { display: grid; grid-template-columns: minmax(0,1fr) 220px; border-bottom: 1px solid var(--rule); }

@@ -383,13 +383,17 @@ export default function FinanceDashboard() {
     );
   }
 
+  // Bank exports are imported by hand; say so when the newest one is getting old.
+  const dataAgeDays = Math.floor((Date.now() - new Date(`${payload.meta.dataEnd}T12:00:00`).getTime()) / 86_400_000);
+  const staleData = dataAgeDays > 31;
+
   const spendChange = previous && previous.spend > 0
     ? Math.round(((current.spend - previous.spend) / previous.spend) * 100)
     : null;
 
   return (
     <div className="space-y-8">
-      <header className="ws-finance-head"><div><h2>Finances</h2><p>Cash flow and recurring commitments.</p></div><label className="ws-field">Month<select value={selectedMonth === "all" ? "all" : current.month} onChange={(event) => setSelectedMonth(event.target.value)}><option value="all">All months · latest summary</option>{allMonthly.map((item) => <option key={item.month} value={item.month}>{monthLabel(item.month, true)}</option>)}</select></label><p>{payload.meta.transactionCount.toLocaleString("de-AT")} transactions · through {dateLabel(payload.meta.dataEnd)}</p></header>
+      <header className="ws-finance-head"><div><h2>Finances</h2><p>Cash flow and recurring commitments.</p></div><label className="ws-field">Month<select value={selectedMonth === "all" ? "all" : current.month} onChange={(event) => setSelectedMonth(event.target.value)}><option value="all">All months · latest summary</option>{allMonthly.map((item) => <option key={item.month} value={item.month}>{monthLabel(item.month, true)}</option>)}</select></label><p>{payload.meta.transactionCount.toLocaleString("de-AT")} transactions · through {dateLabel(payload.meta.dataEnd)}{staleData ? <span className="ws-finance-stale"> · {dataAgeDays} days without a new bank export</span> : null}</p></header>
       <nav className="ws-finance-nav" aria-label="Finance sections"><a href="#finance-transactions">Transactions</a><a href="#finance-recurring">Subscriptions & expenses</a><a href="#finance-analysis">Analysis & categories</a></nav>
 
       <section className="ws-finance-overview" aria-label="Current month overview">
