@@ -94,6 +94,21 @@ export default function TodoBoard({ onStartTimer, userId }: Props) {
   const [draftDueDate, setDraftDueDate] = useState("");
   const addInputRef = useRef<HTMLInputElement>(null);
   const captureLock = useRef(false);
+
+  // "N" jumps to the capture field while the Tasks view is showing and nothing else has focus for typing.
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key.toLowerCase() !== "n" || event.metaKey || event.ctrlKey || event.altKey || event.repeat) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], details[open]")) return;
+      const input = addInputRef.current;
+      if (!input || input.offsetParent === null) return; // view hidden
+      event.preventDefault();
+      input.focus();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   const [capturing, setCapturing] = useState(false);
 
   // Filters
@@ -461,7 +476,7 @@ export default function TodoBoard({ onStartTimer, userId }: Props) {
                 value={draftText}
                 onChange={(e) => setDraftText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") addTodo(); }}
-                aria-label="New task" placeholder="Add a task and press Enter…"
+                aria-label="New task" aria-keyshortcuts="N" placeholder="Add a task and press Enter…  (N)"
                 className="w-full rounded-none border-[2.5px] border-black bg-white px-4 py-3 pr-12 outline-none transition focus:border-fofo-blue focus:ring-2 focus:ring-fofo-blue/10"
               />
             </div>
