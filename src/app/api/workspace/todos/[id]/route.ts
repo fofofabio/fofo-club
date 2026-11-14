@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { deleteWorkspaceTodo, updateWorkspaceTodo } from "@/lib/workspaceTodos";
+import { badRequest, invalidTaskField, isUuid, readBody } from "@/lib/workspaceInput";
 
 function unauthorized() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -17,7 +18,12 @@ export async function PATCH(
   if (!userId) return unauthorized();
 
   const { id } = await context.params;
-  const body = (await request.json()) as {
+  if (!isUuid(id)) return NextResponse.json({ error: "Todo not found." }, { status: 404 });
+  const raw = await readBody(request);
+  if (!raw) return badRequest("Send the changes as a JSON object.");
+  const invalid = invalidTaskField(raw);
+  if (invalid) return badRequest(invalid);
+  const body = raw as {
     text?: string;
     project?: string;
     done?: boolean;
@@ -52,6 +58,7 @@ export async function DELETE(
   if (!userId) return unauthorized();
 
   const { id } = await context.params;
+  if (!isUuid(id)) return NextResponse.json({ error: "Todo not found." }, { status: 404 });
   const deleted = await deleteWorkspaceTodo(userId, id);
 
   if (!deleted) {

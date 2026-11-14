@@ -7,6 +7,7 @@ import {
   listWorkspaceTodos,
   reorderWorkspaceTodos,
 } from "@/lib/workspaceTodos";
+import { badRequest, invalidTaskField, readBody } from "@/lib/workspaceInput";
 
 function unauthorized() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -29,7 +30,11 @@ export async function POST(request: Request) {
 
   if (!userId) return unauthorized();
 
-  const body = (await request.json()) as {
+  const raw = await readBody(request);
+  if (!raw) return badRequest("Send the task as a JSON object.");
+  const invalid = invalidTaskField(raw);
+  if (invalid) return badRequest(invalid);
+  const body = raw as {
     text?: string;
     project?: string;
     dueDate?: string;
