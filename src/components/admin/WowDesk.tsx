@@ -15,6 +15,8 @@ import {
   ROTATION_NOTES,
   TALENT_STEPS,
   ZONE_ROUTE,
+  type EngineeringStep,
+  type Milestone,
   type TalentStep,
 } from "@/data/wowHunter";
 
@@ -204,7 +206,7 @@ function Hero({ state, update, saveState }: { state: WowState; update: (m: (s: W
   }, [state.characterSlug, state.syncedAt, sync]);
 
   const ticks = useMemo(() => [...new Set([10, 20, 30, 40, 50, 60])], []);
-  const nextGate = MILESTONE_GOALS.filter((m) => m.level && m.level > state.level).sort((a, b) => (a.level ?? 0) - (b.level ?? 0))[0];
+  const nextGate = MILESTONE_GOALS.filter((m) => m.level && m.level > state.level && !goalDone(m, state)).sort((a, b) => (a.level ?? 0) - (b.level ?? 0))[0];
 
   return (
     <section className="wow-hero">
@@ -317,7 +319,7 @@ function Overview({ state, onJump }: { state: WowState; onJump: (s: Section) => 
   const eng = currentEngineeringStep(state.engineeringSkill);
   const zone = currentZone(state.level);
   const goal = MILESTONE_GOALS
-    .filter((m) => !state.checked.includes(m.id))
+    .filter((m) => !goalDone(m, state))
     .sort((a, b) => (a.level ?? state.level) - (b.level ?? state.level))[0];
 
   return (
@@ -393,10 +395,18 @@ function Ritual() {
   );
 }
 
-function CheckRow({ checked, onToggle, label, detail, locked, meta, children }: { checked: boolean; onToggle: () => void; label: string; detail?: string; locked?: boolean; meta?: string; children?: React.ReactNode }) {
+function goalDone(g: Milestone, state: WowState) {
+  return state.checked.includes(g.id) || isAutoDone(g, state);
+}
+
+function isAutoDone(g: Milestone, state: WowState) {
+  return g.autoSkill !== undefined && state.engineeringSkill >= g.autoSkill;
+}
+
+function CheckRow({ checked, onToggle, label, detail, locked, meta, auto, children }: { checked: boolean; onToggle: () => void; label: string; detail?: string; locked?: boolean; meta?: string; auto?: boolean; children?: React.ReactNode }) {
   return (
     <li className={`wow-check ${checked ? "is-done" : ""} ${locked ? "is-locked" : ""}`}>
-      <button type="button" className="wow-check-box" aria-pressed={checked} aria-label={checked ? `Unmark ${label}` : `Mark ${label} done`} onClick={onToggle}>
+      <button type="button" className="wow-check-box" aria-pressed={checked} disabled={auto} title={auto ? "Done automatically from your armory data" : undefined} aria-label={auto ? `${label} done automatically` : checked ? `Unmark ${label}` : `Mark ${label} done`} onClick={onToggle}>
         {checked ? <Check className="h-3.5 w-3.5" /> : locked ? <Lock className="h-3 w-3" /> : null}
       </button>
       <div className="wow-check-body">
@@ -495,7 +505,7 @@ function Talents({ level }: { level: number }) {
 function Engineering({ state, update }: { state: WowState; update: (m: (s: WowState) => WowState) => void }) {
   const skill = state.engineeringSkill;
   const current = currentEngineeringStep(skill);
-  const artisanBlocked = skill >= 195 && state.level < 35;
+  const artisanBlocked = skill >= 195 && skill <= 200 && state.level < 35;
   const doneSteps = ENGINEERING_ROUTE.filter((s) => skill >= s.to).length;
   const [showDone, setShowDone] = useState(false);
 
@@ -562,11 +572,69 @@ function Engineering({ state, update }: { state: WowState; update: (m: (s: WowSt
         </ol>
       </section>
 
+      {skill < 300 && <ShoppingList skill={skill} />}
+
       <section className="wow-panel">
         <PanelHead icon={<Sparkles className="h-4 w-4" />} title="Worth knowing" />
         <ul className="wow-bullets">{ENGINEERING_NOTES.map((n) => <li key={n}>{n}</li>)}</ul>
       </section>
     </div>
+  );
+}
+
+// Parts the route itself produces in earlier steps; they never go on the shopping list.
+const CRAFTED_PARTS = /^(Bolts|Rough Powder|Coarse Powder|Heavy Powder|Solid Powder|Bronze Tube|Gizmo|Framework|Casing|Trigger)$/;
+
+type Mat = { name: string; qty: number };
+
+function rawMats(step: EngineeringStep, share: number): Mat[] {
+  return step.mats
+    .split(/[,·]/)
+    .map((part) => part.trim().match(/^(\d+)\s+(.+)$/))
+    .filter((m): m is RegExpMatchArray => m !== null && !CRAFTED_PARTS.test(m[2]))
+    .map((m) => ({ name: m[2], qty: Math.ceil(Number(m[1]) * share) }));
+}
+
+function shoppingList(skill: number, target: number): Mat[] {
+  const totals = new Map<string, number>();
+  for (const step of ENGINEERING_ROUTE) {
+    if (step.to <= skill || step.from >= target) continue;
+    const span = step.to - step.from;
+    const share = span > 0 ? (Math.min(step.to, target) - Math.max(step.from, skill)) / span : 1;
+    for (const mat of rawMats(step, share)) totals.set(mat.name, (totals.get(mat.name) ?? 0) + mat.qty);
+  }
+  return [...totals].map(([name, qty]) => ({ name, qty })).sort((a, b) => b.qty - a.qty);
+}
+
+function ShoppingList({ skill }: { skill: number }) {
+  const targets = [200, 300].filter((t) => t > skill);
+  const [picked, setPicked] = useState(targets[0]);
+  const target = targets.includes(picked) ? picked : targets[0];
+  const mats = useMemo(() => shoppingList(skill, target), [skill, target]);
+  const mined = mats.filter((m) => /Bar|Stone/.test(m.name));
+  const other = mats.filter((m) => !/Bar|Stone/.test(m.name));
+
+  return (
+    <section className="wow-panel">
+      <PanelHead icon={<Coins className="h-4 w-4" />} title="Shopping list"
+        aside={targets.length > 1 ? (
+          <span className="wow-seg" role="group" aria-label="Target skill">
+            {targets.map((t) => (
+              <button key={t} type="button" aria-pressed={t === target} onClick={() => setPicked(t)}>{t === 200 ? "To 200" : "To 300"}</button>
+            ))}
+          </span>
+        ) : `${skill} → ${target}`} />
+      <p className="wow-lede">Raw materials from {skill} to {target}. Parts the route crafts along the way (bolts, powders, gizmos, casings) are left out.</p>
+      <div className="wow-mats">
+        {[{ title: "Mine & smelt", items: mined }, { title: "Buy or farm", items: other }].map((col) => col.items.length > 0 && (
+          <div key={col.title}>
+            <p className="wow-eyebrow">{col.title}</p>
+            <ul>{col.items.map((m) => <li key={m.name}><b>{m.qty}</b> {m.name}</li>)}</ul>
+          </div>
+        ))}
+      </div>
+      <p className="wow-source">Bronze: 1 Copper Bar + 1 Tin Bar makes 2. Steel: 1 Iron Bar + 1 Coal (Mining 165). Other bars smelt 1:1 from ore.</p>
+    </section>
   );
 }
 
@@ -605,14 +673,17 @@ function Zones({ level }: { level: number }) {
 
 function Goals({ state, update, toggleChecked }: { state: WowState; update: (m: (s: WowState) => WowState) => void; toggleChecked: (id: string) => void }) {
   const sorted = [...MILESTONE_GOALS].sort((a, b) => (a.level ?? 0) - (b.level ?? 0));
-  const done = sorted.filter((g) => state.checked.includes(g.id)).length;
-  const available = sorted.filter((g) => !state.checked.includes(g.id) && (g.level === null || g.level <= state.level));
-  const upcoming = sorted.filter((g) => !state.checked.includes(g.id) && g.level !== null && g.level > state.level);
-  const finished = sorted.filter((g) => state.checked.includes(g.id));
+  const isDone = (g: Milestone) => goalDone(g, state);
+  const done = sorted.filter(isDone).length;
+  const available = sorted.filter((g) => !isDone(g) && (g.level === null || g.level <= state.level));
+  const upcoming = sorted.filter((g) => !isDone(g) && g.level !== null && g.level > state.level);
+  const finished = sorted.filter(isDone);
 
-  const renderGoal = (g: (typeof sorted)[number], locked = false) => (
-    <CheckRow key={g.id} checked={state.checked.includes(g.id)} onToggle={() => toggleChecked(g.id)} label={g.label} detail={g.detail} locked={locked} meta={g.level ? `lv ${g.level}` : undefined}>
-      {g.id === "truthseeker" && !state.checked.includes(g.id) && (
+  const renderGoal = (g: Milestone, locked = false) => {
+    const auto = isAutoDone(g, state);
+    return (
+    <CheckRow key={g.id} checked={isDone(g)} auto={auto} onToggle={() => toggleChecked(g.id)} label={g.label} detail={g.detail} locked={locked} meta={auto ? `auto · skill ${state.engineeringSkill}` : g.level ? `lv ${g.level}` : undefined}>
+      {g.id === "truthseeker" && !isDone(g) && (
         <div className="wow-books">
           <BookOpen className="h-4 w-4" />
           <div className="wow-books-bar"><div style={{ width: `${(state.libraryBooks / LIBRARY_BOOKS_TARGET) * 100}%` }} /></div>
@@ -623,7 +694,8 @@ function Goals({ state, update, toggleChecked }: { state: WowState; update: (m: 
         </div>
       )}
     </CheckRow>
-  );
+    );
+  };
 
   return (
     <div className="wow-grid-2">

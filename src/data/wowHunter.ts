@@ -132,6 +132,8 @@ export type Milestone = {
   level: number | null; // null = no level gate
   label: string;
   detail: string;
+  // done automatically once Engineering reaches this skill
+  autoSkill?: number;
 };
 
 export const MILESTONE_GOALS: Milestone[] = [
@@ -139,12 +141,12 @@ export const MILESTONE_GOALS: Milestone[] = [
   { id: "dash-wild-taming", level: 30, label: "Learn Dash via Wild Taming", detail: "Tame a pet that knows Dash, fight until “You have learned a new spell”, teach it to your main pet." },
   { id: "nesingwary-start", level: 31, label: "Start Nesingwary chain in STV", detail: "“Welcome To The Jungle” — leads to the Master Hunter's Rifle/Bow (sweet spot ~41)." },
   { id: "sleeping-bag", level: null, label: "Cozy Sleeping Bag quest chain", detail: "Multi-continent chain → 1–3% XP buff for 2h standing on it. Do it on a travel day." },
-  { id: "artisan-eng", level: 35, label: "Train Artisan Engineering", detail: "Buzzek Bracketswing in Gadgetzan — needed from skill 200 onward." },
+  { id: "artisan-eng", level: 35, label: "Train Artisan Engineering", detail: "Buzzek Bracketswing in Gadgetzan — needed from skill 200 onward.", autoSkill: 201 },
   { id: "gnomish-spec", level: null, label: "Engineering specialization at 200", detail: "Lean: Gnomish. Hand in 6 Mithril Tube, 1 Accurate Scope (schematic: Mazk Snipeshot, Booty Bay), 2 Advanced Target Dummy." },
   { id: "mount-gold", level: 40, label: "Mount + riding (~90g saved)", detail: "The mid-game boss fight. Start saving now; skip AH toys." },
   { id: "truthseeker", level: 40, label: "Truthseeker's Bow — 25 library books", detail: "Turn in 25 library books at the faction library." },
   { id: "master-hunters", level: 41, label: "Master Hunter's Rifle / Bow", detail: "Finish the Nesingwary chain around 41 for the best payoff." },
-  { id: "legacy-150", level: null, label: "Engineering 150 — first Legacy Point", detail: "Then 225 and 300. Legacy talents Working Overtime / Dedicated Study speed up skill gains." },
+  { id: "legacy-150", level: null, label: "Engineering 150 — first Legacy Point", detail: "Then 225 and 300. Legacy talents Working Overtime / Dedicated Study speed up skill gains.", autoSkill: 150 },
   { id: "thorium-rifle", level: 47, label: "Thorium Rifle (Engineering 260)", detail: "Craftable upgrade, BoE." },
   { id: "dark-iron-rifle", level: 50, label: "Dark Iron Rifle (Engineering 275)", detail: "Craftable upgrade, BoE." },
   { id: "trueshot", level: 56, label: "Trueshot Aura", detail: "Marksmanship capstone for leveling." },
