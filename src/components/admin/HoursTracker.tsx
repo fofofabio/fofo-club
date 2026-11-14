@@ -968,11 +968,12 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
         return [];
       }
 
+      const dayMinutes = dayEntries.reduce((sum, entry) => sum + getDurationMinutes(entry), 0);
       return [
-        `${formatWeekday(dateKey)} ${formatMonthDay(dateKey)}`,
+        `${formatWeekday(dateKey)} ${formatMonthDay(dateKey)} (${formatDuration(dayMinutes)})`,
         ...dayEntries.map((entry) => {
           const task = entry.task ? ` | ${entry.task}` : "";
-          return `${entry.start}-${entry.end} | ${entry.project}${task}`;
+          return `${entry.start}-${entry.end} (${formatDuration(getDurationMinutes(entry))}) | ${entry.project}${task}`;
         }),
         "",
       ];
@@ -983,7 +984,8 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
     );
 
     const report = [
-      `Fofo Club admin weekly report (${formatWeekRange(selectedDate)})`,
+      `Weekly hours report (${formatWeekRange(selectedDate)})`,
+      `Total: ${formatDuration(selectedWeekMinutes)}`,
       "",
       "Project totals",
       ...summaryLines,
