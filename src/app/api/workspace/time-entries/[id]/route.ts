@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { badRequest, invalidTimeEntry, isUuid, readBody } from "@/lib/workspaceInput";
 import {
   deleteWorkspaceTimeEntry,
   updateWorkspaceTimeEntry,
@@ -22,7 +23,12 @@ export async function PATCH(
   }
 
   const { id } = await context.params;
-  const body = (await request.json()) as {
+  if (!isUuid(id)) return NextResponse.json({ error: "Entry not found." }, { status: 404 });
+  const raw = await readBody(request);
+  if (!raw) return badRequest("Send the entry as a JSON object.");
+  const invalid = invalidTimeEntry(raw);
+  if (invalid) return badRequest(invalid);
+  const body = raw as {
     project?: string;
     task?: string;
     date?: string;
@@ -67,6 +73,7 @@ export async function DELETE(
   }
 
   const { id } = await context.params;
+  if (!isUuid(id)) return NextResponse.json({ error: "Entry not found." }, { status: 404 });
   const deleted = await deleteWorkspaceTimeEntry(userId, id);
 
   if (!deleted) {

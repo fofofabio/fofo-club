@@ -47,3 +47,27 @@ export function invalidTaskField(body: Record<string, unknown>) {
   }
   return null;
 }
+
+const CLOCK = /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$|^24:00(?::00)?$/;
+
+/** Checks a time entry body (project, task, date, start, end) before it reaches Postgres. */
+export function invalidTimeEntry(body: Record<string, unknown>) {
+  for (const [key, max] of [["project", 200], ["task", 1000]] as const) {
+    const value = body[key];
+    if (value !== undefined && (typeof value !== "string" || value.length > max)) return `${key} must be text of at most ${max} characters.`;
+  }
+  if (typeof body.date !== "string" || !DATE.test(body.date) || Number.isNaN(Date.parse(`${body.date}T00:00:00Z`))) return "Date must look like 2026-11-14.";
+  for (const key of ["start", "end"] as const) {
+    if (typeof body[key] !== "string" || !CLOCK.test(body[key] as string)) return `${key} must be a time like 09:30.`;
+  }
+  return null;
+}
+
+export function isTimeZone(value: string) {
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: value });
+    return true;
+  } catch {
+    return false;
+  }
+}

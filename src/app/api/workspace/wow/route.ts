@@ -27,7 +27,10 @@ export async function PUT(request: Request) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const body = await request.json();
+    const body: unknown = await request.json().catch(() => null);
+    if (!body || typeof body !== "object" || !("state" in body)) {
+      return NextResponse.json({ error: "Send the WoW state as JSON." }, { status: 400, headers: { "Cache-Control": "private, no-store" } });
+    }
     const state = await setWowState(userId, body?.state);
     return NextResponse.json({ state }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {

@@ -16,8 +16,11 @@ export function parseFinanceExpense(
 
   if (
     !name ||
+    name.length > 200 ||
+    note.length > 2000 ||
     !Number.isInteger(amountCents) ||
     amountCents < 0 ||
+    amountCents > 100_000_000 ||
     !FINANCE_CATEGORIES.includes(category as FinanceCategory) ||
     (dueDay !== null && (!Number.isInteger(dueDay) || dueDay < 1 || dueDay > 31))
   ) {

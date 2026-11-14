@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { badRequest, invalidTimeEntry, readBody } from "@/lib/workspaceInput";
 import {
   createWorkspaceTimeEntry,
   getWorkspaceActiveSession,
@@ -35,7 +36,11 @@ export async function POST(request: Request) {
     return unauthorized();
   }
 
-  const body = (await request.json()) as {
+  const raw = await readBody(request);
+  if (!raw) return badRequest("Send the entry as a JSON object.");
+  const invalid = invalidTimeEntry(raw);
+  if (invalid) return badRequest(invalid);
+  const body = raw as {
     project?: string;
     task?: string;
     date?: string;

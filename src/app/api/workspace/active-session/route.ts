@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { badRequest, isTimeZone, readBody } from "@/lib/workspaceInput";
 import {
   startWorkspaceActiveSession,
   stopWorkspaceActiveSession,
@@ -18,7 +19,14 @@ export async function POST(request: Request) {
     return unauthorized();
   }
 
-  const body = (await request.json()) as {
+  const raw = await readBody(request);
+  if (!raw) return badRequest("Send the timer as a JSON object.");
+  for (const [key, max] of [["project", 200], ["task", 1000], ["timezone", 64]] as const) {
+    const value = raw[key];
+    if (value !== undefined && (typeof value !== "string" || value.length > max)) return badRequest(`${key} must be text of at most ${max} characters.`);
+  }
+  if (typeof raw.timezone === "string" && raw.timezone.trim() && !isTimeZone(raw.timezone.trim())) return badRequest("Unknown time zone.");
+  const body = raw as {
     project?: string;
     task?: string;
     timezone?: string;
