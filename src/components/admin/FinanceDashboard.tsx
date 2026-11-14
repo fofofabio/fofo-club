@@ -121,6 +121,28 @@ function shortMoney(cents: number) {
   }).format(cents / 100);
 }
 
+// The stored next charge comes from the last bank export. When that date has
+// already passed, step monthly charges forward to the next one from today.
+function upcomingCharge(nextChargeOn: string, cadence: string) {
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  if (nextChargeOn >= today || cadence !== "monthly") return { date: nextChargeOn, projected: false };
+  const [year, month, day] = nextChargeOn.split("-").map(Number);
+  for (let step = 1; step <= 120; step += 1) {
+    const monthIndex = month - 1 + step;
+    const lastDay = new Date(year, monthIndex + 1, 0).getDate();
+    const candidate = new Date(year, monthIndex, Math.min(day, lastDay));
+    const key = `${candidate.getFullYear()}-${String(candidate.getMonth() + 1).padStart(2, "0")}-${String(candidate.getDate()).padStart(2, "0")}`;
+    if (key >= today) return { date: key, projected: true };
+  }
+  return { date: nextChargeOn, projected: false };
+}
+
+function nextChargeText(nextChargeOn: string, cadence: string) {
+  const { date, projected } = upcomingCharge(nextChargeOn, cadence);
+  return ` · next ~${dateLabel(date)}${projected ? " (projected)" : ""}`;
+}
+
 function dateLabel(date: string | null) {
   if (!date) return "—";
   return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" })
@@ -868,7 +890,7 @@ function SubscriptionRow({
             <p className="truncate font-semibold">{item.name}</p>
             <span className={clsx("font-mono text-[9px] uppercase tracking-wide", item.confidence === "high" ? "text-emerald-700" : "text-amber-700")}>{item.confidence} confidence</span>
           </div>
-          <p className="text-xs text-black/50">last {dateLabel(item.lastChargeOn)} · {item.occurrences} payments{item.nextChargeOn && item.status === "active" ? ` · next ~${dateLabel(item.nextChargeOn)}` : ""}</p>
+          <p className="text-xs text-black/50">last {dateLabel(item.lastChargeOn)} · {item.occurrences} payments{item.nextChargeOn && item.status === "active" ? nextChargeText(item.nextChargeOn, item.cadence) : ""}</p>
         </div>
       </div>
       <div className="flex items-center justify-between gap-2 sm:justify-end">
