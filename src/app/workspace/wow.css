@@ -300,9 +300,15 @@
 }
 @media (max-width: 560px) {
   .wow .wow-hero { padding: 20px 16px 16px; }
-  .wow .wow-hero-main { gap: 16px; }
-  .wow .wow-ring { width: 88px; height: 88px; }
-  .wow .wow-ring-level { font-size: 32px; }
+  .wow .wow-hero-main { gap: 16px; align-items: start; }
+  .wow .wow-ring { width: 68px; height: 68px; margin-top: 4px; }
+  .wow .wow-ring-level { font-size: 26px; }
+  .wow .wow-ring-caption { display: none; }
+  .wow .wow-hero-name { font-size: 30px; }
+  .wow .wow-guild { display: block; margin-left: 0; }
+  .wow .wow-hero-next { display: block; }
+  .wow .wow-hero-next svg { display: inline; vertical-align: -3px; margin-right: 6px; }
+  .wow .wow-hero-next .wow-muted { white-space: nowrap; }
   .wow .wow-now { grid-template-columns: 1fr; }
   .wow .wow-panel { padding: 16px; }
   .wow .wow-craft { grid-template-columns: 1fr auto; }
