@@ -22,25 +22,8 @@ import {
   type Milestone,
   type TalentStep,
 } from "@/data/wowHunter";
-
-type WowState = {
-  level: number;
-  engineeringSkill: number;
-  libraryBooks: number;
-  checked: string[];
-  characterSlug: string;
-  syncedAt: string;
-  equippedRanged: string;
-  experience: number;
-  experienceLevel: number;
-  guild: string;
-  itemLevel: number;
-  lastLogin: string;
-  petName: string;
-  petFamily: string;
-  petLevel: number;
-  xpLog: { at: string; total: number }[];
-};
+// type-only: erased at build time, so the server-only module never ships to the client
+import type { WowState } from "@/lib/workspaceWow";
 
 type Section = "overview" | "talents" | "engineering" | "zones" | "goals" | "gold";
 
@@ -222,7 +205,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // Calendar-time levelling pace over the last two weeks of armory logouts,
 // plus when the next milestone level (40, then 60) lands at that pace.
 function levelPace(log: WowState["xpLog"]) {
-  if (log.length < 2) return null;
+  if (!log || log.length < 2) return null;
   const last = log[log.length - 1];
   const recent = log.filter((e) => Date.parse(last.at) - Date.parse(e.at) <= 14 * DAY_MS);
   const first = recent[0];
@@ -788,6 +771,9 @@ function Zones({ level }: { level: number }) {
                 <p className="wow-stop-range">Level {z.from}–{z.to}{status === "here" && <span className="wow-here">You are here</span>}</p>
                 <p className="wow-stop-zones">{z.zones}</p>
                 {z.note && <p className="wow-stop-note">{z.note}</p>}
+                {z.dungeons && z.dungeons.length > 0 && (
+                  <p className="wow-stop-dungeons"><span>Dungeons</span>{z.dungeons.join(" · ")}</p>
+                )}
               </div>
             </li>
           );

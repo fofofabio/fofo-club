@@ -111,16 +111,16 @@ export const ENGINEERING_NOTES: string[] = [
 // Zone route (Horde, classic-standard — adjust as Forever diverges).
 // ---------------------------------------------------------------------------
 
-export type ZoneStep = { from: number; to: number; zones: string; note?: string };
+export type ZoneStep = { from: number; to: number; zones: string; note?: string; dungeons?: string[] };
 
 export const ZONE_ROUTE: ZoneStep[] = [
-  { from: 25, to: 31, zones: "Thousand Needles · Hillsbrad Foothills", note: "Finish up, grab flight paths." },
-  { from: 30, to: 35, zones: "Desolace · Stranglethorn Vale", note: "Start Nesingwary in STV — weapon chain." },
-  { from: 35, to: 40, zones: "Dustwallow Marsh · Badlands · Swamp of Sorrows", note: "Grab the Gadgetzan flight path for the Artisan trainer." },
-  { from: 40, to: 45, zones: "Tanaris · Feralas · The Hinterlands", note: "Gadgetzan = Artisan trainer + Gnomish teleporter target." },
-  { from: 45, to: 50, zones: "Searing Gorge · Blasted Lands · Un'Goro Crater", note: "Thorium Rifle at eng 260." },
-  { from: 50, to: 55, zones: "Western Plaguelands · Felwood · Burning Steppes", note: "" },
-  { from: 55, to: 60, zones: "Eastern Plaguelands · Winterspring · Silithus", note: "Everlook: buy the Thorium Tube schematic in person." },
+  { from: 25, to: 31, zones: "Thousand Needles · Hillsbrad Foothills", note: "Finish up, grab flight paths.", dungeons: ["SM Graveyard", "Razorfen Kraul", "Gnomeregan (Goblin Rocket Boots schematic)"] },
+  { from: 30, to: 35, zones: "Desolace · Stranglethorn Vale", note: "Start Nesingwary in STV — weapon chain.", dungeons: ["SM Library", "SM Armory", "Razorfen Kraul"] },
+  { from: 35, to: 40, zones: "Dustwallow Marsh · Badlands · Swamp of Sorrows", note: "Grab the Gadgetzan flight path for the Artisan trainer.", dungeons: ["SM Cathedral", "Razorfen Downs"] },
+  { from: 40, to: 45, zones: "Tanaris · Feralas · The Hinterlands", note: "Gadgetzan = Artisan trainer + Gnomish teleporter target.", dungeons: ["Uldaman", "Zul'Farrak"] },
+  { from: 45, to: 50, zones: "Searing Gorge · Blasted Lands · Un'Goro Crater", note: "Thorium Rifle at eng 260.", dungeons: ["Maraudon", "Sunken Temple"] },
+  { from: 50, to: 55, zones: "Western Plaguelands · Felwood · Burning Steppes", note: "", dungeons: ["Blackrock Depths", "Sunken Temple"] },
+  { from: 55, to: 60, zones: "Eastern Plaguelands · Winterspring · Silithus", note: "Everlook: buy the Thorium Tube schematic in person.", dungeons: ["Lower Blackrock Spire", "Dire Maul", "Scholomance", "Stratholme"] },
 ];
 
 // ---------------------------------------------------------------------------
