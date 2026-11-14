@@ -7,6 +7,10 @@ const LEGAL_FORMS = [
   "single member soci[eé]t[eé] anonyme",
   "soci[eé]t[eé] anonyme",
   "gmbh\\s*\\W?\\s*co\\.?\\s*kg",
+  // Exports cut long names short: "Wiener Linien Gmbh & C".
+  "gmbh\\s*&\\s*c",
+  "handels\\s*gmbh",
+  "(?:versicherungs-)?aktiengesellschaft",
   "s\\.?\\s?[aà]\\.?\\s?r\\.?\\s?l\\.?",
   "s\\.c\\.a\\.?",
   "et cie",
