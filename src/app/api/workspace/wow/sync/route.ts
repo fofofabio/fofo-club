@@ -30,8 +30,10 @@ export async function POST() {
 
     const state = await setWowState(userId, {
       ...current,
-      level: character.level ?? current.level,
-      engineeringSkill: character.engineeringSkill ?? current.engineeringSkill,
+      // The armory only refreshes on logout and neither value can drop in game,
+      // so a stale armory never overwrites a higher value entered by hand.
+      level: Math.max(character.level ?? 0, current.level),
+      engineeringSkill: Math.max(character.engineeringSkill ?? 0, current.engineeringSkill),
       equippedRanged: character.equippedRanged ?? current.equippedRanged,
       syncedAt: new Date().toISOString(),
     });
