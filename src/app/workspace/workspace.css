@@ -437,3 +437,8 @@ html:has(.ws-shell[data-theme='dark']) body { background: #161714; }
  .ws-shell .ws-project-notes-dialog { padding: 20px !important; max-height: calc(100dvh - 24px); }
  .ws-project-notes-buttons > .ws-button { width: 100%; }
 }
+
+/* Six destinations must fit a 375px phone: at 8px padding WoW was cut off with no scroll hint. */
+@media (max-width: 400px) {
+ .ws-topbar nav a { padding-inline: 4px; }
+}
