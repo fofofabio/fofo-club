@@ -73,6 +73,25 @@ function newlyAddedMovies(movies: Movie[]) {
   }
 }
 
+// "Not for me" / "Hide" take a film out of every list, so offer a short undo.
+function useUndoToast() {
+  const [toast, setToast] = useState<{ id: number; text: string; undo: () => void } | null>(null);
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(null), 8000);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+  const offer = useCallback((text: string, undo: () => void) => setToast({ id: Date.now(), text, undo }), []);
+  const node = toast && typeof document !== "undefined" ? createPortal(
+    <div key={toast.id} className="ws-undo-toast" role="status">
+      <span>{toast.text}</span>
+      <button type="button" onClick={() => { toast.undo(); setToast(null); }}>Undo</button>
+    </div>,
+    document.querySelector(".ws-shell") ?? document.body,
+  ) : null;
+  return { offer, node };
+}
+
 export default function MoviesUpcoming() {
   const [view, setView] = useState<"programme" | "radar">("programme");
   return <div><header className="ws-view-head mb-5"><h2>Cinema</h2><p className="mt-2 text-sm">Screenings in Graz and upcoming releases.</p></header><div className="ws-cinema-tabs mb-3 grid grid-cols-2 border-[2.5px] border-black bg-white shadow-brutal-sm"><button type="button" aria-pressed={view === "programme"} onClick={() => setView("programme")} className={clsx("p-4 font-mono text-xs font-bold uppercase", view === "programme" ? "bg-black text-white" : "hover:bg-fofo-yellow")}>Playing in Graz</button><button type="button" aria-pressed={view === "radar"} onClick={() => setView("radar")} className={clsx("border-l-[2.5px] border-black p-4 font-mono text-xs font-bold uppercase", view === "radar" ? "bg-fofo-pink text-white" : "hover:bg-fofo-pink/20")}>Movies coming up</button></div><div hidden={view !== "programme"}><NonstopProgramme /></div><div hidden={view !== "radar"}><ReleaseRadar /></div></div>;
@@ -98,6 +117,7 @@ function NonstopProgramme() {
   const [choice, setChoice] = useState<Movie[]>([]);
   const [layout, setLayout] = useState<"films" | "times">("films");
   const [timingsLoading, setTimingsLoading] = useState(false);
+  const undoToast = useUndoToast();
   // Minute clock so screenings that already started drop out while the page stays open.
   const [nowMinutes, setNowMinutes] = useState(() => { const now = new Date(); return now.getHours() * 60 + now.getMinutes(); });
   useEffect(() => {
@@ -170,6 +190,10 @@ function NonstopProgramme() {
     const previous = states[movieKey];
     const note = noteOverride ?? previous?.note ?? "";
     setStates((current) => { const next = { ...current }; if (state) next[movieKey] = { movieKey, state, note }; else delete next[movieKey]; return next; });
+    if (state === "dismissed") {
+      const title = movies.find((movie) => movie.key === movieKey)?.title ?? "Film";
+      undoToast.offer(`${title} hidden`, () => void setMovieState(movieKey, previous?.state ?? null, note));
+    }
     try {
       const result = await requestJson<{ state: MovieState | null }>(`/api/workspace/movies/${movieKey}`, { method: "PATCH", body: JSON.stringify({ state, note }) });
       setStates((current) => { const next = { ...current }; if (result.state) next[movieKey] = result.state; else delete next[movieKey]; return next; });
@@ -212,6 +236,7 @@ function NonstopProgramme() {
     {layout === "films" ? <div className="ws-film-grid grid gap-px bg-black md:grid-cols-2 2xl:grid-cols-3">{eligible.map((movie) => <MovieCard key={movie.key} movie={movie} state={states[movie.key]?.state ?? null} detail={details[movie.key] ?? null} detailLoaded={movie.key in details} isNew={newMovieKeys.has(movie.key)} finishAllowance={preShowMinutes} onRequestDetail={loadDetail} onOpen={() => setSelected(movie)} onState={(state) => setMovieState(movie.key, state)} />)}</div> : <div className="divide-y-2 divide-black">{agenda.map(({ movie, screening }) => <button key={screening.id} type="button" onClick={() => setSelected({ ...movie, screenings: [screening, ...movie.screenings.filter((item) => item.id !== screening.id)] })} className="grid w-full grid-cols-[5rem_1fr] gap-4 p-4 text-left hover:bg-fofo-yellow sm:grid-cols-[5rem_1fr_14rem_9rem]"><span><strong className="block font-mono text-xl">{screening.time}</strong><small className="font-mono text-[9px] uppercase text-black/45">{dateLabel(screening.date)}</small></span><span><strong className="block">{movie.title}{newMovieKeys.has(movie.key) ? <span className="ml-2 border border-black bg-fofo-pink px-1.5 py-0.5 font-mono text-[9px] uppercase text-white">New here</span> : null}</strong><small className="text-black/45">{screening.versionLabel}</small></span><span className="hidden text-sm sm:block">{screening.venue}</span><span className="hidden font-mono text-xs sm:block">{details[movie.key]?.runtimeMinutes ? `est. ${finishLabel(screening, details[movie.key]!.runtimeMinutes!, preShowMinutes)}` : "finish unknown"}</span></button>)}</div>}
     {!message && !eligible.length && !timingsLoading ? <div className="p-12 text-center"><Film className="mx-auto h-10 w-10 text-black/25" /><h3 className="mt-4 font-display text-2xl font-bold lowercase">{latestFinish ? "no verified finish times fit." : newOnly ? "no new films for that window." : "nothing published for that window."}</h3><p className="mt-2 text-sm text-black/45">{latestFinish ? "Try a later finish time. Films without a published runtime cannot be checked against this filter." : "Try another day, include dubbed versions, or widen the cinema filter."}</p></div> : null}
     {selected ? <MoviePanel movie={selected} detail={details[selected.key] ?? null} detailLoaded={selected.key in details} stateRecord={states[selected.key] ?? null} isNew={newMovieKeys.has(selected.key)} onState={(state, note) => setMovieState(selected.key, state, note)} onClose={() => setSelected(null)} /> : null}
+    {undoToast.node}
   </section>;
 }
 
@@ -280,6 +305,7 @@ function ReleaseRadar() {
   const [message, setMessage] = useState("Reading the Austrian release calendar…");
   const [selected, setSelected] = useState<UpcomingRelease | null>(null);
   const [detail, setDetail] = useState<UpcomingMovieDetail | null>(null);
+  const undoToast = useUndoToast();
 
   useEffect(() => {
     requestJson<{ releases: UpcomingRelease[]; refreshedAt: string; sourceUrl: string; states: MovieState[] }>("/api/workspace/movies/upcoming").then((upcoming) => {
@@ -325,6 +351,10 @@ function ReleaseRadar() {
     savingMovies.current.add(movieKey);
     const previous = states[movieKey];
     setStates((current) => { const next = { ...current }; if (state) next[movieKey] = { movieKey, state, note: previous?.note ?? "" }; else delete next[movieKey]; return next; });
+    if (state === "dismissed") {
+      const title = releases.find((movie) => movie.key === movieKey)?.title ?? "Release";
+      undoToast.offer(`${title} hidden`, () => void setReleaseState(movieKey, previous?.state ?? null));
+    }
     try {
       const result = await requestJson<{ state: MovieState | null }>(`/api/workspace/movies/${movieKey}`, { method: "PATCH", body: JSON.stringify({ state, note: previous?.note ?? "" }) });
       setStates((current) => { const next = { ...current }; if (result.state) next[movieKey] = result.state; else delete next[movieKey]; return next; });
@@ -345,6 +375,7 @@ function ReleaseRadar() {
     })}</div></section>)}</div>
     {!message && !filtered.length ? <div className="p-12 text-center"><CalendarDays className="mx-auto h-10 w-10 text-black/25" /><h3 className="mt-4 font-display text-2xl font-bold lowercase">no releases in that view.</h3><p className="mt-2 text-sm text-black/45">Widen the date window or clear the search.</p></div> : null}
     {selected ? <UpcomingMoviePanel movie={selected} detail={detail} state={states[selected.key]?.state ?? null} onState={(state) => setReleaseState(selected.key, state)} onClose={() => setSelected(null)} /> : null}
+    {undoToast.node}
   </section>;
 }
 
