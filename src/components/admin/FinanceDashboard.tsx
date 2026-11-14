@@ -931,7 +931,7 @@ function TransactionTable({ transactions, total }: { transactions: FinanceTransa
     <WorkspaceTable label="Transactions">
       <thead><tr><th scope="col">Date</th><th scope="col">Merchant</th><th scope="col">Category</th><th scope="col">Source</th><th scope="col" className="ws-number">Amount</th></tr></thead>
       <tbody>{transactions.map((item) => <tr key={item.id}>
-        <td>{dateLabel(item.bookedOn)}</td><td><strong>{item.merchant}</strong><p>{item.description}</p></td><td><span className="ws-category-marker" style={{ background: CATEGORY_COLORS[item.category] }} aria-hidden="true" />{item.category}</td><td>{item.provider === "paypal" ? "PayPal → bank" : "bank"}</td><td className="ws-number"><strong>{money(item.amountCents, true)}</strong></td>
+        <td>{dateLabel(item.bookedOn)}</td><td><strong>{item.merchant}</strong><p>{item.description}</p><p className="ws-txn-cat-inline"><span className="ws-category-marker" style={{ background: CATEGORY_COLORS[item.category] }} aria-hidden="true" />{item.category}</p></td><td><span className="ws-category-marker" style={{ background: CATEGORY_COLORS[item.category] }} aria-hidden="true" />{item.category}</td><td>{item.provider === "paypal" ? "PayPal → bank" : "bank"}</td><td className="ws-number"><strong>{money(item.amountCents, true)}</strong></td>
       </tr>)}{!transactions.length ? <tr><td colSpan={5}>No transactions match this view.</td></tr> : null}</tbody>
     </WorkspaceTable>
     {total > transactions.length ? <p className="p-3 text-sm">Showing first {transactions.length} of {total} matches. Refine the filters to narrow it down.</p> : null}

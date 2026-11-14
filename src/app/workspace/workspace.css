@@ -442,3 +442,15 @@ html:has(.ws-shell[data-theme='dark']) body { background: #161714; }
 @media (max-width: 400px) {
  .ws-topbar nav a { padding-inline: 4px; }
 }
+
+/* Transactions on a phone: date, merchant (+ category) and amount, no sideways scroll. */
+.ws-txn-cat-inline { display: none; }
+@media (max-width: 560px) {
+ .ws-finances .ws-data-table[aria-label='Transactions'] { min-width: 0; width: 100%; }
+ .ws-data-table[aria-label='Transactions'] th:nth-child(3), .ws-data-table[aria-label='Transactions'] th:nth-child(4),
+ .ws-data-table[aria-label='Transactions'] td:nth-child(3), .ws-data-table[aria-label='Transactions'] td:nth-child(4) { display: none; }
+ .ws-data-table[aria-label='Transactions'] th, .ws-data-table[aria-label='Transactions'] td { padding: 10px 8px; }
+ .ws-data-table[aria-label='Transactions'] td:first-child { width: 56px; font-size: 13px; }
+ .ws-data-table[aria-label='Transactions'] td:nth-child(2) { overflow-wrap: anywhere; }
+ .ws-txn-cat-inline { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+}
