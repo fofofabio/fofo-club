@@ -278,7 +278,8 @@ export default function FinanceDashboard() {
       setPayload({
         ...payload,
         subscriptions: payload.subscriptions.map((subscription) =>
-          subscription.id === item.id ? result.subscription : subscription,
+          // Keep the price worked out from recent charges; the stored one is from the import.
+          subscription.id === item.id ? { ...result.subscription, amountCents: subscription.amountCents } : subscription,
         ),
       });
       setNotice(`${item.name} marked ${status}.`);

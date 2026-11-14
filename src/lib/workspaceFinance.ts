@@ -81,6 +81,39 @@ type FinanceMetaRow = {
   transactionCount: number;
 };
 
+// Same grouping key as the importer's subscription detection.
+function subscriptionKey(merchant: string) {
+  return merchant === "Foodora" ? "foodora-pro" : merchant.toLocaleLowerCase("de-AT").replace(/[^a-z0-9]+/g, "-");
+}
+
+function median(values: number[]) {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : Math.round((sorted[middle - 1] + sorted[middle]) / 2);
+}
+
+const STATUS_ORDER: Record<string, number> = { active: 0, paused: 1 };
+
+// The stored amount is fixed at import time. Price each subscription from the median of its
+// latest three charges in the ledger instead, so a price rise shows without a re-import and
+// a single odd charge does not.
+function currentSubscriptionPrices(rows: (FinanceSubscription & { merchantKey: string })[], transactions: FinanceTransaction[]) {
+  const recent = new Map<string, number[]>();
+  for (const item of transactions) { // newest first
+    if (item.category !== "Subscriptions" || item.amountCents >= 0) continue;
+    const key = subscriptionKey(item.merchant);
+    const amounts = recent.get(key) ?? [];
+    if (amounts.length < 3) amounts.push(Math.abs(item.amountCents));
+    recent.set(key, amounts);
+  }
+  return rows
+    .map(({ merchantKey, ...row }) => {
+      const amounts = recent.get(merchantKey);
+      return { ...row, name: displayMerchant(row.name), amountCents: amounts?.length === 3 ? median(amounts) : row.amountCents };
+    })
+    .sort((a, b) => (STATUS_ORDER[a.status] ?? 2) - (STATUS_ORDER[b.status] ?? 2) || b.amountCents - a.amountCents || a.name.localeCompare(b.name));
+}
+
 export async function listWorkspaceFinance(userId: string): Promise<FinancePayload> {
   const [transactions, subscriptions, monthlyExpenses, meta] = await Promise.all([
     query<FinanceTransaction>(
@@ -100,10 +133,11 @@ export async function listWorkspaceFinance(userId: string): Promise<FinancePaylo
       `,
       [userId],
     ),
-    query<FinanceSubscription>(
+    query<FinanceSubscription & { merchantKey: string }>(
       `
         select
           id,
+          merchant_key as "merchantKey",
           name,
           amount_cents as "amountCents",
           cadence,
@@ -156,7 +190,7 @@ export async function listWorkspaceFinance(userId: string): Promise<FinancePaylo
       const merchant = displayMerchant(row.merchant);
       return merchant === row.merchant ? row : { ...row, merchant, merchantRaw: row.merchant };
     }),
-    subscriptions: subscriptions.rows.map((row) => ({ ...row, name: displayMerchant(row.name) })),
+    subscriptions: currentSubscriptionPrices(subscriptions.rows, transactions.rows),
     monthlyExpenses: monthlyExpenses.rows,
     meta: meta.rows[0] ?? { dataStart: null, dataEnd: null, transactionCount: 0 },
   };
