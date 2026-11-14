@@ -20,6 +20,7 @@ type UpcomingMovieDetail = { title: string; posterUrl: string | null; synopsis: 
 function dateKey(offset = 0) { const value = new Date(); value.setDate(value.getDate() + offset); return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`; }
 function dateLabel(date: string) { return new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" }).format(new Date(`${date}T12:00:00`)); }
 function isOriginal(screening: Screening) { return screening.versionCode !== "DF"; }
+const LATE_ENTRY_MINUTES = 10;
 function clockMinutes(value: string) { const [hours, minutes] = value.split(":").map(Number); return hours * 60 + minutes; }
 function estimatedFinishMinutes(screening: Screening, runtime: number, buffer: number) { return clockMinutes(screening.time) + runtime + buffer; }
 function finishLabel(screening: Screening, runtime: number, buffer: number) {
@@ -96,6 +97,13 @@ function NonstopProgramme() {
   const [choice, setChoice] = useState<Movie[]>([]);
   const [layout, setLayout] = useState<"films" | "times">("films");
   const [timingsLoading, setTimingsLoading] = useState(false);
+  // Minute clock so screenings that already started drop out while the page stays open.
+  const [nowMinutes, setNowMinutes] = useState(() => { const now = new Date(); return now.getHours() * 60 + now.getMinutes(); });
+  useEffect(() => {
+    const tick = () => { const now = new Date(); setNowMinutes(now.getHours() * 60 + now.getMinutes()); };
+    const timer = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const loadDetail = useCallback((key: string) => {
     const existing = detailRequests.current.get(key);
@@ -137,6 +145,8 @@ function NonstopProgramme() {
       let screenings = movie.screenings.filter((screening) => venue === "all" || screening.venueId === venue);
       if (!includeDubbed) screenings = screenings.filter(isOriginal);
       screenings = screenings.filter((screening) => {
+        // Today's screenings stay catchable through the first ~10 minutes of ads, then they are gone.
+        if (screening.date === today && clockMinutes(screening.time) < nowMinutes - LATE_ENTRY_MINUTES) return false;
         if (horizon === "watchlist") return movieState === "watchlist" && screening.date >= today;
         if (horizon === "tonight") return screening.date === today && screening.time >= after;
         if (horizon === "tomorrow") return screening.date === tomorrow;
@@ -149,7 +159,7 @@ function NonstopProgramme() {
       }
       return screenings.length ? [{ ...movie, screenings }] : [];
     });
-  }, [movies, states, venue, includeDubbed, horizon, after, latestFinish, details, preShowMinutes, newOnly, newMovieKeys]);
+  }, [movies, states, venue, includeDubbed, horizon, after, latestFinish, details, preShowMinutes, newOnly, newMovieKeys, nowMinutes]);
 
   const agenda = useMemo(() => eligible.flatMap((movie) => movie.screenings.map((screening) => ({ movie, screening }))).sort((a, b) => a.screening.startsAt.localeCompare(b.screening.startsAt)), [eligible]);
 

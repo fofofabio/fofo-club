@@ -28,7 +28,9 @@ export default function WorkspaceDesk({ displayName, userId }: { displayName: st
 
   useEffect(() => {
     const readView = () => {
-      const candidate = new URL(window.location.href).searchParams.get("view");
+      const raw = new URL(window.location.href).searchParams.get("view")?.toLowerCase() ?? null;
+      // The tab says "Cinema" but the id is "movies": accept both.
+      const candidate = raw === "cinema" ? "movies" : raw;
       const next = destinations.some((item) => item.id === candidate) ? candidate as WorkspaceView : "hours";
       setView(next);
       setVisited((current) => new Set(current).add(next));
