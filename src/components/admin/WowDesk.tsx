@@ -17,6 +17,7 @@ import {
   XP_TO_NEXT_LEVEL,
   ZONE_ROUTE,
   levelFromTotalXp,
+  petFamilyFor,
   totalXp,
   type EngineeringStep,
   type Milestone,
@@ -476,7 +477,10 @@ function Overview({ state, onJump }: { state: WowState; onJump: (s: Section) => 
       </div>
 
       <div className="wow-grid-2">
-        <Ritual />
+        <div className="wow-stack">
+          <Ritual />
+          {state.petName && <PetPanel state={state} />}
+        </div>
         <section className="wow-panel">
           <PanelHead icon={<Crosshair className="h-4 w-4" />} title="Rotation cheat sheet" />
           <ul className="wow-bullets">
@@ -485,6 +489,34 @@ function Overview({ state, onJump }: { state: WowState; onJump: (s: Section) => 
         </section>
       </div>
     </>
+  );
+}
+
+function PetPanel({ state }: { state: WowState }) {
+  const family = petFamilyFor(state.petFamily);
+  const behind = state.petLevel > 0 ? state.level - state.petLevel : 0;
+  return (
+    <section className="wow-panel">
+      <PanelHead icon={<PawPrint className="h-4 w-4" />} title="Your pet" aside={state.petLevel ? `lv ${state.petLevel}` : undefined} />
+      <p className="wow-pet-name">
+        {state.petName}
+        <span className="wow-muted"> · {state.petFamily}{family && family.family !== state.petFamily ? ` (${family.family})` : ""}</span>
+      </p>
+      {family ? (
+        <dl className="wow-pet-facts">
+          <div><dt>Eats</dt><dd>{family.diet.join(", ")}</dd></div>
+          <div><dt>Learns</dt><dd>{family.abilities.join(", ")}</dd></div>
+          {family.note && <div><dt>Notes</dt><dd>{family.note}</dd></div>}
+        </dl>
+      ) : (
+        <p className="wow-lede">Unknown family for this creature; check its beast lore before feeding.</p>
+      )}
+      <p className={behind > 0 ? "wow-pet-status is-behind" : "wow-pet-status"}>
+        {behind > 0
+          ? `${behind} level${behind === 1 ? "" : "s"} behind you. Pets earn XP faster while below your level, so keep ${state.petName} out and fed.`
+          : `Level with you. Feed ${state.petName} to keep it happy: an unhappy pet deals less damage.`}
+      </p>
+    </section>
   );
 }
 

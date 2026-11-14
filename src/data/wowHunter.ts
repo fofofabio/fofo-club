@@ -246,3 +246,33 @@ export function levelFromTotalXp(total: number): number {
   }
   return level >= 60 ? 60 : level + rest / XP_TO_NEXT_LEVEL[level];
 }
+
+// ---------------------------------------------------------------------------
+// Pet families (Classic): what they eat and what they can learn
+// ---------------------------------------------------------------------------
+
+export type PetFamily = { family: string; match: RegExp; diet: string[]; abilities: string[]; note?: string };
+
+export const PET_FAMILIES: PetFamily[] = [
+  { family: "Cat", match: /lion|cat|panther|tiger|lynx|leopard|cougar|puma|saber|prowler/i, diet: ["Meat", "Fish"], abilities: ["Claw", "Bite", "Dash", "Prowl", "Cower"], note: "Top single-target damage; Claw is your main focus dump." },
+  { family: "Wolf", match: /wolf|worg/i, diet: ["Meat"], abilities: ["Bite", "Furious Howl", "Dash"], note: "Furious Howl buffs your next hit too." },
+  { family: "Boar", match: /boar/i, diet: ["Meat", "Fish", "Bread", "Cheese", "Fruit", "Fungus"], abilities: ["Charge", "Bite", "Dash"], note: "Eats anything; Charge helps it grab aggro." },
+  { family: "Bear", match: /bear/i, diet: ["Meat", "Fish", "Bread", "Cheese", "Fruit", "Fungus"], abilities: ["Claw", "Bite"], note: "Tanky, slow to kill things." },
+  { family: "Raptor", match: /raptor/i, diet: ["Meat"], abilities: ["Bite", "Claw"] },
+  { family: "Owl", match: /owl/i, diet: ["Meat"], abilities: ["Claw", "Screech", "Dive"] },
+  { family: "Bat", match: /bat\b|bat$/i, diet: ["Fruit", "Fungus"], abilities: ["Bite", "Screech", "Dive"] },
+  { family: "Gorilla", match: /gorilla|ape/i, diet: ["Fruit", "Fungus"], abilities: ["Bite", "Thunderstomp"] },
+  { family: "Wind Serpent", match: /serpent/i, diet: ["Bread", "Cheese", "Fish"], abilities: ["Bite", "Lightning Breath", "Dive"] },
+  { family: "Crab", match: /crab|crawler/i, diet: ["Bread", "Fish", "Fruit", "Fungus"], abilities: ["Claw"] },
+  { family: "Scorpid", match: /scorpid|scorpion/i, diet: ["Meat"], abilities: ["Claw", "Scorpid Poison"] },
+  { family: "Turtle", match: /turtle|tortoise|snapjaw/i, diet: ["Fish", "Fruit", "Fungus"], abilities: ["Bite", "Shell Shield"] },
+  { family: "Spider", match: /spider|widow|tarantula|recluse/i, diet: ["Meat"], abilities: ["Bite"] },
+  { family: "Hyena", match: /hyena/i, diet: ["Meat", "Fruit"], abilities: ["Bite", "Dash"] },
+  { family: "Tallstrider", match: /strider/i, diet: ["Cheese", "Fruit", "Fungus"], abilities: ["Bite", "Dash"] },
+  { family: "Carrion Bird", match: /vulture|buzzard|carrion|condor/i, diet: ["Meat", "Fish"], abilities: ["Bite", "Claw", "Screech", "Dive"] },
+  { family: "Crocolisk", match: /crocolisk|crocodile/i, diet: ["Meat", "Fish"], abilities: ["Bite"] },
+];
+
+export function petFamilyFor(creature: string): PetFamily | null {
+  return PET_FAMILIES.find((f) => f.match.test(creature)) ?? null;
+}
