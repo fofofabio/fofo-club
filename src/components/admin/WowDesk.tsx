@@ -178,17 +178,42 @@ function LevelRing({ level }: { level: number }) {
   );
 }
 
+// What an armory sync brought in, in plain words. Empty when nothing changed.
+function syncNews(before: WowState, after: WowState): string[] {
+  const news: string[] = [];
+  // a first sync compares against defaults, not progress
+  if (!before.syncedAt) return news;
+  if (after.level > before.level) {
+    const gained = after.level - before.level;
+    news.push(gained === 1 ? `Ding! Level ${after.level}.` : `Ding! Level ${after.level} (+${gained}).`);
+    const talents = [...new Set(TALENT_STEPS.filter((t) => t.level > before.level && t.level <= after.level).map((t) => t.talent))];
+    if (talents.length) news.push(`Spend your new talent ${gained === 1 ? "point" : "points"}: ${talents.join(", ")}.`);
+  }
+  if (after.engineeringSkill > before.engineeringSkill) {
+    news.push(`Engineering +${after.engineeringSkill - before.engineeringSkill}, now ${after.engineeringSkill}.`);
+  }
+  if (after.equippedRanged && before.equippedRanged && after.equippedRanged !== before.equippedRanged) {
+    news.push(`New weapon equipped: ${after.equippedRanged}.`);
+  }
+  return news;
+}
+
 function Hero({ state, update, saveState }: { state: WowState; update: (m: (s: WowState) => WowState) => void; saveState: "idle" | "saving" | "error" }) {
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<{ text: string; error: boolean } | null>(null);
+  const [news, setNews] = useState<string[]>([]);
   const autoSynced = useRef(false);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   const sync = useCallback(async (quiet = false) => {
     setSyncing(true);
     if (!quiet) setSyncMessage(null);
     try {
+      const before = stateRef.current;
       const data = await requestJson<{ state: WowState }>("/api/workspace/wow/sync", { method: "POST" });
       update(() => data.state);
+      setNews(syncNews(before, data.state));
       setSyncMessage({ text: "Synced from the armory", error: false });
     } catch (err) {
       if (!quiet) setSyncMessage({ text: err instanceof Error ? err.message : "Sync failed", error: true });
@@ -257,6 +282,14 @@ function Hero({ state, update, saveState }: { state: WowState; update: (m: (s: W
           </details>
         </div>
       </div>
+
+      {news.length > 0 && (
+        <div className="wow-news" role="status">
+          <Sparkles className="h-4 w-4" />
+          <ul>{news.map((n) => <li key={n}>{n}</li>)}</ul>
+          <button type="button" onClick={() => setNews([])} aria-label="Dismiss">×</button>
+        </div>
+      )}
 
       <div className="wow-track" aria-hidden="true">
         <div className="wow-track-bar"><div className="wow-track-fill" style={{ width: `${(state.level / 60) * 100}%` }} /></div>

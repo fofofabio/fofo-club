@@ -16,7 +16,8 @@
 
 /* Hero: always dark, it's the character sheet. */
 .wow .wow-hero {
-  position: relative; overflow: hidden; display: grid; gap: 18px; padding: 28px 28px 22px;
+  /* clip, not hidden: a hidden box can still be scrolled when a field inside gets focus */
+  position: relative; overflow: clip; display: grid; gap: 18px; padding: 28px 28px 22px;
   background: #12140e; color: #ece9dc; border: 1px solid #2c3122;
 }
 .wow .wow-hero-glow {
@@ -55,6 +56,8 @@
 .wow .wow-hint { font-size: 12px; color: #8a8e7e; }
 .wow .wow-field { display: grid; gap: 4px; font-size: 12px; color: var(--ink-2); }
 .wow .wow-hero .wow-field { color: #9ba08f; }
+.ws-tool .wow .wow-hero input { background: #12140e !important; color: #ece9dc !important; border-color: #3d4430 !important; }
+.ws-tool .wow .wow-hero input::placeholder { color: #6f7464 !important; }
 .wow .wow-field input {
   min-height: 34px; padding: 6px 10px; border: 1px solid var(--rule-strong); background: var(--paper); color: var(--ink);
   font: inherit; font-size: 14px; font-variant-numeric: tabular-nums; width: 100%;
@@ -65,6 +68,17 @@
 .wow .wow-field-inline { display: inline-flex; align-items: center; gap: 8px; }
 .wow .wow-field-inline input { width: 76px; }
 .wow .wow-track { position: relative; padding-bottom: 18px; }
+.wow .wow-news {
+  position: relative; display: flex; align-items: flex-start; gap: 10px; margin-top: 18px; padding: 10px 12px;
+  border: 1px solid rgba(227, 179, 65, .45); background: rgba(227, 179, 65, .1); color: #f3e3b8; font-size: 14px;
+  animation: wow-news-in 360ms ease-out !important;
+}
+.wow .wow-news > svg { flex: none; margin-top: 2px; color: #e3b341; }
+.wow .wow-news ul { flex: 1; display: grid; gap: 2px; }
+.wow .wow-news li:first-child { font-weight: 650; color: #fff4d6; }
+.wow .wow-news button { border: 0; background: none; color: #c9b88e; font-size: 18px; line-height: 1; padding: 0 4px; }
+.wow .wow-news button:hover { color: #fff4d6; }
+@keyframes wow-news-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 .wow .wow-track-bar { height: 6px; background: #2a2f20; }
 .wow .wow-track-fill { height: 100%; background: linear-gradient(90deg, #6f9440, #abd473); transition: width 700ms ease !important; }
 .wow .wow-track-ticks { position: absolute; inset: 10px 0 0; }
