@@ -90,7 +90,7 @@ export const ENGINEERING_ROUTE: EngineeringStep[] = [
   { from: 160, to: 175, craft: "Explosive Sheep", count: "15", mats: "30 Heavy Powder, 15 Gizmo, 15 Framework, 30 Wool", note: "Keep 5 if going Goblin." },
   { from: 175, to: 194, craft: "Solid Blasting Powder", count: "60", mats: "120 Solid Stone", note: "Keep all." },
   { from: 194, to: 195, craft: "Gyromatic Micro-Adjustor", count: "1", mats: "4 Steel Bar", note: "Or Iron Grenades if short." },
-  { from: 195, to: 200, craft: "Mithril Tube", count: "6", mats: "18 Mithril Bar", note: "Keep all if going Gnomish. At 200: specialization + Artisan (needs level 35, Gadgetzan)." },
+  { from: 195, to: 200, craft: "Mithril Tube", count: "6", mats: "18 Mithril Bar", note: "Keep all if going Gnomish. At 200: specialization + Artisan (Gadgetzan)." },
   { from: 200, to: 215, craft: "Unstable Trigger", count: "20", mats: "20 Mithril Bar, 20 Mageweave, 20 Solid Powder", note: "Keep all." },
   { from: 215, to: 238, craft: "Mithril Casing", count: "40", mats: "120 Mithril Bar", note: "Keep all." },
   { from: 238, to: 250, craft: "Hi-Explosive Bomb", count: "20", mats: "40 Casing, 20 Trigger, 40 Solid Powder" },
@@ -100,7 +100,7 @@ export const ENGINEERING_ROUTE: EngineeringStep[] = [
 ];
 
 export const ENGINEERING_NOTES: string[] = [
-  "Artisan needs character level 35 — Buzzek Bracketswing in Gadgetzan, by the mailbox outside the inn.",
+  "Artisan trainer: Buzzek Bracketswing in Gadgetzan, by the mailbox outside the inn.",
   "Specialization lean: Gnomish (Accurate Scope for your bow, teleporter to Gadgetzan = Artisan trainer).",
   "Legacy Points at 150, 225 and 300 — first time each.",
   "Cost: ~13g if you mine everything, ~84g buying all mats. Smelt your own bars.",
@@ -116,7 +116,7 @@ export type ZoneStep = { from: number; to: number; zones: string; note?: string 
 export const ZONE_ROUTE: ZoneStep[] = [
   { from: 25, to: 31, zones: "Thousand Needles · Hillsbrad Foothills", note: "Finish up, grab flight paths." },
   { from: 30, to: 35, zones: "Desolace · Stranglethorn Vale", note: "Start Nesingwary in STV — weapon chain." },
-  { from: 35, to: 40, zones: "Dustwallow Marsh · Badlands · Swamp of Sorrows", note: "Artisan Engineering unlocks at 35." },
+  { from: 35, to: 40, zones: "Dustwallow Marsh · Badlands · Swamp of Sorrows", note: "Grab the Gadgetzan flight path for the Artisan trainer." },
   { from: 40, to: 45, zones: "Tanaris · Feralas · The Hinterlands", note: "Gadgetzan = Artisan trainer + Gnomish teleporter target." },
   { from: 45, to: 50, zones: "Searing Gorge · Blasted Lands · Un'Goro Crater", note: "Thorium Rifle at eng 260." },
   { from: 50, to: 55, zones: "Western Plaguelands · Felwood · Burning Steppes", note: "" },
@@ -134,6 +134,8 @@ export type Milestone = {
   detail: string;
   // done automatically once Engineering reaches this skill
   autoSkill?: number;
+  // optional sub-tasks, tracked as "<goal id>:<step id>" in the checked list
+  steps?: { id: string; label: string }[];
 };
 
 export const MILESTONE_GOALS: Milestone[] = [
@@ -141,8 +143,13 @@ export const MILESTONE_GOALS: Milestone[] = [
   { id: "dash-wild-taming", level: 30, label: "Learn Dash via Wild Taming", detail: "Tame a pet that knows Dash, fight until “You have learned a new spell”, teach it to your main pet." },
   { id: "nesingwary-start", level: 31, label: "Start Nesingwary chain in STV", detail: "“Welcome To The Jungle” — leads to the Master Hunter's Rifle/Bow (sweet spot ~41)." },
   { id: "sleeping-bag", level: null, label: "Cozy Sleeping Bag quest chain", detail: "Multi-continent chain → 1–3% XP buff for 2h standing on it. Do it on a travel day." },
-  { id: "artisan-eng", level: 35, label: "Train Artisan Engineering", detail: "Buzzek Bracketswing in Gadgetzan — needed from skill 200 onward.", autoSkill: 201 },
-  { id: "gnomish-spec", level: null, label: "Engineering specialization at 200", detail: "Lean: Gnomish. Hand in 6 Mithril Tube, 1 Accurate Scope (schematic: Mazk Snipeshot, Booty Bay), 2 Advanced Target Dummy." },
+  { id: "artisan-eng", level: null, label: "Train Artisan Engineering", detail: "Buzzek Bracketswing in Gadgetzan — needed from skill 200 onward.", autoSkill: 201 },
+  { id: "gnomish-spec", level: null, label: "Engineering specialization at 200", detail: "Lean: Gnomish. Pick up the quest from the Artisan trainer, then hand in:",
+    steps: [
+      { id: "tubes", label: "6 Mithril Tube (keep them from the 195–200 step)" },
+      { id: "scope", label: "1 Accurate Scope (schematic: Mazk Snipeshot, Booty Bay)" },
+      { id: "dummies", label: "2 Advanced Target Dummy" },
+    ] },
   { id: "mount-gold", level: 40, label: "Mount + riding (~90g saved)", detail: "The mid-game boss fight. Start saving now; skip AH toys." },
   { id: "truthseeker", level: 40, label: "Truthseeker's Bow — 25 library books", detail: "Turn in 25 library books at the faction library." },
   { id: "master-hunters", level: 41, label: "Master Hunter's Rifle / Bow", detail: "Finish the Nesingwary chain around 41 for the best payoff." },

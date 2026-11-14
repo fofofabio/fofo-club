@@ -505,7 +505,6 @@ function Talents({ level }: { level: number }) {
 function Engineering({ state, update }: { state: WowState; update: (m: (s: WowState) => WowState) => void }) {
   const skill = state.engineeringSkill;
   const current = currentEngineeringStep(skill);
-  const artisanBlocked = skill >= 195 && skill <= 200 && state.level < 35;
   const doneSteps = ENGINEERING_ROUTE.filter((s) => skill >= s.to).length;
   const [showDone, setShowDone] = useState(false);
 
@@ -542,7 +541,6 @@ function Engineering({ state, update }: { state: WowState; update: (m: (s: WowSt
             </div>
           </div>
         )}
-        {artisanBlocked && <p className="wow-warn">Artisan (200+) needs character level 35, so you have {35 - state.level} levels to go. Bank mats until then.</p>}
       </section>
 
       <section className="wow-panel">
@@ -683,6 +681,22 @@ function Goals({ state, update, toggleChecked }: { state: WowState; update: (m: 
     const auto = isAutoDone(g, state);
     return (
     <CheckRow key={g.id} checked={isDone(g)} auto={auto} onToggle={() => toggleChecked(g.id)} label={g.label} detail={g.detail} locked={locked} meta={auto ? `auto · skill ${state.engineeringSkill}` : g.level ? `lv ${g.level}` : undefined}>
+      {g.steps && !isDone(g) && (
+        <ul className="wow-substeps">
+          {g.steps.map((step) => {
+            const key = `${g.id}:${step.id}`;
+            const on = state.checked.includes(key);
+            return (
+              <li key={key}>
+                <button type="button" className={on ? "is-on" : ""} aria-pressed={on} onClick={() => toggleChecked(key)}>
+                  <span aria-hidden="true">{on && <Check className="h-3 w-3" />}</span>
+                  {step.label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
       {g.id === "truthseeker" && !isDone(g) && (
         <div className="wow-books">
           <BookOpen className="h-4 w-4" />

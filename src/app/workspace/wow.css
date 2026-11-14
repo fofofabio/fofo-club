@@ -182,6 +182,14 @@
 .wow .wow-mats ul { margin-top: 6px; }
 .wow .wow-mats li { display: flex; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--rule); font-size: 14px; color: var(--ink-2); }
 .wow .wow-mats li b { min-width: 3.5ch; text-align: right; color: var(--ink); font-variant-numeric: tabular-nums; }
+.wow .wow-substeps { margin-top: 8px; display: grid; gap: 2px; }
+.ws-tool .wow .wow-substeps button[aria-pressed],
+.ws-tool .wow .wow-seg button[aria-pressed] { border-bottom: 0 !important; }
+.wow .wow-substeps button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 4px 0; border: 0; background: none; text-align: left; font-size: 13px; color: var(--ink-2); }
+.wow .wow-substeps button > span { display: grid; place-items: center; width: 16px; height: 16px; flex: none; border: 1px solid var(--rule-strong); color: var(--paper); }
+.wow .wow-substeps button:hover > span { border-color: var(--wow-accent); }
+.wow .wow-substeps button.is-on { color: var(--ink-3); text-decoration: line-through; }
+.wow .wow-substeps button.is-on > span { background: var(--wow-accent); border-color: var(--wow-accent); }
 .wow .wow-check-box:disabled { cursor: default; }
 .wow .wow-check-box:disabled:hover { border-color: var(--wow-accent); }
 .wow .wow-step-progress { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 13px; color: var(--wow-gold); font-weight: 600; font-variant-numeric: tabular-nums; }
