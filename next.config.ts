@@ -6,6 +6,8 @@ const scriptPolicy = process.env.NODE_ENV === "development"
 
 const nextConfig: NextConfig = {
   images: {
+    // 75 is the default; Cinema posters ask for 85. Next 16 rejects unlisted qualities.
+    qualities: [75, 85],
     remotePatterns: [
       { protocol: "https", hostname: "culturekit-assets.imgix.net" },
       { protocol: "https", hostname: "nonstopkino.at" },
