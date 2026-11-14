@@ -492,3 +492,22 @@ small.ws-starts-in { display: block; width: max-content; margin-top: 4px; }
 @media (pointer: coarse) {
   .ws-hours details > summary, .ws-wow .wow-settings > summary { min-height: 44px; display: flex; align-items: center; }
 }
+
+/* Finances: read-only bank export check */
+.ws-export-disclosure { margin-block: 12px 20px; }
+.ws-export-check { display: grid; gap: 12px; font-size: 14px; }
+.ws-export-check > p { color: var(--ink-2); max-width: 70ch; margin: 0; }
+.ws-export-pick { position: relative; display: inline-flex; width: max-content; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid var(--ink); background: var(--paper-raised); color: var(--ink); font-weight: 600; cursor: pointer; }
+.ws-export-pick:hover { background: var(--paper-well); }
+.ws-export-pick:focus-within { outline: 2px solid var(--ink); outline-offset: 3px; }
+.ws-export-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.ws-export-error { color: var(--state-bad); margin: 0; }
+.ws-export-result { display: grid; gap: 10px; border-top: 1px solid var(--rule); padding-top: 12px; }
+.ws-export-result dl { display: grid; gap: 6px; margin: 0; }
+.ws-export-result dl > div { display: grid; grid-template-columns: 4.5rem 1fr; gap: 12px; }
+.ws-export-result dt { color: var(--ink-2); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; padding-top: 2px; }
+.ws-export-result dd { margin: 0; overflow-wrap: anywhere; }
+.ws-export-verdict { margin: 0; padding: 10px 12px; border-left: 3px solid var(--state-ok); background: var(--paper-well); }
+.ws-export-verdict[data-tone='warn'] { border-left-color: var(--state-warn); }
+.ws-export-next { margin: 0; font-size: 13px; color: var(--ink-2); }
+.ws-export-next code { font-size: 12px; overflow-wrap: anywhere; }

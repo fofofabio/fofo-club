@@ -5,6 +5,7 @@ import { workspaceRequest as requestJson } from "./workspaceRequest";
 import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { Disclosure, WorkspaceTable } from "./WorkspaceUI";
+import FinanceExportCheck from "./FinanceExportCheck";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -423,6 +424,7 @@ export default function FinanceDashboard() {
   return (
     <div className="space-y-8">
       <header className="ws-finance-head"><div><h2>Finances</h2><p>Cash flow and recurring commitments.</p></div><label className="ws-field">Month<select value={selectedMonth === "all" ? "all" : current.month} onChange={(event) => setSelectedMonth(event.target.value)}><option value="all">All months · latest summary</option>{allMonthly.map((item) => <option key={item.month} value={item.month}>{monthLabel(item.month, true)}</option>)}</select></label><p>{payload.meta.transactionCount.toLocaleString("de-AT")} transactions · through {dateLabel(payload.meta.dataEnd)}{staleData ? <span className="ws-finance-stale" title="Export the full bank (CSV) and PayPal history, then run: npm run import:finances -- --user <email> --bank <bank.csv> --paypal <paypal.csv>"> · {dataAgeDays} days without a new bank export</span> : null}</p></header>
+      <Disclosure title="Check a bank export" className="ws-export-disclosure"><FinanceExportCheck /></Disclosure>
       <nav className="ws-finance-nav" aria-label="Finance sections"><a href="#finance-transactions">Transactions</a><a href="#finance-recurring">Subscriptions & expenses</a><a href="#finance-analysis">Analysis & categories</a></nav>
 
       <section className="ws-finance-overview" aria-label="Current month overview">
