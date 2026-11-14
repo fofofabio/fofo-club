@@ -553,6 +553,20 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
     [selectedWeekEnd, selectedWeekStart, sortedEntries],
   );
 
+  const selectedMonthKey = selectedDate.slice(0, 7);
+  const selectedMonthEntries = useMemo(
+    () => sortedEntries.filter((entry) => entry.date.startsWith(selectedMonthKey)),
+    [selectedMonthKey, sortedEntries],
+  );
+  const selectedMonthMinutes = useMemo(
+    () => selectedMonthEntries.reduce((total, entry) => total + getDurationMinutes(entry), 0),
+    [selectedMonthEntries],
+  );
+  const selectedMonthLabel = new Date(`${selectedMonthKey}-01T12:00:00`).toLocaleDateString("en-GB", {
+    month: "long",
+    year: "numeric",
+  });
+
   const selectedDayMinutes = useMemo(
     () => selectedDayEntries.reduce((total, entry) => total + getDurationMinutes(entry), 0),
     [selectedDayEntries],
@@ -1007,14 +1021,12 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
     }
   }
 
-  function downloadWeekCsv() {
-    const csv = buildHoursCsv(
-      selectedWeekEntries.map((entry) => ({ ...entry, minutes: getDurationMinutes(entry) })),
-    );
+  function downloadCsv(list: HourEntry[], filename: string) {
+    const csv = buildHoursCsv(list.map((entry) => ({ ...entry, minutes: getDurationMinutes(entry) })));
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `hours-${toDateKey(selectedWeekDays[0])}.csv`;
+    link.download = filename;
     link.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
@@ -1369,7 +1381,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
           </div>
         ) : null}
 
-        {weeklyProjectTotals.length > 0 ? (
+        {selectedMonthEntries.length > 0 ? (
           <div className="rounded-none border border-black/12 bg-white p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -1378,6 +1390,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
                   booking-ready
                 </h3>
               </div>
+              {weeklyProjectTotals.length > 0 ? (
               <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -1393,7 +1406,7 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
               </button>
               <button
                 type="button"
-                onClick={downloadWeekCsv}
+                onClick={() => downloadCsv(selectedWeekEntries, `hours-${toDateKey(selectedWeekDays[0])}.csv`)}
                 title="Download this week as CSV for Excel or Sheets"
                 className="inline-flex items-center gap-2 rounded-none border-[2px] border-black bg-white px-3 py-1.5 text-sm text-black/70 transition hover:bg-fofo-blue hover:text-white"
               >
@@ -1401,7 +1414,12 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
                 CSV
               </button>
               </div>
+              ) : null}
             </div>
+
+            {weeklyProjectTotals.length === 0 ? (
+              <p className="text-sm text-black/55">No hours this week.</p>
+            ) : null}
 
             <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
               {weeklyProjectTotals.map((project) => {
@@ -1434,6 +1452,25 @@ export default function HoursTracker({ pendingDraft, onPendingDraftApplied, onTi
                   </div>
                 );
               })}
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-black/10 pt-3">
+              <p className="text-sm text-black/70">
+                <span className="font-medium text-black">{selectedMonthLabel}</span>{" "}
+                <span className="font-mono">{formatDuration(selectedMonthMinutes)}</span>
+                <span className="text-black/50">
+                  {" "}· {selectedMonthEntries.length} {selectedMonthEntries.length === 1 ? "entry" : "entries"}
+                </span>
+              </p>
+              <button
+                type="button"
+                onClick={() => downloadCsv(selectedMonthEntries, `hours-${selectedMonthKey}.csv`)}
+                title={`Download ${selectedMonthLabel} as CSV for Excel or Sheets`}
+                className="inline-flex items-center gap-2 rounded-none border-[2px] border-black bg-white px-3 py-1.5 text-sm text-black/70 transition hover:bg-fofo-blue hover:text-white"
+              >
+                <Download className="h-4 w-4" />
+                Month CSV
+              </button>
             </div>
           </div>
         ) : null}
