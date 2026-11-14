@@ -103,7 +103,7 @@ export const ENGINEERING_NOTES: string[] = [
   "Artisan trainer: Buzzek Bracketswing in Gadgetzan, by the mailbox outside the inn.",
   "Specialization lean: Gnomish (Accurate Scope for your bow, teleporter to Gadgetzan = Artisan trainer).",
   "Legacy Points at 150, 225 and 300 — first time each.",
-  "Cost: ~13g if you mine everything, ~84g buying all mats. Smelt your own bars.",
+  "Cost: about 13g if you mine everything, about 84g buying all mats. Smelt your own bars.",
   "Save all Linen, Wool, Mageweave and Runecloth from quest mobs starting now.",
 ];
 
@@ -141,7 +141,7 @@ export type Milestone = {
 export const MILESTONE_GOALS: Milestone[] = [
   { id: "quilboar-blaster", level: 29, label: "Quilboar Blaster (RFK quest)", detail: "Horde-only Razorfen Kraul reward — free gun upgrade, still worth grabbing." },
   { id: "dash-wild-taming", level: 30, label: "Learn Dash via Wild Taming", detail: "Tame a pet that knows Dash, fight until “You have learned a new spell”, teach it to your main pet." },
-  { id: "nesingwary-start", level: 31, label: "Start Nesingwary chain in STV", detail: "“Welcome To The Jungle” — leads to the Master Hunter's Rifle/Bow (sweet spot ~41)." },
+  { id: "nesingwary-start", level: 31, label: "Start Nesingwary chain in STV", detail: "“Welcome To The Jungle” — leads to the Master Hunter's Rifle/Bow (sweet spot around 41)." },
   { id: "sleeping-bag", level: null, label: "Cozy Sleeping Bag quest chain", detail: "Multi-continent chain → 1–3% XP buff for 2h standing on it. Do it on a travel day." },
   { id: "artisan-eng", level: null, label: "Train Artisan Engineering", detail: "Buzzek Bracketswing in Gadgetzan — needed from skill 200 onward.", autoSkill: 201 },
   { id: "gnomish-spec", level: null, label: "Engineering specialization at 200", detail: "Lean: Gnomish. Pick up the quest from the Artisan trainer, then hand in:",
@@ -150,7 +150,7 @@ export const MILESTONE_GOALS: Milestone[] = [
       { id: "scope", label: "1 Accurate Scope (schematic: Mazk Snipeshot, Booty Bay)" },
       { id: "dummies", label: "2 Advanced Target Dummy" },
     ] },
-  { id: "mount-gold", level: 40, label: "Mount + riding (~90g saved)", detail: "The mid-game boss fight. Start saving now; skip AH toys." },
+  { id: "mount-gold", level: 40, label: "Mount + riding (about 90g)", detail: "The mid-game boss fight. Start saving now; skip AH toys." },
   { id: "truthseeker", level: 40, label: "Truthseeker's Bow — 25 library books", detail: "Turn in 25 library books at the faction library." },
   { id: "master-hunters", level: 41, label: "Master Hunter's Rifle / Bow", detail: "Finish the Nesingwary chain around 41 for the best payoff." },
   { id: "legacy-150", level: null, label: "Engineering 150 — first Legacy Point", detail: "Then 225 and 300. Legacy talents Working Overtime / Dedicated Study speed up skill gains.", autoSkill: 150 },
@@ -175,7 +175,7 @@ export type GoldCraft = {
 };
 
 export const GOLD_CRAFTS: GoldCraft[] = [
-  { name: "Hoof-Shaped Foot Pedal", skill: 140, verdict: "sell", profit: "+1.5g each (EU)", detail: "New centaur toy, anyone can use it. Schematic from Gorhak in Desolace (30s). Mats ~85s." },
+  { name: "Hoof-Shaped Foot Pedal", skill: 140, verdict: "sell", profit: "+1.5g each (EU)", detail: "New centaur toy, anyone can use it. Schematic from Gorhak in Desolace (30s). Mats about 85s." },
   { name: "No Slip SAF-T Padding", skill: 145, verdict: "sell", profit: "+33s each (EU)", detail: "Crafting part for SAF-T recipes. Heavy Leather + Magenta Dye. Steady small margin." },
   { name: "EZ-Thro Bronze Mortar", skill: 190, verdict: "later", profit: "+1.5g each", detail: "No engineering requirement to use, so it sells to everyone." },
   { name: "Deadly Scope", skill: 210, verdict: "later", profit: "+16s EU / +79s US", detail: "Other hunters buy it — you're your own first customer." },
@@ -191,7 +191,7 @@ export const GOLD_TIPS: Array<{ title: string; detail: string }> = [
   { title: "Skin what your pet kills", detail: "New Pristine Leather, Hide and Scale are scarce Forever skins. Check AH prices before vendoring anything \"pristine\"." },
   { title: "Never vendor cloth", detail: "Wool, Silk and Mageweave feed your engineering route (and tailors pay for the rest)." },
   { title: "List small, list on the faction AH", detail: "The faction house takes 5%; neutral goblin houses take 15%. Test a few listings before crafting a stack, and don't count unsold stock as gold." },
-  { title: "Save for 40 first", detail: "Mount + riding is ~90g. Skip AH toys and greens you'll outlevel in two dings." },
+  { title: "Save for 40 first", detail: "Mount + riding is about 90g. Skip AH toys and greens you'll outlevel in two dings." },
 ];
 
 // ---------------------------------------------------------------------------
