@@ -386,6 +386,13 @@ export default function FinanceDashboard() {
   // Bank exports are imported by hand; say so when the newest one is getting old.
   const dataAgeDays = Math.floor((Date.now() - new Date(`${payload.meta.dataEnd}T12:00:00`).getTime()) / 86_400_000);
   const staleData = dataAgeDays > 31;
+  // "Month to date" only makes sense for the running month; older months are either
+  // complete or cut short by the last import.
+  const nowDate = new Date();
+  const calendarMonth = `${nowDate.getFullYear()}-${String(nowDate.getMonth() + 1).padStart(2, "0")}`;
+  const isCalendarMonth = current.month === calendarMonth;
+  const cutShort = !isCalendarMonth && payload.meta.dataEnd.slice(0, 7) === current.month;
+  const coverageLabel = isCalendarMonth ? "Month to date" : cutShort ? `Data through ${dateLabel(payload.meta.dataEnd)}` : "Full month";
 
   const spendChange = previous && previous.spend > 0
     ? Math.round(((current.spend - previous.spend) / previous.spend) * 100)
@@ -399,10 +406,10 @@ export default function FinanceDashboard() {
       <section className="ws-finance-overview" aria-label="Current month overview">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="meta text-fofo-blue">NOW / {current.month ? monthLabel(current.month, true) : "CURRENT MONTH"}</p>
+            <p className="meta text-fofo-blue">{isCalendarMonth ? "NOW" : "MONTH"} / {current.month ? monthLabel(current.month, true) : "CURRENT MONTH"}</p>
             <h3 className="font-display text-3xl font-bold lowercase tracking-tight">Month summary</h3>
           </div>
-          <p className="text-sm">Month to date</p>
+          <p className="text-sm">{coverageLabel}</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
