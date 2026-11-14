@@ -186,6 +186,21 @@ export default function TodoBoard({ onStartTimer, userId }: Props) {
 
   // Undo delete toasts
   const [pendingDeletes, setPendingDeletes] = useState<PendingDelete[]>([]);
+  // A delete waits five seconds for undo. If the page is left in that window, send it
+  // anyway (keepalive outlives the page) so the task does not come back next visit.
+  const pendingDeletesRef = useRef(pendingDeletes);
+  pendingDeletesRef.current = pendingDeletes;
+  useEffect(() => {
+    function flush() {
+      for (const pending of pendingDeletesRef.current) {
+        clearTimeout(pending.timeoutId);
+        void fetch(`/api/workspace/todos/${pending.todo.id}`, { method: "DELETE", keepalive: true }).catch(() => {});
+      }
+      pendingDeletesRef.current = [];
+    }
+    window.addEventListener("pagehide", flush);
+    return () => window.removeEventListener("pagehide", flush);
+  }, []);
 
   // Load
   useEffect(() => {
