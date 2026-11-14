@@ -454,3 +454,12 @@ html:has(.ws-shell[data-theme='dark']) body { background: #161714; }
  .ws-data-table[aria-label='Transactions'] td:nth-child(2) { overflow-wrap: anywhere; }
  .ws-txn-cat-inline { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
 }
+
+/* Cinema filters on a phone: start time and cinema share a row so tonight's films show sooner. */
+@media (max-width: 639px) {
+ .ws-cinema .ws-cinema-filters { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+ .ws-cinema .ws-cinema-filters > label { padding: 12px; }
+ .ws-cinema .ws-cinema-filters > label:nth-child(1) { border-right: 1px solid var(--rule) !important; }
+ .ws-cinema .ws-cinema-filters > label:nth-child(3) { grid-column: 1 / -1; padding-block: 10px; }
+ .ws-cinema .ws-cinema-filters select, .ws-cinema .ws-cinema-filters input[type='time'] { min-width: 0; padding-inline: 8px; }
+}
